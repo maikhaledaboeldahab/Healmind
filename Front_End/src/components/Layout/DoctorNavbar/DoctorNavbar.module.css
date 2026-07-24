@@ -1,0 +1,79 @@
+.navbar {
+  background-color: var(--white-color);
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.5rem 1.5rem;
+  height: 70px;
+}
+
+.brand {
+  font-family: var(--font-headline-md-family);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.doctorSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.avatarCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  object-fit: cover;
+}
+
+.notifIcon {
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  cursor: pointer;
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 0.65rem;
+  background-color: var(--accent-color);
+}
+
+/* Profile dropdown trigger button */
+.profileToggle {
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.profileToggle:hover {
+  background-color: var(--color-surface-container-low, #f2f4f2);
+}
+
+/* remove Bootstrap's default caret — we use our own chevron icon instead */
+.profileToggle::after {
+  display: none;
+}
+
+.chevron {
+  font-size: 0.7rem;
+  color: var(--primary-color);
+  margin-left: 2px;
+}
+
+.menu {
+  border-radius: var(--radius-md, 0.75rem);
+  box-shadow: var(--shadow-surface, 0 6px 18px rgba(0, 0, 0, 0.12));
+  border: none;
+  padding: 8px;
+  min-width: 180px;
+}

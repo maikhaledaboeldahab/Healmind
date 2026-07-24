@@ -1,0 +1,11 @@
+/* Footer.module.css */
+.footer {
+  height: 50px;
+  background-color: var( --color-primary);
+  color: var(--white-color);
+}
+
+.footer span {
+  opacity: 0.9;
+  font-size: 0.9rem; 
+}

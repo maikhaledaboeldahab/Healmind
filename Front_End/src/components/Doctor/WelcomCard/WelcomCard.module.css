@@ -1,0 +1,53 @@
+.card {
+  background-color: var(--color-primary-container);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-surface);
+  overflow: hidden;
+}
+
+.greeting {
+  font-family: var(--font-headline-lg-family);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-on-primary-container);
+  margin-bottom: 12px;
+}
+
+.subtext {
+  font-family: var(--font-body-lg-family);
+  font-size: 1rem;
+  color: var(--color-on-primary-container);
+  opacity: 0.9;
+  max-width: 520px;
+  margin: 0;
+}
+
+.primaryBtn {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-family: var(--font-label-md-family);
+  transition: transform 0.2s ease;
+}
+
+.primaryBtn:hover {
+  transform: translateY(-2px);
+}
+
+.ghostBtn {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--color-on-primary-container);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 28px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-family: var(--font-label-md-family);
+  transition: background-color 0.2s ease;
+}
+
+.ghostBtn:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}

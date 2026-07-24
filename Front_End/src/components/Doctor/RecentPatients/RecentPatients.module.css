@@ -1,0 +1,19 @@
+.card {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-surface);
+}
+
+.title {
+  font-family: var(--font-headline-md-family);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin-bottom: 8px;
+}
+
+.emptyState {
+  text-align: center;
+  color: var(--color-on-surface-variant);
+  padding: 32px 0;
+}

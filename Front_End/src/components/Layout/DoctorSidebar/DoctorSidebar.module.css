@@ -1,0 +1,72 @@
+.sidebar {
+  width: 240px;
+  background-color: var(--color-primary);
+}
+
+.brand {
+  color: var(--color-on-primary);
+  font-family: var(--font-headline-md-family);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  height: 46px;
+  padding: 0 16px;
+
+  color: var(--color-on-primary);
+  text-decoration: none;
+
+  border-left: 3px solid transparent;
+  transition: background-color 0.2s ease;
+}
+
+.navItem i {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+}
+
+.navItem span {
+  font-family: var(--font-label-md-family);
+  font-size: 14px;
+  font-weight: var(--font-label-md-weight);
+}
+
+.navItem:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.active {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-left-color: var(--color-inverse-primary);
+}
+@media (max-width: 992px) {
+  .sidebar {
+    width: 70px;
+  }
+
+  .navItem {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .navItem span {
+    display: none;
+  }
+
+  .brand {
+    text-align: center;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .brand::after {
+    content: "H";
+    font-size: 20px;
+  }
+}
