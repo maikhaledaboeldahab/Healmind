@@ -7,7 +7,7 @@ import Notfound from './components/Layout/Notfound/Notfound'
 import AuthLayout from './components/Layout/Authlayout'
 import Login from './components/Layout/Login/Login'
 import Register from './components/Layout/Register/Register'
-import DoctorDashboard from './pages/Doctor/DoctorDashboard'
+import DoctorDashboard from './Pages/Doctor/DoctorDashboard'
 
 function App() {
   const routes = createBrowserRouter([
