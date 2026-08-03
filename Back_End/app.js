@@ -3,9 +3,7 @@ require("dotenv").config();
 
 
 // Packages
-
 const express = require("express");
-
 const morgan = require("morgan");
 
 
@@ -55,9 +53,8 @@ app.get("/test", (req, res) => {
 // Routes
 
 app.use("/api/auth", require("./routes/auth.routes"));
-
+app.use("/api/session", require("./routes/session.routes"));
 app.use("/api/profile", require("./routes/profile.routes"));
-
 app.use("/api/reviews", require("./routes/review.routes"));
 app.use ("/api/contactus", require("./routes/contactus.routes"));
 

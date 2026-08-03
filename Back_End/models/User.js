@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema(
 
     isActive: {
       type: Boolean,
-      default: true,
+      default: true,   //for testing
     },
   },
   userOptions
@@ -127,7 +127,7 @@ const doctorSchema = new mongoose.Schema({
   },
   isApproved: {
     type: Boolean,
-    default: false, // Requires admin approval
+    default: true, // Requires admin approval //need to be edited // this is true just for testing
   },
   approvedBy: {
     type: mongoose.Schema.Types.ObjectId,
