@@ -1,5 +1,4 @@
 import PatientListItem from "../PatientListItems/PatientListItems";
-import Skeleton from "../../UI/Skeleton/Skeleton";
 import styles from "./RecentPatients.module.css";
 
 const RecentPatients = ({ patients = [] }) => {

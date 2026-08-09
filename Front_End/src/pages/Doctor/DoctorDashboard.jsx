@@ -7,6 +7,7 @@ import Patients from "./Patients";
 import Availability from "./Availability";
 import Session from "./Sessions";
 import Profile from "./Profile";
+import PatientDetails from "./PatientDetails";
 
 const DoctorDashboard = () => {
   return (
@@ -23,6 +24,7 @@ const DoctorDashboard = () => {
             <Route path="availability" element={<Availability />} />
             <Route path="sessions" element={<Session />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="patients/:id" element={<PatientDetails />} />
           </Routes>
         </main>
       </div>

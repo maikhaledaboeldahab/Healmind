@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PatientCard from "../../components/Doctor/PatientCard/PatientCard";
 import PatientsToolbar from "../../components/Doctor/PatientsToolbar/PatientsToolbar";
-import Skeleton from "../../components/UI/Skeleton/Skeleton";
 
 const samplePatients = [
   { id: 1, patientName: "Arlo Sterling", age: 29, gender: "Male", status: "Approved", therapyType: "Cognitive Behavioral Therapy", lastSession: "Oct 24, 2023" },
@@ -62,21 +61,12 @@ const DoctorPatients = () => {
       />
 
       {isLoading ? (
-        <div className="row g-3">
-          {[1, 2, 3].map((n) => (
-            <div className="col-12 col-md-6 col-lg-4" key={n}>
-              <div className="p-3">
-                <div className="d-flex justify-content-between mb-3">
-                  <Skeleton width="48px" height="48px" circle />
-                  <Skeleton width="80px" height="22px" />
-                </div>
-                <div className="mb-2">
-                  <Skeleton width="60%" height="18px" />
-                </div>
-                <Skeleton width="40%" height="12px" />
-              </div>
-            </div>
-          ))}
+        <div className="text-center py-5">
+          <div
+            className="spinner-border"
+            style={{ color: "var(--color-primary)" }}
+            role="status"
+          ></div>
         </div>
       ) : filteredPatients.length === 0 ? (
         <div className="text-center py-5">

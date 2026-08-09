@@ -1,5 +1,4 @@
 import SessionListItem from "../SessionListItem/SessionListItem";
-import Skeleton from "../../UI/Skeleton/Skeleton";
 import styles from "./UpcomingSessions.module.css";
 
 // Props:

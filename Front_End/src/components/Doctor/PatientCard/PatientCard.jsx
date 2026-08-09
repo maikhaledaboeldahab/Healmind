@@ -42,7 +42,7 @@ const PatientCard = ({
       </p>
 
       <p className={styles.detailRow}>
-        <i className="fa-solid fa-clipboard me-2"></i>
+        <i className="fa-regular fa-file-lines me-2"></i>
         {therapyType}
       </p>
       <p className={styles.detailRow}>

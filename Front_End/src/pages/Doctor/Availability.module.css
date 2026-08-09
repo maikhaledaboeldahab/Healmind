@@ -1,0 +1,86 @@
+.navBtn {
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.navBtn:hover {
+  background-color: var(--color-surface-container-low);
+}
+
+.dayColumn {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-surface);
+  padding: 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dayHeader {
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-outline-variant);
+  margin-bottom: 4px;
+}
+
+.dayLabel {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-on-surface-variant);
+  letter-spacing: 0.03em;
+}
+
+.dayNumber {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.emptyDay {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--color-on-surface-variant);
+  font-size: 0.75rem;
+  padding: 20px 0;
+}
+
+.emptyDay i {
+  font-size: 1.3rem;
+}
+
+.addSlotBtn {
+  background: transparent;
+  border: 1.5px dashed var(--color-outline-variant);
+  border-radius: var(--radius);
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px;
+  margin-top: auto;
+}
+
+.addSlotBtn:hover {
+  background-color: var(--color-surface-container-low);
+}
+
+@media (max-width: 992px) {
+  .row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .col {
+    min-width: 140px;
+  }
+}

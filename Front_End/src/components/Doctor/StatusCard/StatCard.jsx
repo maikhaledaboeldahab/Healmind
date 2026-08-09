@@ -1,4 +1,3 @@
-import Skeleton from "../../UI/Skeleton/Skeleton";
 import styles from "./StatCard.module.css";
 
 

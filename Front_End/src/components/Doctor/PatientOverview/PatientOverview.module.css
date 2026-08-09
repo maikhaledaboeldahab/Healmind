@@ -1,0 +1,46 @@
+.card {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-surface);
+}
+
+.sectionTitle {
+  font-family: var(--font-headline-md-family);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin-bottom: 8px;
+}
+
+.diagnosis {
+  font-size: 0.9rem;
+  color: var(--color-on-surface-variant);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.noteRow {
+  border-left: 3px solid var(--color-secondary-container);
+  padding: 4px 0 4px 12px;
+  margin-bottom: 12px;
+}
+
+.noteDate {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 2px;
+}
+
+.noteText {
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.emptyText {
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+  font-style: italic;
+}

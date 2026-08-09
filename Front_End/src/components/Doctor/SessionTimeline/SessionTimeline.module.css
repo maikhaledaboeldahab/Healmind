@@ -1,0 +1,87 @@
+.card {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-surface);
+}
+
+.title {
+  font-family: var(--font-headline-md-family);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.nextSession {
+  background-color: var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.nextLabel {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-inverse-primary);
+  margin-bottom: 4px;
+}
+
+.nextTitle {
+  color: var(--color-on-primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0 0 2px;
+}
+
+.nextGoal {
+  color: var(--color-on-primary);
+  opacity: 0.85;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.pastRow {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.checkIcon {
+  color: var(--color-secondary);
+  font-size: 1.1rem;
+  margin-top: 2px;
+}
+
+.pastDate {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.pastDuration {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+}
+
+.pastTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  margin: 4px 0 2px;
+}
+
+.pastSummary {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.emptyState {
+  text-align: center;
+  color: var(--color-on-surface-variant);
+  padding: 24px 0;
+}
