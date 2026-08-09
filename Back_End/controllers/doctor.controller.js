@@ -1,4 +1,4 @@
-const { User, Doctor, Patient } = require("../models/User");
+const { Doctor, Patient } = require("../models/User");
 const {
   updateDoctorProfileSchema,
 } = require("../validation/Profile.validators");
