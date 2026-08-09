@@ -23,12 +23,12 @@ router.patch("/", protect, restrictTo("doctor"), updateDoctorProfile);
 router.put("/image", protect, uploadProfileImage, updateProfileImage);
 
 // Get Patient History
-router.get("/patient/history/:id", protect, restrictTo("doctor"), getPatientHistory);
+router.get("/patient/history/:id", protect, restrictTo("doctor"), getPatientHistory);         //added and tested by Mai
 
 //slots
-router.post("/slots", protect, restrictTo("doctor"), setSlots);
-router.get("/slots", protect, restrictTo("doctor"), getSlots);
-router.delete("/slots", protect, restrictTo("doctor"), deleteSlots);
-router.delete("/slots/:id", protect, restrictTo("doctor"), cancelSlot);
+router.post("/slots", protect, restrictTo("doctor"), setSlots);         //added and tested by Mai
+router.get("/slots", protect, restrictTo("doctor"), getSlots);          //added and tested by Mai
+router.delete("/slots", protect, restrictTo("doctor"), deleteSlots);          //added and tested by Mai
+router.delete("/slots/:id", protect, restrictTo("doctor"), cancelSlot);         //added and tested by Mai
 
 module.exports = router;

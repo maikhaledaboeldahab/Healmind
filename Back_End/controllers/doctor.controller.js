@@ -86,7 +86,6 @@ const getPatientHistory = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      patient,
       history: patient.sessionHistory, // Contains all sessions with reports & prescriptions
     });
   } catch (error) {
