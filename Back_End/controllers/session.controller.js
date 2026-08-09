@@ -1,27 +1,29 @@
 const Session = require("../models/session.model");
 
+const { createSessionSchema, updateSessionSchema, endSessionSchema, rescheduleSessionSchema } = require("../validation/session.validation");
+
 //----------------------------------------normal Session-------------------------
 
 //get all sessions
 // Admin role
 exports.getAllSessions = async (req, res) => {
-    try {
-        if (!req.user || req.user.role !== 'admin') {
-            return res.status(403).json({ 
-                success: false, 
-                message: "Access denied. Admin resources only." 
-            });
-        }
-
-        const sessions = await Session.find()
-            .sort({ scheduledTime: 1 })
-            // Optional: Populate doctor and patient names for the admin dashboard
-            .populate('doctorId', 'name email')
-            .populate('patientId', 'name email');
-        return res.status(200).json({ success: true, data: sessions});
-    }catch (error) {
-        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  try {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Admin resources only."
+      });
     }
+
+    const sessions = await Session.find()
+      .sort({ scheduledTime: 1 })
+      // Optional: Populate doctor and patient names for the admin dashboard
+      .populate('doctorId', 'name email')
+      .populate('patientId', 'name email');
+    return res.status(200).json({ success: true, data: sessions });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
 
 }
 // Doctor and patient
@@ -29,14 +31,14 @@ exports.getAllSessions = async (req, res) => {
 exports.getMySessions = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { status, startDate, endDate, type } = req.query; 
+    const { status, startDate, endDate, type } = req.query;
 
     let query = {};
 
     if (req.user.role === 'doctor') {
-      query.doctorId = userId; 
+      query.doctorId = userId;
     } else if (req.user.role === 'patient') {
-      query.patientId = userId; 
+      query.patientId = userId;
     }
 
     // Apply Filters
@@ -52,14 +54,14 @@ exports.getMySessions = async (req, res) => {
 
     // Fetch only the specific fields needed from the database
     const sessions = await Session.find(query)
-      .select('_id scheduledTime patientname doctorname') 
+      .select('_id scheduledTime patientname doctorname')
       .sort({ scheduledTime: 1 });
-    
+
     // Map through the array and format each object exactly how you want it
     const formattedSessions = sessions.map(session => {
       // Determine which name to show based on the current user's role
-      const displayName = req.user.role === 'doctor' 
-        ? session.patientname 
+      const displayName = req.user.role === 'doctor'
+        ? session.patientname
         : session.doctorname;
 
       return {
@@ -124,6 +126,11 @@ exports.getSessionDetails = async (req, res) => {
 exports.updateSessionStatus = async (req, res) => {
   try {
     const { status } = req.body;
+    //validation
+    const { error } = updateSessionSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ success: false, message: error.details[0].message });
+    }
     const validStatuses = [
       "pending",
       "confirmed",
@@ -164,8 +171,13 @@ exports.updateSessionStatus = async (req, res) => {
 //Role : doctor
 exports.submitVisitReport = async (req, res) => {
   try {
-    const { diagnosis, notes, followUpDate, prescription } = req.body;
 
+    //validation
+    const { error, value } = updateSessionSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ success: false, message: error.details[0].message });
+    }
+    const { diagnosis, notes, followUpDate, prescription } = value;
     // 1. Verify session exists by session id
     // 2. Create Report
     // do a report db first
@@ -208,6 +220,33 @@ exports.submitVisitReport = async (req, res) => {
       });
   }
 };
+
+//reschedule
+exports.rescheduleSession = async (req, res) => {
+  try {
+    const { newScheduledTime } = req.body;
+    //validation
+    const { error } = rescheduleSessionSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ success: false, message: error.details[0].message });
+    }
+    const session = await Session.findOneAndUpdate(
+      { _id: req.params.id, doctorId: req.user.id },
+      { scheduledTime: newScheduledTime, status: "rescheduled" },
+      { new: true },
+    );
+    if (!session)
+      return res
+        .status(404)
+        .json({ success: false, message: "Session not found" });
+    res.status(200).json({ success: true, data: session });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Error rescheduling session", error: error.message });
+  }
+};
+
 
 //----------------------------------------end of Doctor related APIs-------------------------
 

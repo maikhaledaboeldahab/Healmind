@@ -24,6 +24,7 @@ router.put("/image", protect, uploadProfileImage, updateProfileImage);
 
 // Get Patient History
 router.get("/patient/history/:id", protect, restrictTo("doctor"), getPatientHistory);         //added and tested by Mai
+// router.get("/patient/profile/:id", protect,restrictTo("doctor"),istheresessionbetweenyou,getpatientprofile) //later and needs to generate token while making a session
 
 //slots
 router.post("/slots", protect, restrictTo("doctor"), setSlots);         //added and tested by Mai
