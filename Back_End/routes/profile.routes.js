@@ -18,13 +18,7 @@ router.get("/", protect, getProfile);
 // Update User Profile
 router.put("/profile", protect, updateProfile);
 
-// Update Doctor Profile
-router.put(
-  "/doctor",
-  protect,
-  restrictTo("doctor"),
-  updateDoctorProfile
-);
+
 
 // Update Profile Image
 router.put(

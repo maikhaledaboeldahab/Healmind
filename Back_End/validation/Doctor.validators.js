@@ -4,7 +4,7 @@ const { baseRegisterFields } = require("./User.validators");
 // Register — Doctor
 const registerDoctorSchema = Joi.object({
   ...baseRegisterFields,
-  NationalId: Joi.string().min(14).max(14).required().unique().messages({
+  NationalId: Joi.string().min(14).max(14).required().messages({
     "string.min": "National ID must be at least 14 characters long.",
     "string.max": "National ID must not exceed 14 characters.",
     "any.required": "National ID is required.",

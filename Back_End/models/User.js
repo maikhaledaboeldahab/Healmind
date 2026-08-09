@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true, //for testing
     },
-  },
+  }, userOptions
 );
 
 
@@ -116,7 +116,7 @@ const Patient = User.discriminator("patient", patientSchema);
 // Doctor Schema (extends User)
 const doctorSchema = new mongoose.Schema(
   {
-    NationalId: { type: String, require: true, default: null },
+    NationalId: { type: String, require: true, default: null, unique: true },
     specialization: {
       type: String,
       required: [true, "Specialization is required."],

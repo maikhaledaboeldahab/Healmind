@@ -32,9 +32,12 @@ const updateDoctorProfileSchema = Joi.object({
   sessionPrice: Joi.number().min(0).optional().messages({
     "number.min": "Session price cannot be negative.",
   }),
-  availableDays: Joi.array()
+  slots: Joi.array()
     .items(
-      Joi.string().valid("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+      Joi.object({
+        day: Joi.date().required(), // Changed from Joi.string() to Joi.date()
+        time: Joi.string().required(),
+      })
     )
     .optional(),
 }).min(1);

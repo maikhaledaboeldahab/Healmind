@@ -113,7 +113,27 @@ const setSlots = async (req, res) => {
     const { slots } = value;
     const doctorId = req.user.id;
 
-    const doctor = await Doctor.findByIdAndUpdate(
+
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: "Doctor not found" });
+    }
+
+
+    //deny duplication
+    const newSlots = slots.filter(newSlot => {
+      return !doctor.slots.some(existing =>
+        new Date(existing.day).toISOString() === new Date(newSlot.day).toISOString() &&
+        existing.time === newSlot.time
+      );
+    });
+
+    if (newSlots.length === 0) {
+      return res.status(400).json({ success: false, message: "All provided slots already exist." });
+    }
+
+
+    const updateddoctor = await Doctor.findByIdAndUpdate(
       doctorId,
       {
         $push: {
@@ -123,13 +143,10 @@ const setSlots = async (req, res) => {
       { new: true, runValidators: true },
     );
 
-    if (!doctor) {
-      return res.status(404).json({ message: "Doctor not found" });
-    }
-    await doctor.save();
-    res.status(200).json({ message: "slots added" });
+
+    res.status(200).json({ message: "slots added", data: updateddoctor.slots, name: updateddoctor.name });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "error", error: error.message });
   }
 };
 
@@ -165,7 +182,7 @@ const cancelSlot = async (req, res) => {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    const { slotId } = req.body;
+    const slotId = req.params.id;
 
     doctor.slots.pull(slotId);
 
