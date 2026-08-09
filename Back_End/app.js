@@ -55,6 +55,7 @@ app.get("/test", (req, res) => {
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/session", require("./routes/session.routes"));
 app.use("/api/profile", require("./routes/profile.routes"));
+app.use("/api/doctor", require("./routes/doctor.routes"));
 app.use("/api/reviews", require("./routes/review.routes"));
 app.use ("/api/contactus", require("./routes/contactus.routes"));
 

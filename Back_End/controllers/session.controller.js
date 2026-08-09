@@ -25,6 +25,7 @@ exports.getAllSessions = async (req, res) => {
 
 }
 // Doctor and patient
+//may filter by status, date range, and type
 exports.getMySessions = async (req, res) => {
   try {
     const userId = req.user.id;

@@ -1,8 +1,8 @@
 const { User , Doctor } = require("../models/User");
-const { updateProfileSchema,updateDoctorProfileSchema} = require("../validation/Profile.validators");
+const { updateProfileSchema} = require("../validation/Profile.validators");
 
 
-// Update Profile
+// Update Profile for user
 const updateProfile = async (req, res) => {
   try {
     // Joi Validation
@@ -52,7 +52,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// Get Profile
+// Get Profile user or doctor
 const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
@@ -78,67 +78,7 @@ const getProfile = async (req, res) => {
   }
 };
 
-// Update Doctor Profile
-const updateDoctorProfile = async (req, res) => {
-  try {
-    // Joi Validation
-    const { error, value } = updateDoctorProfileSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
-
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        errors: error.details.map((err) => err.message),
-      });
-    }
-
-    const doctor = await Doctor.findById(req.user.id);
-
-    if (!doctor) {
-      return res.status(404).json({
-        success: false,
-        message: "Doctor not found.",
-      });
-    }
-
-    // Common fields
-    if (value.name !== undefined) doctor.name = value.name;
-    if (value.phone !== undefined) doctor.phone = value.phone;
-
-    // Doctor fields
-    if (value.specialization !== undefined)
-      doctor.specialization = value.specialization;
-
-    if (value.bio !== undefined)
-      doctor.bio = value.bio;
-
-    if (value.yearsOfExperience !== undefined)
-      doctor.yearsOfExperience = value.yearsOfExperience;
-
-    if (value.sessionPrice !== undefined)
-      doctor.sessionPrice = value.sessionPrice;
-
-    if (value.availableDays !== undefined)
-      doctor.availableDays = value.availableDays;
-
-    await doctor.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Doctor profile updated successfully.",
-      data: doctor,
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-// Update Profile Image
+// Update Profile Image for user or doctor
 const updateProfileImage = async (req, res) => {
   try {
     // Check if image was uploaded
@@ -182,5 +122,4 @@ module.exports = {
   getProfile,
   updateProfile,
   updateProfileImage,
-  updateDoctorProfile,
 };

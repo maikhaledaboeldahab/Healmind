@@ -1,9 +1,9 @@
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const { User, Patient, Doctor ,Admin } = require("../models/User");
-const { registerPatientSchema} = require("../validation/Patient.validators");
+const { User, Patient, Doctor, Admin } = require("../models/User");
+const { registerPatientSchema } = require("../validation/Patient.validators");
 const { registerDoctorSchema } = require("../validation/doctor.validators");
-const{resetPasswordSchema  ,forgotPasswordSchema,changePasswordSchema } = require("../validation/authValidators");
+const { resetPasswordSchema, forgotPasswordSchema, changePasswordSchema } = require("../validation/authValidators");
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -22,7 +22,7 @@ const sendTokenResponse = (res, statusCode, user, message) => {
     accessToken,
     refreshToken,
     expiresIn: process.env.JWT_EXPIRES_IN || "1d",
-   
+
   });
 };
 // POST /auth/register/patient
@@ -93,6 +93,7 @@ const registerPatient = async (req, res) => {
   }
 };
 // POST /auth/register/doctor
+//check if the national Id exists
 const registerDoctor = async (req, res) => {
   try {
     // Joi Validation
@@ -110,6 +111,7 @@ const registerDoctor = async (req, res) => {
     }
 
     const {
+      NationalId,
       name,
       email,
       password,
@@ -121,6 +123,15 @@ const registerDoctor = async (req, res) => {
       sessionPrice,
       availableDays,
     } = value;
+
+    // Check if NationalId already exists
+    const existingNationalId = await Doctor.findOne({ NationalId });
+    if (existingNationalId) {
+      return res.status(409).json({
+        success: false,
+        message: "NationalId is already registered.",
+      });
+    }
 
     // Certificate is required
     if (!req.file) {
@@ -143,7 +154,8 @@ const registerDoctor = async (req, res) => {
     // Store certificate path
     const certificatePath = `uploads/certificates/${req.file.filename}`;
 
-    const doctor = await Doctor.create({
+    await Doctor.create({
+      NationalId,
       name,
       email,
       password,
@@ -162,7 +174,7 @@ const registerDoctor = async (req, res) => {
       success: true,
       message:
         "Doctor registration request submitted successfully. Please wait for admin approval before logging in.",
-     
+
     });
 
   } catch (err) {
@@ -181,7 +193,7 @@ const login = async (req, res) => {
 
     const { email, password } = req.body;
 
-    
+
 
 
     // Retrieve user with password (password is excluded by default)
@@ -438,8 +450,8 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-  
-    
+
+
 // POST reset-password/:token
 const resetPassword = async (req, res) => {
   try {
