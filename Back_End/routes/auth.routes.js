@@ -25,11 +25,11 @@ const {
 
 const {
   registerPatientSchema,
-} = require("../validation/patient.validators");
+} = require("../validation/Patient.validators");
 
 const {
   registerDoctorSchema,
-} = require("../validation/doctor.validators");
+} = require("../validation/Doctor.validators");
 
 
 const {

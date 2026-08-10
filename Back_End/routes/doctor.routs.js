@@ -7,7 +7,7 @@ const {
 
 } = require("../controllers/Profile.controller");
 
-const { updateDoctorProfile, getPatientHistory, setSlots, getSlots, deleteSlots, cancelSlot } = require("../controllers/doctor.controller");
+const { updateDoctorProfile, getPatientHistory, setSlots, getSlots, deleteSlots, cancelSlot, editSlot } = require("../controllers/doctor.controller");
 
 const { protect, restrictTo } = require("../middleware/authMiddleware");
 
@@ -31,5 +31,6 @@ router.post("/slots", protect, restrictTo("doctor"), setSlots);         //added 
 router.get("/slots", protect, restrictTo("doctor"), getSlots);          //added and tested by Mai
 router.delete("/slots", protect, restrictTo("doctor"), deleteSlots);          //added and tested by Mai
 router.delete("/slots/:id", protect, restrictTo("doctor"), cancelSlot);         //added and tested by Mai
+router.patch("/slots/:id", protect, restrictTo("doctor"), editSlot);         //added and tested by Mai
 
 module.exports = router;

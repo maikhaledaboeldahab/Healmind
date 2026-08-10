@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { name, email, phone } = require("../validation/User.validators");
+const { name, email, phone } = require("./User.validators");
 
 
 
@@ -39,7 +39,7 @@ const updateDoctorProfileSchema = Joi.object({
         time: Joi.string().required(),
       })
     )
-    .optional(),
+    .optional()
 }).min(1);
 
 module.exports = {

@@ -194,6 +194,42 @@ const cancelSlot = async (req, res) => {
 };
 
 
+const editSlot = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    const slotId = req.params.id;
+
+    // Extract time and day from req.body
+    const { time, day } = req.body;
+
+    // 1. Find the doctor
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    // 2. Find the specific subdocument inside the slots array
+    const slot = doctor.slots.id(slotId);
+
+    if (!slot) {
+      return res.status(404).json({ message: "Slot not found" });
+    }
+
+    // 3. Update the fields only if they are provided in the request
+    if (time !== undefined) slot.time = time;
+    if (day !== undefined) slot.day = day;
+
+    // 4. Save the parent document (Mongoose tracks the subdocument changes for you!)
+    await doctor.save();
+
+    res.status(200).json({
+      message: "Slot updated successfully",
+      data: slot,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   updateDoctorProfile,
@@ -202,4 +238,5 @@ module.exports = {
   getSlots,
   deleteSlots,
   cancelSlot,
+  editSlot
 };

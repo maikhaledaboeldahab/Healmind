@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { baseRegisterFields} = require("./user.validators");
+const { baseRegisterFields } = require("./User.validators");
 
 // Register — Patient
 const registerPatientSchema = Joi.object({
