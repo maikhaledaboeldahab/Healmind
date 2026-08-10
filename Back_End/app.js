@@ -1,6 +1,7 @@
 
 require("dotenv").config();
 
+const cors = require('cors');
 
 // Packages
 const express = require("express");
@@ -23,6 +24,7 @@ connectedDB();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 // Logger
 if (process.env.NODE_ENV === "development") {

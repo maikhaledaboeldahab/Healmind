@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { User, Patient, Doctor, Admin } = require("../models/User");
 const { registerPatientSchema } = require("../validation/Patient.validators");
-const { registerDoctorSchema } = require("../validation/doctor.validators");
+const { registerDoctorSchema } = require("../validation/Doctor.validators");
 const { resetPasswordSchema, forgotPasswordSchema, changePasswordSchema } = require("../validation/authValidators");
 const {
   generateAccessToken,
