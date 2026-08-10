@@ -167,6 +167,11 @@ const doctorSchema = new mongoose.Schema(
           required: false,
           default: null,
         },
+        location: {
+          type: String,
+          required: [false, "Location is required."],
+          trim: true,
+        }
       },
     ],
   },

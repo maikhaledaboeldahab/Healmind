@@ -162,7 +162,7 @@ const getSlots = async (req, res) => {
   }
 };
 
-const deleteSlots = async (req, res) => {
+const deleteAllSlots = async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.user.id);
     doctor.slots = [];
@@ -173,7 +173,7 @@ const deleteSlots = async (req, res) => {
   }
 };
 
-const cancelSlot = async (req, res) => {
+const deleteSlot = async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.user.id);
 
@@ -236,7 +236,7 @@ module.exports = {
   getPatientHistory,
   setSlots,
   getSlots,
-  deleteSlots,
-  cancelSlot,
+  deleteAllSlots,
+  deleteSlot,
   editSlot
 };

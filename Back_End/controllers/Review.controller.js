@@ -1,10 +1,13 @@
 const Review = require("../models/Review");
-const {Doctor}= require("../models/User");
+const { Doctor } = require("../models/User");
 
 const {
   createReviewSchema,
   updateReviewSchema,
 } = require("../validation/review.validator");
+
+
+//patient role
 const createReview = async (req, res) => {
   try {
     const { error, value } = createReviewSchema.validate(req.body, {
@@ -45,6 +48,8 @@ const createReview = async (req, res) => {
     });
   }
 };
+
+//role(patient , doctor , admin)
 const getDoctorReviews = async (req, res) => {
   try {
     const reviews = await Review.find({
@@ -60,6 +65,10 @@ const getDoctorReviews = async (req, res) => {
     });
   }
 };
+
+
+
+//role(patient)
 const updateReview = async (req, res) => {
   try {
     const { error } = updateReviewSchema.validate(req.body);
@@ -98,6 +107,9 @@ const updateReview = async (req, res) => {
     });
   }
 };
+
+
+//role(patient)
 const deleteReview = async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
