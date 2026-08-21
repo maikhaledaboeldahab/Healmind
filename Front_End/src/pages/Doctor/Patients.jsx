@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PatientCard from "../../components/Doctor/PatientCard/PatientCard";
-import PatientsToolbar from "../../components/Doctor/PatientsToolbar/PatientsToolbar";
+import FilterToolbar from "../../components/UI/FilterToolbar/FilterToolbar";
 
 const samplePatients = [
   { id: 1, patientName: "Arlo Sterling", age: 29, gender: "Male", status: "Approved", therapyType: "Cognitive Behavioral Therapy", lastSession: "Oct 24, 2023" },
@@ -53,9 +53,11 @@ const DoctorPatients = () => {
         </Link>
       </div>
 
-      <PatientsToolbar
+      <FilterToolbar
         searchValue={searchValue}
         onSearchChange={setSearchValue}
+        searchPlaceholder="Search patients..."
+        filters={["All", "Pending", "Approved", "Rejected", "Needs Another Session"]}
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
       />

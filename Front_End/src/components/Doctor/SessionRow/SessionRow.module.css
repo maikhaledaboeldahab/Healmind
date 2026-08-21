@@ -1,0 +1,83 @@
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.patientName {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-on-surface);
+}
+
+.cellText {
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+}
+
+.statusPill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.completed {
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+
+.inprogress {
+  background-color: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
+}
+
+.cancelled {
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+
+.decisionDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.approved {
+  background-color: var(--color-secondary);
+}
+
+.pending {
+  background-color: var(--color-outline);
+}
+
+.rejected {
+  background-color: var(--color-error);
+}
+
+.decisionText {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+}
+
+.actionsBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-on-surface-variant);
+  padding: 4px 8px;
+}
+
+.actionsBtn:hover {
+  color: var(--color-on-surface);
+}
