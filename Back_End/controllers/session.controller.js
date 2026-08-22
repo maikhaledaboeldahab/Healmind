@@ -1,6 +1,5 @@
 const Session = require("../models/session.model");
 const { createNotification } = require("../utils/notificationService");
-
 const { createSessionSchema, updateSessionSchema, endSessionSchema, rescheduleSessionSchema } = require("../validation/session.validation");
 
 //----------------------------------------normal Session-------------------------
