@@ -43,11 +43,13 @@ app.get("/test", (req, res) => {
 // Routes
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/session", require("./routes/session.routes"));
+app.use("/api/session", require("./routes/video.routes"));
 app.use("/api/profile", require("./routes/profile.routes"));
 app.use("/api/doctor", require("./routes/doctor.routs"));
 app.use("/api/reviews", require("./routes/review.routes"));
 app.use("/api/contactus", require("./routes/contactus.routes"));
 app.use("/api/conversations", require("./routes/conversation.routes"));
+app.use("/api/notifications", require("./routes/notification.routes"));
 
 // app.use("/api/dashboard", require("./routes/dashboard.routes"));
 
@@ -87,6 +89,11 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
+
+// ✅ نخزن الـ io instance جوه الـ app نفسه
+// عشان أي controller يقدر يوصلها بـ req.app.get("io")
+// من غير ما نعمل circular require بينه وبين chat.socket.js
+app.set("io", io);
 
 // تشغيل منطق الشات وتوصيله بالـ io instance
 require("./sockets/chat.socket")(io);
