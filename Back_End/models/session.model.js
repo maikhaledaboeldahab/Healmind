@@ -47,6 +47,11 @@ const sessionSchema = new mongoose.Schema(
     },
     //----------------------
 
+    slotId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
+
     depositAmount: {
       type: Number,
       default: 0,

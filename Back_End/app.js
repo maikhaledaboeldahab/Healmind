@@ -22,7 +22,11 @@ connectedDB();
 
 // Global Middleware
 
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
@@ -60,6 +64,7 @@ app.use("/api/profile", require("./routes/profile.routes"));
 app.use("/api/doctor", require("./routes/doctor.routs"));
 app.use("/api/reviews", require("./routes/review.routes"));
 app.use("/api/contactus", require("./routes/contactus.routes"));
+app.use("/api/payments", require("./routes/payment.routes"));
 
 // app.use("/api/dashboard", require("./routes/dashboard.routes"));
 

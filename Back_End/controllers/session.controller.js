@@ -1,4 +1,5 @@
 const Session = require("../models/session.model");
+const { Doctor } = require("../models/User");
 
 const { createSessionSchema, updateSessionSchema, endSessionSchema, rescheduleSessionSchema } = require("../validation/session.validation");
 
@@ -155,6 +156,14 @@ exports.updateSessionStatus = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Session not found" });
+
+    // If session is cancelled or rejected, release the associated doctor slot
+    if ((status === "cancelled" || status === "rejected") && session.slotId) {
+      await Doctor.updateOne(
+        { _id: session.doctorId, "slots._id": session.slotId },
+        { $set: { "slots.$.isBooked": false } }
+      );
+    }
 
     res.status(200).json({ success: true, data: session });
   } catch (error) {

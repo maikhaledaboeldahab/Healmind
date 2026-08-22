@@ -1,0 +1,86 @@
+# Implementation Plan - Add Payment and Slot Reservation Feature
+
+This plan outlines the design and integration of a payment feature in the HealMind back-end application. When a patient books a doctor's slot and pays the deposit (via Stripe or Mock API), the reservation is completed and marked as confirmed, and the slot is reserved (isBooked = true) so it is no longer available to other patients.
+
+## Proposed Changes
+
+We will introduce a payment router and controller that supports both **Stripe Checkout Sessions** (with webhook updates) and a **Mock Payment Endpoint** (for easier client/frontend testing). We will also extend the Doctor's slots to track booking status and ensure that only non-booked slots can be reserved.
+
+---
+
+### Database Models
+
+#### [MODIFY] [User.js](file:///d:/Capistone_sama/graduation-project-healmind/Back_End/models/User.js)
+- Update the `slots` array schema in `doctorSchema` to include `isBooked` (Boolean, default `false`).
+
+#### [MODIFY] [session.model.js](file:///d:/Capistone_sama/graduation-project-healmind/Back_End/models/session.model.js)
+- Add `slotId` (Mongoose Schema Types ObjectId) to track which slot of the doctor's slots is associated with the session.
+- Keep `depositAmount` (Number) and `depositPaid` (Boolean).
+- Ensure `status` enum includes `pending` and `confirmed`.
+
+---
+
+### Payment Controller and Routing
+
+#### [NEW] [payment.controller.js](file:///d:/Capistone_sama/graduation-project-healmind/Back_End/controllers/payment.controller.js)
+- **`createCheckoutSession(req, res)`**:
+  - Accept `doctorId`, `slotId`, `type`, `mode`, and optionally custom `depositAmount` in body.
+  - Verify that the doctor exists.
+  - Verify that the slot exists within the doctor's slots and is NOT already booked (`isBooked !== true`).
+  - Create a new `Session` document with `status: "pending"`, `depositPaid: false`, and `slotId`.
+  - If `STRIPE_SECRET_KEY` is configured in environment:
+    - Create a Stripe Checkout Session with line items representing the deposit amount, setting the success and cancel redirect URLs.
+    - Pass metadata: `{ sessionId: session._id.toString(), doctorId: doctorId.toString(), slotId: slotId.toString() }`.
+    - Return the Stripe checkout URL.
+  - If Stripe is not configured or mock is requested, return the pending session details, noting that Stripe is disabled and the client should use `/api/payments/mock-charge` to simulate payment.
+- **`mockCharge(req, res)`**:
+  - Accept `sessionId` in body.
+  - Find the session (must be `status: "pending"`).
+  - Update session: `depositPaid = true`, `status = "confirmed"`.
+  - Find doctor, find slot by `slotId`, and set `isBooked = true`.
+  - Return updated session and success message.
+- **`stripeWebhook(req, res)`**:
+  - Parse Stripe event (with signature verification if `STRIPE_WEBHOOK_SECRET` is set).
+  - If event is `checkout.session.completed`:
+    - Retrieve `sessionId`, `doctorId`, and `slotId` from Stripe metadata.
+    - Update the session `depositPaid = true`, `status = "confirmed"`.
+    - Find doctor, find slot by `slotId`, and set `isBooked = true`.
+  - Return a 200 response to Stripe.
+
+#### [NEW] [payment.routes.js](file:///d:/Capistone_sama/graduation-project-healmind/Back_End/routes/payment.routes.js)
+- Expose the following endpoints:
+  - `POST /api/payments/checkout-session` (Protected, Patients only)
+  - `POST /api/payments/mock-charge` (Protected, Patients only)
+  - `POST /api/payments/webhook` (Public, for Stripe webhook notifications)
+
+---
+
+### Adjustments to Existing Modules
+
+#### [MODIFY] [app.js](file:///d:/Capistone_sama/graduation-project-healmind/Back_End/app.js)
+- Register `/api/payments` routing pointing to `routes/payment.routes.js`.
+- *Note on raw body for Webhooks*: Stripe signature verification requires the raw request body. We will configure the webhook endpoint route to use `express.raw({ type: 'application/json' })` or bypass standard JSON parsing specifically for `/api/payments/webhook`.
+
+#### [MODIFY] [session.controller.js](file:///d:/Capistone_sama/graduation-project-healmind/Back_End/controllers/session.controller.js)
+- Update `updateSessionStatus` to release slots when a session is cancelled:
+  - If a session status becomes `cancelled` (or `rejected`), and it has a `slotId`, find the associated doctor and update the slot's `isBooked` status to `false`.
+
+#### [NEW] [doctor.routs.js / doctor.controller.js additions]
+- Add a route: `GET /api/doctor/:id/available-slots` (Protected, accessible to Patients)
+  - Returns only the slots for a doctor where `isBooked` is false (or not true). This is essential so patients can select an active slot.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- We will write a Node.js verification script (`scripts/test-payment.js`) to:
+  1. Create a dummy patient and doctor with some slots.
+  2. Create a booking (checkout session).
+  3. Trigger the mock charge endpoint.
+  4. Verify the slot is marked as `isBooked = true`.
+  5. Cancel the session.
+  6. Verify the slot is released (`isBooked = false`).
+
+### Manual Verification
+- Deploy and verify database state change manually.
