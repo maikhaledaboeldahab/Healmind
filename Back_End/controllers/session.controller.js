@@ -1,4 +1,5 @@
 const Session = require("../models/session.model");
+const { createNotification } = require("../utils/notificationService");
 
 const { createSessionSchema, updateSessionSchema, endSessionSchema, rescheduleSessionSchema } = require("../validation/session.validation");
 
@@ -156,6 +157,16 @@ exports.updateSessionStatus = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Session not found" });
 
+    // ✅ نبلغ المريض إن حالة السيشن اتغيرت
+    const io = req.app.get("io");
+    await createNotification(io, {
+      recipientId: session.patientId,
+      recipientModel: "patient",
+      type: "session_status_changed",
+      title: "Session Status Updated",
+      message: `Your session with Dr. ${session.doctorname} has been updated to "${status}"`,
+    });
+
     res.status(200).json({ success: true, data: session });
   } catch (error) {
     res
@@ -201,6 +212,16 @@ exports.submitVisitReport = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Session not found" });
 
+    // ✅ نبلغ المريض إن التقرير والروشتة جاهزين
+    const io = req.app.get("io");
+    await createNotification(io, {
+      recipientId: session.patientId,
+      recipientModel: "patient",
+      type: "report_submitted",
+      title: "New Report Available",
+      message: `Dr. ${session.doctorname} has submitted your session report and prescription`,
+    });
+
     res
       .status(201)
       .json({
@@ -239,6 +260,17 @@ exports.rescheduleSession = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Session not found" });
+
+    // ✅ نبلغ المريض إن الميعاد اتغيّر
+    const io = req.app.get("io");
+    await createNotification(io, {
+      recipientId: session.patientId,
+      recipientModel: "patient",
+      type: "session_rescheduled",
+      title: "Session Rescheduled",
+      message: `Dr. ${session.doctorname} has rescheduled your session`,
+    });
+
     res.status(200).json({ success: true, data: session });
   } catch (error) {
     res
@@ -249,5 +281,3 @@ exports.rescheduleSession = async (req, res) => {
 
 
 //----------------------------------------end of Doctor related APIs-------------------------
-
-
