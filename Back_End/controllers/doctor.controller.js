@@ -231,6 +231,23 @@ const editSlot = async (req, res) => {
   }
 };
 
+const getAvailableSlots = async (req, res) => {
+  try {
+    const doctorId = req.params.id;
+    const doctor = await Doctor.findById(doctorId).select("slots");
+    if (!doctor) {
+      return res.status(404).json({ success: false, message: "Doctor not found" });
+    }
+
+    // Filter slots where isBooked is false/undefined/not true
+    const availableSlots = doctor.slots.filter(slot => !slot.isBooked);
+
+    res.status(200).json({ success: true, slots: availableSlots });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   updateDoctorProfile,
   getPatientHistory,
@@ -238,5 +255,7 @@ module.exports = {
   getSlots,
   deleteAllSlots,
   deleteSlot,
-  editSlot
+  editSlot,
+  getAvailableSlots
 };
+

@@ -7,7 +7,7 @@ const {
 
 } = require("../controllers/Profile.controller");
 
-const { updateDoctorProfile, getPatientHistory, setSlots, getSlots, deleteAllSlots, deleteSlot, editSlot } = require("../controllers/doctor.controller");
+const { updateDoctorProfile, getPatientHistory, setSlots, getSlots, deleteAllSlots, deleteSlot, editSlot, getAvailableSlots } = require("../controllers/doctor.controller");
 
 const { protect, restrictTo } = require("../middleware/authMiddleware");
 
@@ -25,6 +25,9 @@ router.put("/image", protect, uploadProfileImage, updateProfileImage);
 // Get Patient History
 router.get("/patient/history/:id", protect, restrictTo("doctor"), getPatientHistory);         //added and tested by Mai
 // router.get("/patient/profile/:id", protect,restrictTo("doctor"),istheresessionbetweenyou,getpatientprofile) //later and needs to generate token while making a session
+
+// Get doctor's available slots (for patients)
+router.get("/:id/available-slots", protect, getAvailableSlots);
 
 //slots
 router.post("/slots", protect, restrictTo("doctor"), setSlots);         //added and tested by Mai

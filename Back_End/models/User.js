@@ -179,6 +179,10 @@ const doctorSchema = new mongoose.Schema(
           type: String,
           required: [false, "Location is required."],
           trim: true,
+        },
+        isBooked: {
+          type: Boolean,
+          default: false,
         }
       },
     ],
