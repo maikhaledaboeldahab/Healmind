@@ -6,6 +6,7 @@ const links = [
     {icon:"fa-solid fa-users", text: "Patients", path:"/doctor/patients"},
     {icon:"fa-solid fa-business-time", text: "Sessions", path:"/doctor/sessions"},
     {icon:"fa-regular fa-comments", text: "Live Chat", path:"/doctor/livechat"},
+    {icon:"fa-solid fa-robot", text: "Chat Bot", path:"/doctor/chatbot"},
     {icon:"fa-regular fa-calendar-days", text: "Availability", path:"/doctor/availability"},
     {icon:"fa-regular fa-user", text: "Profile", path:"/doctor/profile"},
 

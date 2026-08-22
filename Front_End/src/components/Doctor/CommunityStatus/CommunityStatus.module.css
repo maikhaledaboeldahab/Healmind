@@ -76,3 +76,39 @@
   line-height: 1.5;
   margin: 0;
 }
+
+.decisionBtn {
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.approveBtn {
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+
+.approveBtn:hover {
+  filter: brightness(0.97);
+}
+
+.requestBtn {
+  background-color: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
+}
+
+.requestBtn:hover {
+  filter: brightness(0.97);
+}
+
+.rejectBtn {
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+
+.rejectBtn:hover {
+  filter: brightness(0.97);
+}
