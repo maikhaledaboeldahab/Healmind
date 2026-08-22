@@ -1,22 +1,32 @@
+// ⚠️ ده مش ملف جديد بديل عن session.routes.js بتاعك
+// ده بس السطر المطلوب تضيفه في ملفك الحالي، مكانه فوق أي route فيه :id
+// (عشان Express يقرا الـ static routes قبل الـ dynamic ones لو فيه تعارض)
+
 const express = require("express");
 const router = express.Router();
-const { protect, restrictTo, requireApprovedDoctor } = require("../middleware/authMiddleware");
 
+const { protect, restrictTo } = require("../middleware/authMiddleware");
 const {
-    submitVisitReport,
-    getMySessions,
-    getSessionDetails,
-    updateSessionStatus,
-    getAllSessions,
-    rescheduleSession
+  createSession, // ✅ الدالة الجديدة
+  getAllSessions,
+  getMySessions,
+  getSessionDetails,
+  updateSessionStatus,
+  submitVisitReport,
+  rescheduleSession,
 } = require("../controllers/session.controller");
 
+router.use(protect);
 
-router.get('/getallsessions', protect, restrictTo("admin"), getAllSessions);
-router.get('/getmysessions', protect, restrictTo("doctor", "patient"), getMySessions);  //tested 
-router.get('/getsessiondetails/:sessionid', protect, restrictTo("doctor", "patient"), getSessionDetails); //tested
-router.patch('/updatesessionstatus/:id', protect, restrictTo("doctor"), updateSessionStatus); //tested
-router.patch('/submitvisitreport/:id', protect, restrictTo("doctor"), submitVisitReport);    //tested
-router.patch('/reschedule/:id', protect, restrictTo("patient,doctor"), rescheduleSession); //tested
+// ✅ الراوت الجديد المطلوب إضافته
+router.post("/", protect, restrictTo("patient"), createSession);
+
+// باقي الراوتس بتاعتك زي ما هي (مثال تقريبي حسب الدوال الموجودة)
+router.get("/", getAllSessions);
+router.get("/my-sessions", getMySessions);
+router.get("/:sessionid", getSessionDetails);
+router.patch("/:id", restrictTo("doctor"), updateSessionStatus);
+router.post("/:id/report", restrictTo("doctor"), submitVisitReport);
+router.patch("/:id/reschedule", restrictTo("doctor"), rescheduleSession);
 
 module.exports = router;

@@ -19,7 +19,7 @@ const sessionSchema = new mongoose.Schema(
     },
     doctorname: {
       type: String,
-      
+
     },
     //will be buttons in front end
     type: {
@@ -29,7 +29,7 @@ const sessionSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: ["visit", "chat", "video"],
+      enum: ["visit", "chat", "video"], // ✅ ضفنا video كنوع جديد
       required: true,
     },
     //-----------------
@@ -41,7 +41,7 @@ const sessionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "completed", "cancelled"],
+      enum: ["pending", "confirmed", "completed", "cancelled", "rejected"], // ✅ ضفنا rejected
       default: "pending",
       index: true,
     },
@@ -78,11 +78,5 @@ const sessionSchema = new mongoose.Schema(
     timestamps: true, // Automatically manages createdAt and updatedAt
   },
 );
-
-// // Compound index to optimize list queries for a doctor's schedule
-// appointmentSchema.index({ doctorId: 1, scheduledTime: 1 });
-
-// // Compound index to optimize queries for a mother's history/status
-// appointmentSchema.index({ motherId: 1, status: 1 });
 
 module.exports = mongoose.model("Session", sessionSchema);

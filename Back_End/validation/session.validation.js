@@ -1,157 +1,87 @@
-//analyze session.model and session.controller and generate joi schema
-
 const Joi = require("joi");
 
-const baseSessionSchema = Joi.object({
-    patientId: Joi.string()
-        .regex(/^[0-9a-fA-F]{24}$/)
-        .required()
-        .messages({
-            "string.pattern.base": "Invalid patient ID format.",
-            "any.required": "Patient ID is required.",
-        }),
+// ✅ متطابقة تمامًا مع enum القيم الموجودة فعليًا في session.model.js
+const SESSION_TYPES = ["urgent", "followup"];
+const SESSION_MODES = ["visit", "chat", "video"];
+const SESSION_STATUSES = ["pending", "confirmed", "completed", "cancelled", "rejected"];
 
-    doctorId: Joi.string()
-        .regex(/^[0-9a-fA-F]{24}$/)
-        .required()
-        .messages({
-            "string.pattern.base": "Invalid doctor ID format.",
-            "any.required": "Doctor ID is required.",
-        }),
+// ✅ يُستخدم عند إنشاء سيشن جديدة (المريض هو اللي بيحجز)
+// ملحوظة: patientId اتشال من هنا عن قصد — بيتاخد من req.user.id (التوكن)
+// مش من الـ body، عشان محدش يقدر يحجز باسم مريض تاني
+const createSessionSchema = Joi.object({
+  doctorId: Joi.string()
+    .regex(/^[0-9a-fA-F]{24}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Invalid doctor ID format.",
+      "any.required": "Doctor ID is required.",
+    }),
 
-    scheduledTime: Joi.object({
-        date: Joi.date().required().messages({
-            "any.required": "Session date is required.",
-        }),
-        time: Joi.string()
-            .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-            .required()
-            .messages({
-                "string.pattern.base": "Time must be in HH:mm format (24-hour).",
-                "any.required": "Session time is required.",
-            }),
-    })
-        .required()
-        .messages({ "any.required": "Scheduled time is required." }),
+  type: Joi.string()
+    .valid(...SESSION_TYPES)
+    .required()
+    .messages({
+      "any.only": `Session type must be one of: ${SESSION_TYPES.join(", ")}.`,
+      "any.required": "Session type is required.",
+    }),
 
-    type: Joi.string()
-        .valid("online", "in-person")
-        .required()
-        .messages({
-            "any.only": "Session type must be either 'online' or 'in-person'.",
-            "any.required": "Session type is required.",
-        }),
+  mode: Joi.string()
+    .valid(...SESSION_MODES)
+    .required()
+    .messages({
+      "any.only": `Session mode must be one of: ${SESSION_MODES.join(", ")}.`,
+      "any.required": "Session mode is required.",
+    }),
 
-    mode: Joi.string()
-        .valid("video", "voice", "chat")
-        .default("video")
-        .messages({
-            "any.only": "Session mode must be 'video', 'voice', or 'chat'.",
-        }),
+  scheduledTime: Joi.date().required().messages({
+    "any.required": "Scheduled time is required.",
+    "date.base": "Scheduled time must be a valid date.",
+  }),
+
+  // مطلوب بس لو mode = "visit"، هنتأكد من ده في الـ controller نفسه
+  location: Joi.object({
+    address: Joi.string().max(300).optional(),
+  }).optional(),
 });
 
-// Add status enum validation for completeness, though it's typically handled by other logic
-const sessionSchema = baseSessionSchema.append({
-    status: Joi.string()
-        .valid("scheduled", "completed", "cancelled", "rescheduled")
-        .default("scheduled")
-        .messages({
-            "any.only": "Status must be one of: scheduled, completed, cancelled, rescheduled.",
-        }),
-
-    notes: Joi.string()
-        .max(1000)
-        .allow(null, "")
-        .messages({
-            "string.max": "Notes cannot exceed 1000 characters.",
-        }),
-
-    prescription: Joi.string()
-        .max(500)
-        .allow(null, "")
-        .messages({
-            "string.max": "Prescription cannot exceed 500 characters.",
-        }),
-
-    report: Joi.string()
-        .allow(null, "")
-        .messages({
-            "string.base": "Report must be a string.",
-        }),
-});
-
-// Create schemas for different operations
-const createSessionSchema = baseSessionSchema;
-
-
-//diagnosis, notes, followUpDate, prescription
+// ✅ يُستخدم في updateSessionStatus و submitVisitReport
 const updateSessionSchema = Joi.object({
-    scheduledTime: Joi.object({
-        date: Joi.date().required(),
-        time: Joi.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
-    }).optional(),
+  status: Joi.string()
+    .valid(...SESSION_STATUSES)
+    .optional(),
 
-    type: Joi.string()
-        .valid("online", "in-person")
-        .optional(),
+  diagnosis: Joi.string().max(1000).allow(null, "").optional(),
 
-    mode: Joi.string()
-        .valid("video", "voice", "chat")
-        .optional(),
+  notes: Joi.string().max(1000).allow(null, "").optional(),
 
-    status: Joi.string()
-        .valid("pending", "confirmed", "completed", "cancelled", "rejected")
-        .optional(),
+  followUpDate: Joi.date().allow(null, "").optional(),
 
-    notes: Joi.string()
-        .max(1000)
-        .allow(null, "")
-        .optional(),
+  prescription: Joi.string().max(500).allow(null, "").optional(),
 
-    prescription: Joi.string()
-        .max(500)
-        .allow(null, "")
-        .optional(),
-
-    report: Joi.string()
-        .allow(null, "")
-        .optional(),
-
-
-    diagnosis: Joi.string()
-        .max(1000)
-        .allow(null, "")
-        .optional(),
-
-    followUpDate: Joi.date()
-        .allow(null, "")
-        .optional(),
+  // موجود في validation القديمة بس مش مستخدم فعليًا في submitVisitReport الحالية
+  // (سايبينه اختياري عشان مايكسرش حاجة لو حد استخدمه بعدين)
+  slots: Joi.array().optional(),
 });
 
 const endSessionSchema = Joi.object({
-    notes: Joi.string()
-        .max(1000)
-        .required()
-        .messages({ "any.required": "Notes are required to end the session." }),
+  notes: Joi.string()
+    .max(1000)
+    .required()
+    .messages({ "any.required": "Notes are required to end the session." }),
 
-    prescription: Joi.string()
-        .max(500)
-        .allow(null, "")
-        .optional(),
+  prescription: Joi.string().max(500).allow(null, "").optional(),
 });
 
 const rescheduleSessionSchema = Joi.object({
-    newScheduledTime: Joi.object({
-        date: Joi.date().required(),
-        time: Joi.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
-    }).required(),
+  newScheduledTime: Joi.date().required().messages({
+    "any.required": "New scheduled time is required.",
+    "date.base": "New scheduled time must be a valid date.",
+  }),
 });
 
 module.exports = {
-    createSessionSchema,
-    updateSessionSchema,
-    endSessionSchema,
-    rescheduleSessionSchema,
-    sessionSchema, // Full schema with all fields
-    baseSessionSchema, // Schema for creation (without optional fields)
+  createSessionSchema,
+  updateSessionSchema,
+  endSessionSchema,
+  rescheduleSessionSchema,
 };

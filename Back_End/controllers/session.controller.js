@@ -1,8 +1,92 @@
 const Session = require("../models/session.model");
+const { Patient, Doctor } = require("../models/User");
 const { createNotification } = require("../utils/notificationService");
 const { createSessionSchema, updateSessionSchema, endSessionSchema, rescheduleSessionSchema } = require("../validation/session.validation");
 
 //----------------------------------------normal Session-------------------------
+
+// Role: patient
+// المريض بيبعت طلب حجز بمعاد مقترح، والدكتور بعدين يأكد أو يرفض عن طريق updateSessionStatus
+exports.createSession = async (req, res) => {
+  try {
+    // Joi Validation
+    // ملحوظة: لو أسامي الفيلدز في createSessionSchema مختلفة عن اللي هنا، ظبطها حسب الـ schema بتاعتك
+    const { error, value } = createSessionSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        errors: error.details.map((err) => err.message),
+      });
+    }
+
+    const { doctorId, type, mode, scheduledTime, location } = value;
+
+    // ✅ لو الحجز بالكشف الفعلي، لازم يكون فيه عنوان
+    if (mode === "visit" && (!location || !location.address)) {
+      return res.status(400).json({
+        success: false,
+        message: "Location address is required when mode is 'visit'",
+      });
+    }
+
+    // تأكيد إن الدكتور موجود فعلاً وموافق عليه
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found",
+      });
+    }
+
+    if (!doctor.isApproved) {
+      return res.status(400).json({
+        success: false,
+        message: "This doctor is not approved yet",
+      });
+    }
+
+    const patient = await Patient.findById(req.user.id);
+
+    const session = await Session.create({
+      patientId: patient._id,
+      doctorId: doctor._id,
+      patientname: patient.name,
+      doctorname: doctor.name,
+      type,
+      mode,
+      scheduledTime,
+      location: mode === "visit" ? location : undefined,
+      status: "pending",
+    });
+
+    // ✅ نبلغ الدكتور إن فيه طلب حجز جديد محتاج تأكيده
+    const io = req.app.get("io");
+    await createNotification(io, {
+      recipientId: doctor._id,
+      recipientModel: "doctor",
+      type: "session_booked",
+      title: "New Session Request",
+      message: `${patient.name} has requested a new session with you`,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Session request created successfully. Waiting for doctor confirmation.",
+      data: session,
+    });
+  } catch (error) {
+    console.error("❌ Error creating session:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error creating session",
+      error: error.message,
+    });
+  }
+};
 
 //get all sessions
 // Admin role
