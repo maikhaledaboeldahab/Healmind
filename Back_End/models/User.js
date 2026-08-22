@@ -47,6 +47,14 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true, //for testing
     },
+
+    // ✅ ضروري عشان الشات يعرف يبعت للمستخدم لو أونلاين
+    // كانت الكود بيحاول يحفظها من غير ما تكون معرّفة في الـ schema
+    // فكان Mongoose بيتجاهلها بصمت (strict mode) ومكانتش بتتخزن خالص
+    socketId: {
+      type: String,
+      default: null,
+    },
   }, userOptions
 );
 

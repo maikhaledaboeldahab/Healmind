@@ -1,27 +1,20 @@
-
 require("dotenv").config();
-
+const http = require("http");
 const cors = require('cors');
 
 // Packages
 const express = require("express");
 const morgan = require("morgan");
-
+const { Server } = require("socket.io");
 
 // App Initialization
-
 const app = express();
 
-
-
 // Database
-
 const connectedDB = require("./config/db");
 connectedDB();
 
-
 // Global Middleware
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -31,11 +24,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-
-
-
 // Health Check
-
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
@@ -51,15 +40,14 @@ app.get("/test", (req, res) => {
   });
 });
 
-
 // Routes
-
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/session", require("./routes/session.routes"));
 app.use("/api/profile", require("./routes/profile.routes"));
 app.use("/api/doctor", require("./routes/doctor.routs"));
 app.use("/api/reviews", require("./routes/review.routes"));
 app.use("/api/contactus", require("./routes/contactus.routes"));
+app.use("/api/conversations", require("./routes/conversation.routes"));
 
 // app.use("/api/dashboard", require("./routes/dashboard.routes"));
 
@@ -86,12 +74,25 @@ app.use((err, req, res, next) => {
 });
 
 // ================================
-// Server
+// Server + Socket.IO
 // ================================
 const PORT = process.env.PORT || 3000;
 
-const appServer = app.listen(PORT, () => {
-  console.log(` Server running on port ${PORT}`);
+// بدل app.listen، بنعمل http server يدوي عشان نقدر نركب عليه socket.io
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*", // في الإنتاج غيّرها لدومين الفرونت اند
+    methods: ["GET", "POST"],
+  },
 });
 
-module.exports = { app, appServer };
+// تشغيل منطق الشات وتوصيله بالـ io instance
+require("./sockets/chat.socket")(io);
+
+const appServer = server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+module.exports = { app, appServer, io };
