@@ -29,7 +29,7 @@ const sessionSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: ["visit", "chat"],
+      enum: ["visit", "chat", "video"],
       required: true,
     },
     //-----------------

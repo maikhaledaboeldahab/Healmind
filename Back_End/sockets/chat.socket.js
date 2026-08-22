@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const { Patient, Doctor } = require('../models/User');
 const Message = require('../models/message.model');
 const Conversation = require('../models/conversation.model');
+const { createNotification } = require('../utils/notificationService');
 
 // =============================================
 // 🔧 Helper function to find user by role
@@ -242,6 +243,17 @@ module.exports = (io) => {
             });
           }
 
+          // ✅ الإشعار بيتسجل ويتبعت دايمًا (أونلاين أو أوفلاين)
+          // القرار إنه يتعرض للمستخدم كـ toast أو لأ بيبقى مسؤولية الفرونت
+          // (مثلاً: لو الفرونت شايف إن اليوزر فاتح نفس المحادثة دي بالفعل، يقدر يتجاهل الـ toast)
+          await createNotification(io, {
+            recipientId: receiverId,
+            recipientModel: receiverModel,
+            type: 'new_message',
+            title: 'New Message',
+            message: `${socket.user.name} sent you a new message`,
+          });
+
         } catch (error) {
           console.error('❌ Error sending message:', error);
           socket.emit('error', {
@@ -321,8 +333,10 @@ module.exports = (io) => {
           });
         }
       });
+
+      
       // =============================================
-      // 5️⃣ Delete Message
+      // 3️⃣ Delete Message
       // =============================================
       socket.on('delete_message', async (data) => {
         try {
@@ -394,7 +408,7 @@ module.exports = (io) => {
       });
 
       // =============================================
-      // 6️⃣ Typing Indicator
+      // 4️⃣ Typing Indicator
       // =============================================
       socket.on('typing', async (data) => {
         try {
