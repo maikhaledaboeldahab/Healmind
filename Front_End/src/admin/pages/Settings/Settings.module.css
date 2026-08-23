@@ -1,0 +1,82 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hm-on-surface-variant);
+}
+
+.input,
+.textarea {
+  border: 1px solid var(--hm-outline-variant);
+  border-radius: var(--hm-radius);
+  padding: 11px 14px;
+  font-size: 14px;
+  font-family: var(--hm-font-body);
+  background-color: var(--hm-surface-container-low);
+  resize: vertical;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--hm-primary);
+  background-color: var(--hm-surface-container-lowest);
+}
+
+.toggleList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hm-outline-variant);
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--hm-primary);
+}
+
+.actions {
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .actions {
+    grid-column: span 1;
+  }
+}

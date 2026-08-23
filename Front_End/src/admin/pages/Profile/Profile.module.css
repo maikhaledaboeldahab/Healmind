@@ -1,0 +1,79 @@
+.grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+}
+
+.avatarCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  height: fit-content;
+}
+
+.name {
+  font-size: 17px;
+  margin-top: 8px;
+}
+
+.role {
+  color: var(--hm-on-surface-variant);
+  font-size: 13px;
+  margin: 0;
+}
+
+.formsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hm-on-surface-variant);
+}
+
+.input {
+  border: 1px solid var(--hm-outline-variant);
+  border-radius: var(--hm-radius);
+  padding: 11px 14px;
+  font-size: 14px;
+  background-color: var(--hm-surface-container-low);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--hm-primary);
+  background-color: var(--hm-surface-container-lowest);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

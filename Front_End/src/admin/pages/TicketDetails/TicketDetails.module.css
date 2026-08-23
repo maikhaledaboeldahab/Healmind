@@ -1,0 +1,98 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.notesCard {
+  grid-column: span 2;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.infoList div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--hm-outline-variant);
+  padding-bottom: 8px;
+  font-size: 13px;
+}
+
+.infoList dt {
+  color: var(--hm-on-surface-variant);
+}
+
+.infoList dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.link {
+  cursor: pointer;
+  color: var(--hm-primary);
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.statusRow {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.statusRow > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statusLabel {
+  font-size: 13px;
+  color: var(--hm-on-surface-variant);
+}
+
+.decisionNote {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background-color: var(--hm-surface-container-low);
+  border-radius: var(--hm-radius-md);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--hm-on-surface-variant);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.decisionNote i {
+  color: var(--hm-secondary);
+  margin-top: 2px;
+}
+
+.notes {
+  color: var(--hm-on-surface-variant);
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .notesCard {
+    grid-column: span 1;
+  }
+}

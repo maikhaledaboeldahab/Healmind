@@ -1,0 +1,33 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star {
+  background: none;
+  border: none;
+  padding: 2px;
+  color: var(--color-border);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.star.static {
+  cursor: default;
+}
+
+.filled {
+  color: #f0a93a;
+}
+
+.value {
+  margin-left: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.lg .star {
+  font-size: 1.5rem;
+}

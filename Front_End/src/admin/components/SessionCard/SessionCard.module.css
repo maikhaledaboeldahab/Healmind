@@ -1,0 +1,58 @@
+.card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--hm-outline-variant);
+  border-radius: var(--hm-radius-md);
+  background-color: var(--hm-surface-container-lowest);
+  cursor: pointer;
+  text-align: left;
+  transition: box-shadow 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: var(--hm-shadow-softer);
+}
+
+.time {
+  display: flex;
+  flex-direction: column;
+  min-width: 68px;
+}
+
+.timeValue {
+  font-family: var(--hm-font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--hm-primary);
+}
+
+.duration {
+  font-size: 11px;
+  color: var(--hm-on-surface-variant);
+}
+
+.divider {
+  width: 1px;
+  align-self: stretch;
+  background-color: var(--hm-outline-variant);
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.type {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.names {
+  font-size: 12px;
+  color: var(--hm-on-surface-variant);
+}

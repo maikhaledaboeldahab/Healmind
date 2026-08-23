@@ -1,0 +1,51 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  color: var(--hm-on-surface-variant);
+}
+
+.title {
+  font-size: 15px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+
+.weekday {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hm-on-surface-variant);
+  padding-bottom: 4px;
+}
+
+.cell {
+  font-size: 12px;
+  padding: 6px 0;
+  border-radius: var(--hm-radius-sm);
+  color: var(--hm-on-surface);
+  position: relative;
+}
+
+.today {
+  background-color: var(--hm-primary);
+  color: var(--hm-on-primary);
+  font-weight: 700;
+}
+
+.hasSession:not(.today)::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--hm-secondary);
+}

@@ -1,0 +1,109 @@
+.grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+}
+
+.profileCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  height: fit-content;
+}
+
+.name {
+  font-size: 18px;
+  margin-top: 8px;
+}
+
+.specialization {
+  color: var(--hm-on-surface-variant);
+  font-size: 13px;
+  margin: 0 0 4px;
+}
+
+.infoList {
+  width: 100%;
+  text-align: left;
+  margin: 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.infoList div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--hm-outline-variant);
+  padding-bottom: 8px;
+  font-size: 13px;
+}
+
+.infoList dt {
+  color: var(--hm-on-surface-variant);
+}
+
+.infoList dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.certLink {
+  margin-top: 16px;
+  color: var(--hm-primary);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.detailsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.bio {
+  color: var(--hm-on-surface-variant);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.statValue {
+  font-family: var(--hm-font-display);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--hm-primary);
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--hm-on-surface-variant);
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,32 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 56px 24px;
+  gap: 12px;
+}
+
+.iconCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--hm-secondary-container);
+  color: var(--hm-on-secondary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 18px;
+}
+
+.description {
+  color: var(--hm-on-surface-variant);
+  max-width: 380px;
+  margin: 0 0 8px;
+  line-height: 1.6;
+}

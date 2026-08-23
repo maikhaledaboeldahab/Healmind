@@ -1,0 +1,63 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.viewSwitch {
+  display: flex;
+  background-color: var(--hm-surface-container-low);
+  border-radius: var(--hm-radius-full);
+  padding: 4px;
+}
+
+.viewButton {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: var(--hm-radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hm-on-surface-variant);
+  cursor: pointer;
+}
+
+.activeView {
+  background-color: var(--hm-primary);
+  color: var(--hm-on-primary);
+}
+
+.dateNav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--hm-outline-variant);
+  background-color: var(--hm-surface-container-lowest);
+  cursor: pointer;
+}
+
+.navButton:hover {
+  background-color: var(--hm-secondary-container);
+}
+
+.currentLabel {
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 160px;
+  text-align: center;
+}
+
+.dayDetails {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--hm-outline-variant);
+}

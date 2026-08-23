@@ -1,0 +1,29 @@
+.wrap {
+  max-width: 65%;
+}
+
+.bubble {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.patient {
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-bottom-left-radius: var(--radius-sm);
+}
+
+.doctor {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+.timestamp {
+  font-size: 0.7rem;
+  color: var(--color-on-surface-variant);
+  margin-top: 4px;
+}

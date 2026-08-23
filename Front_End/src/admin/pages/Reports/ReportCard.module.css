@@ -1,0 +1,36 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.iconCircle {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--hm-radius-md);
+  background-color: var(--hm-primary-container);
+  color: var(--hm-primary-fixed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 16px;
+}
+
+.description {
+  color: var(--hm-on-surface-variant);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 14px;
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

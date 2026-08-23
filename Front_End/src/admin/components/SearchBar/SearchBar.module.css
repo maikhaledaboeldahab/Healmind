@@ -1,0 +1,27 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--hm-input-tint);
+  border: 1px solid transparent;
+  border-radius: var(--hm-radius);
+  padding: 0 14px;
+  min-width: 220px;
+  color: var(--hm-on-surface-variant);
+  transition: border-color 0.15s ease;
+}
+
+.wrapper:focus-within {
+  border-color: var(--hm-primary);
+  background-color: var(--hm-surface-container-lowest);
+}
+
+.input {
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 10px 0;
+  width: 100%;
+  font-size: 14px;
+  color: var(--hm-on-surface);
+}

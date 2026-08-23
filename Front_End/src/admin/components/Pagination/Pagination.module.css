@@ -1,0 +1,45 @@
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pageButton,
+.navButton {
+  min-width: 36px;
+  height: 36px;
+  border-radius: var(--hm-radius);
+  border: 1px solid var(--hm-outline-variant);
+  background-color: var(--hm-surface-container-lowest);
+  color: var(--hm-on-surface-variant);
+  font-family: var(--hm-font-display);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pageButton:hover,
+.navButton:hover:not(:disabled) {
+  background-color: var(--hm-secondary-container);
+  border-color: var(--hm-secondary);
+}
+
+.navButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.active {
+  background-color: var(--hm-primary);
+  border-color: var(--hm-primary);
+  color: var(--hm-on-primary);
+}
+
+.ellipsis {
+  padding: 0 4px;
+  color: var(--hm-outline);
+}

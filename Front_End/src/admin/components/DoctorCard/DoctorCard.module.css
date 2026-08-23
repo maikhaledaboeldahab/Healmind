@@ -1,0 +1,45 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.name {
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+
+.specialization {
+  font-size: 13px;
+  color: var(--hm-on-surface-variant);
+  margin: 0;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--hm-on-surface-variant);
+  border-top: 1px solid var(--hm-outline-variant);
+  border-bottom: 1px solid var(--hm-outline-variant);
+  padding: 12px 0;
+}
+
+.certLink {
+  color: var(--hm-primary);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}

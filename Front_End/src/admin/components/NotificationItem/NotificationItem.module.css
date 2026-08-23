@@ -1,0 +1,58 @@
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--hm-radius-md);
+  border: 1px solid transparent;
+}
+
+.unread {
+  background-color: var(--hm-surface-container-low);
+  border-color: var(--hm-outline-variant);
+}
+
+.iconCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--hm-primary-container);
+  color: var(--hm-primary-fixed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.message {
+  margin: 0;
+  font-size: 14px;
+  color: var(--hm-on-surface);
+}
+
+.time {
+  font-size: 12px;
+  color: var(--hm-on-surface-variant);
+}
+
+.markRead {
+  border: none;
+  background: transparent;
+  color: var(--hm-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.markRead:hover {
+  text-decoration: underline;
+}

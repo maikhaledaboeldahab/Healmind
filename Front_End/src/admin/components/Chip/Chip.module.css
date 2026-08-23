@@ -1,0 +1,26 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--hm-radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--hm-font-display);
+}
+
+.sage {
+  background-color: var(--hm-secondary-container);
+  color: var(--hm-on-secondary-container);
+}
+
+.mint {
+  background-color: var(--hm-tertiary-fixed);
+  color: var(--hm-on-tertiary-fixed-variant);
+}
+
+.outline {
+  background-color: transparent;
+  border: 1px solid var(--hm-outline-variant);
+  color: var(--hm-on-surface-variant);
+}

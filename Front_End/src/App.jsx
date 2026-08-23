@@ -1,37 +1,19 @@
-import 'bootstrap/dist/css/bootstrap.min.css'
-import './App.css'
-import MasterLayout from './components/Layout/MasterLayout'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Home from './components/Home/Home'
-import Notfound from './components/Layout/Notfound/Notfound'
-import AuthLayout from './components/Layout/Authlayout'
-import Login from './components/Layout/Login/Login'
-import Register from './components/Layout/Register/Register'
-import DoctorDashboard from './pages/Doctor/DoctorDashboard'
+import { AuthProvider as AdminAuthProvider } from './admin/context/AuthContext';
+import { ToastProvider as AdminToastProvider } from './admin/context/ToastContext';
+import { AuthProvider as UserAuthProvider } from './context/AuthContext';
+import { NotificationProvider as UserNotificationProvider } from './context/NotificationContext';
+import AppRoutes from './routes/AppRoutes';
 
-function App() {
-  const routes = createBrowserRouter([
-    {
-      element: <AuthLayout />,
-      children: [
-        { path: '/', element: <Login /> },
-        { path: '/register', element: <Register /> },
-      ],
-    },
-    {
-      element: <MasterLayout />,
-      children: [
-        { path: '/home', element: <Home /> },
-      ],
-    },
-    {path: '/doctor/*', element: <DoctorDashboard />},
-    {
-      path: '*',
-      element: <Notfound />,
-    },
-  ])
-
-  return <RouterProvider router={routes} />
+export default function App() {
+  return (
+    <AdminAuthProvider>
+      <AdminToastProvider>
+        <UserAuthProvider>
+          <UserNotificationProvider>
+            <AppRoutes />
+          </UserNotificationProvider>
+        </UserAuthProvider>
+      </AdminToastProvider>
+    </AdminAuthProvider>
+  );
 }
-
-export default App

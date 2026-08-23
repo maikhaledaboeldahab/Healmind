@@ -1,0 +1,38 @@
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  height: 180px;
+  padding-top: 12px;
+}
+
+.barColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.barTrack {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  background-color: var(--hm-surface-container-low);
+  border-radius: var(--hm-radius-sm);
+  overflow: hidden;
+}
+
+.bar {
+  width: 100%;
+  background-color: var(--hm-secondary);
+  border-radius: var(--hm-radius-sm) var(--hm-radius-sm) 0 0;
+  transition: height 0.4s ease;
+}
+
+.barLabel {
+  font-size: 12px;
+  color: var(--hm-on-surface-variant);
+}

@@ -1,0 +1,76 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.infoList div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--hm-outline-variant);
+  padding-bottom: 8px;
+  font-size: 13px;
+}
+
+.infoList dt {
+  color: var(--hm-on-surface-variant);
+}
+
+.infoList dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.link {
+  cursor: pointer;
+  color: var(--hm-primary);
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.splitRow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.splitCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--hm-surface-container-low);
+  border-radius: var(--hm-radius-md);
+  padding: 14px 16px;
+}
+
+.splitValue {
+  font-family: var(--hm-font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--hm-primary);
+}
+
+.splitLabel {
+  font-size: 13px;
+  color: var(--hm-on-surface-variant);
+}
+
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

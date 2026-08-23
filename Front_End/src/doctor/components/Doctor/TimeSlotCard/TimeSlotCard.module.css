@@ -1,0 +1,51 @@
+.slotCard {
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.available {
+  background-color: var(--color-secondary-container);
+}
+
+.booked {
+  background-color: var(--color-surface-container-high);
+}
+
+.slotType {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.available .slotType {
+  color: var(--color-on-secondary-container);
+}
+
+.booked .slotType {
+  color: var(--color-on-surface-variant);
+}
+
+.slotTime {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.deleteBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-on-secondary-container);
+  opacity: 0.6;
+  font-size: 0.8rem;
+  padding: 2px;
+}
+
+.deleteBtn:hover {
+  opacity: 1;
+  color: var(--color-error);
+}

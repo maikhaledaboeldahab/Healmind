@@ -1,0 +1,45 @@
+.title {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 10px;
+  border: 1px solid var(--hm-outline-variant);
+  border-radius: var(--hm-radius-md);
+  background-color: var(--hm-surface-container-low);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hm-on-surface);
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.action:hover {
+  background-color: var(--hm-secondary-container);
+  border-color: var(--hm-secondary);
+  transform: translateY(-2px);
+}
+
+.icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--hm-primary);
+  color: var(--hm-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
