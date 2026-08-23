@@ -50,8 +50,10 @@ app.use("/api/reviews", require("./routes/review.routes"));
 app.use("/api/contactus", require("./routes/contactus.routes"));
 app.use("/api/conversations", require("./routes/conversation.routes"));
 app.use("/api/notifications", require("./routes/notification.routes"));
+app.use("/api/admin", require("./routes/admin.routes"));
+app.use("/api/ticket", require("./routes/ticket.routes"));
+app.use("/api/posts", require("./routes/post.routes"));
 
-// app.use("/api/dashboard", require("./routes/dashboard.routes"));
 
 // ================================
 // 404 Handler
@@ -97,6 +99,7 @@ app.set("io", io);
 
 // تشغيل منطق الشات وتوصيله بالـ io instance
 require("./sockets/chat.socket")(io);
+require("./sockets/Community.socket ")(io);
 
 const appServer = server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -508,13 +508,19 @@ const resetPassword = async (req, res) => {
     });
   }
 };
+
+
 module.exports = {
   registerPatient,
   registerDoctor,
   login,
+ 
   refreshToken,
   logout,
   changePassword,
   forgotPassword,
   resetPassword,
 };
+
+
+
