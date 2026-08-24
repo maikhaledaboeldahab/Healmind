@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getDoctorById, getAvailableSlots } from '../../../../data/doctors';
+import { calculatePricing } from '../../../../shared/utils/pricing';
 import BookingSummary from '../../../../shared/components/BookingSummary/BookingSummary';
 import Input from '../../../../shared/components/Input/Input';
 import Button from '../../../../shared/components/Button/Button';
@@ -37,10 +38,21 @@ export default function BookAppointment() {
 
   const onConfirm = (formData) => {
     if (!selectedTime) return;
-    // Simulate booking creation, then move to payment.
+    const { sessionPrice, depositAmount, remainingBalance } = calculatePricing(
+      doctor.fee || doctor.sessionPrice
+    );
+    // Booking creation with deposit and balance details
     const bookingId = `bk-${Date.now()}`;
     navigate(`/payment/${bookingId}`, {
-      state: { doctorId: doctor.id, date: selectedDate, time: selectedTime, ...formData },
+      state: {
+        doctorId: doctor.id,
+        date: selectedDate,
+        time: selectedTime,
+        sessionPrice,
+        depositAmount,
+        remainingBalance,
+        ...formData,
+      },
     });
   };
 

@@ -1,10 +1,15 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDay, faClock, faTag } from '@fortawesome/free-solid-svg-icons';
+import { faCalendarDay, faClock, faTag, faCoins, faReceipt } from '@fortawesome/free-solid-svg-icons';
 import { formatShortDate } from '../../utils/formatDate';
+import { calculatePricing } from '../../utils/pricing';
 import styles from './BookingSummary.module.css';
 
 export default function BookingSummary({ doctor, date, time }) {
   if (!doctor) return null;
+
+  const { sessionPrice, depositAmount, remainingBalance, depositPercentage } = calculatePricing(
+    doctor.fee || doctor.sessionPrice
+  );
 
   return (
     <div className={styles.card}>
@@ -37,17 +42,32 @@ export default function BookingSummary({ doctor, date, time }) {
         )}
         <li>
           <span>
-            <FontAwesomeIcon icon={faTag} /> Session Fee
+            <FontAwesomeIcon icon={faTag} /> Session Price
           </span>
-          <strong>${doctor.fee.toFixed(2)}</strong>
+          <strong>{sessionPrice.toFixed(2)} EGP</strong>
+        </li>
+        <li>
+          <span>
+            <FontAwesomeIcon icon={faCoins} /> Deposit Required ({depositPercentage}%)
+          </span>
+          <strong className={styles.depositHighlight}>{depositAmount.toFixed(2)} EGP</strong>
+        </li>
+        <li>
+          <span>
+            <FontAwesomeIcon icon={faReceipt} /> Remaining Balance
+          </span>
+          <strong className={styles.remainingMuted}>{remainingBalance.toFixed(2)} EGP</strong>
         </li>
       </ul>
 
       <div className={styles.divider} />
 
       <div className={styles.total}>
-        <span>Total</span>
-        <span>${doctor.fee.toFixed(2)}</span>
+        <div className={styles.totalLabel}>
+          <span>Deposit Payable Now</span>
+          <small className={styles.subtext}>Remaining {remainingBalance.toFixed(2)} EGP due at session</small>
+        </div>
+        <span className={styles.totalAmount}>{depositAmount.toFixed(2)} EGP</span>
       </div>
     </div>
   );

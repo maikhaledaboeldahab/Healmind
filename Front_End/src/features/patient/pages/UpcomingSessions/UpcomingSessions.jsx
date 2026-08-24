@@ -21,13 +21,19 @@ export default function UpcomingSessions() {
       </div>
 
       {state?.paid && (
-        <div className={styles.confirmation}>Payment successful — your session is confirmed.</div>
+        <div className={styles.confirmation}>
+          <strong>Payment Successful!</strong> Your deposit of{' '}
+          <strong>{state?.depositAmount ? `${state.depositAmount.toFixed(2)} EGP` : 'required amount'}</strong> is
+          confirmed. Remaining balance of{' '}
+          <strong>{state?.remainingBalance ? `${state.remainingBalance.toFixed(2)} EGP` : 'balance'}</strong> is due directly at
+          your session.
+        </div>
       )}
 
       {upcomingSessions.length ? (
         <div className={styles.list}>
           {upcomingSessions.map((session) => (
-            <SessionCard key={session.id} session={session} showJoin />
+            <SessionCard key={session.id} session={session} />
           ))}
         </div>
       ) : (

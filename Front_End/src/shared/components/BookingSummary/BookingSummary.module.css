@@ -69,3 +69,37 @@
   font-size: 1.125rem;
   color: var(--color-primary);
 }
+
+.depositHighlight {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.remainingMuted {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.totalLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.totalLabel span {
+  font-size: 0.9375rem;
+  color: var(--color-text);
+}
+
+.subtext {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.totalAmount {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+

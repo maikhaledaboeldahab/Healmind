@@ -34,6 +34,9 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const activeTickets = tickets.filter((t) => t.status === 'Open' || t.status === 'In Progress');
+  const confirmedUpcomingSessions = upcomingSessions.filter(
+    (s) => s.status?.toLowerCase() === 'confirmed' && s.depositPaid !== false
+  );
 
   return (
     <div className={styles.page}>
@@ -47,7 +50,7 @@ export default function Dashboard() {
       <div className={styles.stats}>
         <StatCard
           icon={<FontAwesomeIcon icon={faCalendarCheck} />}
-          value={upcomingSessions.length}
+          value={confirmedUpcomingSessions.length}
           label="Upcoming Sessions"
         />
         <StatCard
@@ -84,10 +87,10 @@ export default function Dashboard() {
               View All
             </Button>
           </div>
-          {upcomingSessions.length ? (
+          {confirmedUpcomingSessions.length ? (
             <div className={styles.list}>
-              {upcomingSessions.map((session) => (
-                <SessionCard key={session.id} session={session} showJoin />
+              {confirmedUpcomingSessions.map((session) => (
+                <SessionCard key={session.id} session={session} />
               ))}
             </div>
           ) : (

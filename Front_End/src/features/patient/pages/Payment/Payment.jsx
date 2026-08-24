@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCreditCard, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faCreditCard, faLock, faCoins } from '@fortawesome/free-solid-svg-icons';
 import { getDoctorById } from '../../../../data/doctors';
+import { upcomingSessions } from '../../../../data/sessions';
+import { calculatePricing } from '../../../../shared/utils/pricing';
 import BookingSummary from '../../../../shared/components/BookingSummary/BookingSummary';
 import Input from '../../../../shared/components/Input/Input';
 import Button from '../../../../shared/components/Button/Button';
@@ -34,17 +36,50 @@ export default function Payment() {
     );
   }
 
+  const { sessionPrice, depositAmount, remainingBalance } = calculatePricing(
+    state?.sessionPrice || doctor.fee || doctor.sessionPrice
+  );
+
   const onPay = async () => {
     setIsPaying(true);
     // Simulate processing delay.
     await new Promise((resolve) => setTimeout(resolve, 900));
-    navigate('/sessions/upcoming', { state: { paid: true, bookingId } });
+
+    // Register confirmed session in upcoming sessions
+    const newConfirmedSession = {
+      id: bookingId || `ses-${Date.now()}`,
+      doctorId: doctor.id,
+      doctorName: doctor.name,
+      doctorImage: doctor.image,
+      date: state?.date || new Date().toISOString().split('T')[0],
+      time: state?.time || 'Scheduled Time',
+      status: 'Confirmed',
+      depositPaid: true,
+      depositAmount,
+      remainingBalance,
+      sessionPrice,
+    };
+
+    if (!upcomingSessions.some((s) => s.id === newConfirmedSession.id)) {
+      upcomingSessions.unshift(newConfirmedSession);
+    }
+
+    navigate('/sessions/upcoming', {
+      state: {
+        paid: true,
+        bookingId: newConfirmedSession.id,
+        depositAmount,
+        remainingBalance,
+        sessionPrice,
+        doctorName: doctor.name,
+      },
+    });
   };
 
   return (
     <div className={styles.page}>
       <h1>Payment</h1>
-      <p className={styles.subtext}>Complete your payment to confirm the appointment.</p>
+      <p className={styles.subtext}>Pay the required session deposit to confirm your appointment.</p>
 
       <div className={styles.grid}>
         <form className={styles.form} onSubmit={handleSubmit(onPay)}>
@@ -94,7 +129,7 @@ export default function Payment() {
           </section>
 
           <Button type="submit" size="lg" fullWidth disabled={isPaying}>
-            {isPaying ? 'Processing Payment...' : `Pay $${doctor.fee.toFixed(2)}`}
+            {isPaying ? 'Processing Deposit...' : `Pay Deposit (${depositAmount.toFixed(2)} EGP)`}
           </Button>
         </form>
 

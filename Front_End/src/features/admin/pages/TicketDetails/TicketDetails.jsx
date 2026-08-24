@@ -5,11 +5,10 @@ import Card from '../../../../shared/components/Card/Card'
 import Button from '../../../../shared/components/AdminButton/AdminButton'
 import StatusBadge from '../../../../shared/components/StatusBadge/StatusBadge'
 import LoadingSpinner from '../../../../shared/components/LoadingSpinner/LoadingSpinner'
-import AssignDoctorModal from './AssignDoctorModal'
 import { ticketService } from '../../services/ticketService'
 import { patientService } from '../../services/patientService'
 import { doctorService } from '../../services/doctorService'
-import { TICKET_DECISION_LABEL } from '../../constants/statusEnums'
+import { TICKET_STATUS_LABEL, TICKET_DECISION_LABEL, PAYMENT_STATUS_LABEL } from '../../constants/statusEnums'
 import { formatDate } from '../../utils/formatDate'
 import { buildPath, ROUTE_PATHS } from '../../constants/routePaths'
 import styles from './TicketDetails.module.css'
@@ -20,9 +19,7 @@ function TicketDetails() {
   const [ticket, setTicket] = useState(null)
   const [patient, setPatient] = useState(null)
   const [doctor, setDoctor] = useState(null)
-  const [allDoctors, setAllDoctors] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showAssignModal, setShowAssignModal] = useState(false)
 
   useEffect(() => {
     ticketService.getById(ticketId).then(async (ticketResult) => {
@@ -30,25 +27,16 @@ function TicketDetails() {
         setIsLoading(false)
         return
       }
-      const [patientResult, doctorResult, allDoctorsResult] = await Promise.all([
+      const [patientResult, doctorResult] = await Promise.all([
         patientService.getById(ticketResult.patientId),
-        ticketResult.doctorId ? doctorService.getById(ticketResult.doctorId) : Promise.resolve(null),
-        doctorService.getAll(),
+        doctorService.getById(ticketResult.doctorId),
       ])
       setTicket(ticketResult)
       setPatient(patientResult)
       setDoctor(doctorResult)
-      setAllDoctors(allDoctorsResult)
       setIsLoading(false)
     })
   }, [ticketId])
-
-  const handleAssigned = (updatedTicket) => {
-    setTicket(updatedTicket)
-    // Fetch the newly assigned doctor's details to display
-    doctorService.getById(updatedTicket.doctorId).then(setDoctor)
-    setShowAssignModal(false)
-  }
 
   if (isLoading) return <LoadingSpinner fullHeight label="Loading ticket…" />
 
@@ -63,17 +51,11 @@ function TicketDetails() {
     )
   }
 
-  const isAssigned = Boolean(ticket.doctorId)
-
   return (
     <div>
-      <PageHeader
-        title={`Community Access Ticket ${ticket.id}`}
-        description="Full details of this community access request, doctor assignment, and evaluation status."
-      />
+      <PageHeader title={`Community Access Ticket ${ticket.id}`} description="Full details of this community access request, doctor decision, and evaluation status." />
 
       <div className={styles.grid}>
-        {/* ── Request Overview ──────────────────────────────────────── */}
         <Card>
           <h3 className={styles.sectionTitle}>Request Overview</h3>
           <dl className={styles.infoList}>
@@ -90,20 +72,22 @@ function TicketDetails() {
                 {patient?.name || ticket.patientId}
               </dd>
             </div>
-
-            {/* Preferred Date & Time — visually highlighted so admin can use them for assignment */}
-            <div className={styles.highlightRow}>
-              <dt>Preferred Date</dt>
-              <dd>{ticket.preferredDate ? formatDate(ticket.preferredDate) : 'Not provided'}</dd>
+            <div>
+              <dt>Assigned Doctor</dt>
+              <dd
+                className={styles.link}
+                onClick={() => navigate(buildPath(ROUTE_PATHS.DOCTOR_DETAILS, { doctorId: ticket.doctorId }))}
+              >
+                {doctor?.name || ticket.doctorId}
+              </dd>
             </div>
-            <div className={styles.highlightRow}>
-              <dt>Preferred Time</dt>
-              <dd>{ticket.preferredTime || 'Not provided'}</dd>
-            </div>
-
             <div>
               <dt>Created Date</dt>
               <dd>{formatDate(ticket.createdAt || ticket.bookingDate)}</dd>
+            </div>
+            <div>
+              <dt>Session Date</dt>
+              <dd>{formatDate(ticket.sessionDate)}</dd>
             </div>
             {ticket.updatedAt && (
               <div>
@@ -114,64 +98,29 @@ function TicketDetails() {
           </dl>
         </Card>
 
-        {/* ── Assignment & Decision ─────────────────────────────────── */}
         <Card>
-          <h3 className={styles.sectionTitle}>Status &amp; Decision</h3>
+          <h3 className={styles.sectionTitle}>Status & Decision</h3>
           <div className={styles.statusRow}>
-            {/* Assigned Doctor */}
             <div>
-              <span className={styles.statusLabel}>Assigned Doctor</span>
-              {isAssigned ? (
-                <span
-                  className={styles.link}
-                  onClick={() => navigate(buildPath(ROUTE_PATHS.DOCTOR_DETAILS, { doctorId: ticket.doctorId }))}
-                >
-                  {doctor?.name || ticket.doctorId}
-                </span>
-              ) : (
-                <StatusBadge status="unassigned" label="Not Assigned" tone="neutral" />
-              )}
+              <span className={styles.statusLabel}>Payment Status</span>
+              <StatusBadge status={ticket.paymentStatus} label={PAYMENT_STATUS_LABEL[ticket.paymentStatus]} />
             </div>
-
-            {/* Assignment Status */}
             <div>
-              <span className={styles.statusLabel}>Assignment Status</span>
-              {isAssigned ? (
-                <StatusBadge status="assigned" label="Assigned" tone="success" />
-              ) : (
-                <StatusBadge status="unassigned" label="Awaiting Assignment" tone="warning" />
-              )}
+              <span className={styles.statusLabel}>Session Status</span>
+              <StatusBadge status={ticket.status} label={TICKET_STATUS_LABEL[ticket.status]} />
             </div>
-
-            {/* Doctor Decision — read-only; admin cannot modify */}
             <div>
               <span className={styles.statusLabel}>Doctor Decision</span>
               <StatusBadge status={ticket.decision} label={TICKET_DECISION_LABEL[ticket.decision]} />
             </div>
           </div>
-
-          {/* Assign Doctor button — only visible when no doctor is assigned yet */}
-          {!isAssigned && (
-            <Button
-              variant="primary"
-              icon="fa-solid fa-user-doctor"
-              fullWidth
-              onClick={() => setShowAssignModal(true)}
-              style={{ marginBottom: '12px' }}
-            >
-              Assign Doctor
-            </Button>
-          )}
-
           <p className={styles.decisionNote}>
-            <i className="fa-solid fa-circle-info" aria-hidden="true" />
-            Only the assigned doctor can make the clinical decision regarding community access. Admins may monitor but not override it.
+            <i className="fa-solid fa-circle-info" aria-hidden="true" /> Only the assigned doctor can make the clinical decision regarding community access. Admins may monitor but not override it.
           </p>
         </Card>
 
-        {/* ── Patient Description & Notes ───────────────────────────── */}
         <Card className={styles.notesCard}>
-          <h3 className={styles.sectionTitle}>Request Description &amp; Notes</h3>
+          <h3 className={styles.sectionTitle}>Request Description & Notes</h3>
           {ticket.description && (
             <div style={{ marginBottom: '1rem' }}>
               <strong>Patient Description:</strong>
@@ -186,17 +135,6 @@ function TicketDetails() {
           )}
         </Card>
       </div>
-
-      {showAssignModal && (
-        <AssignDoctorModal
-          isOpen={showAssignModal}
-          onClose={() => setShowAssignModal(false)}
-          ticket={ticket}
-          patient={patient}
-          doctors={allDoctors}
-          onAssigned={handleAssigned}
-        />
-      )}
     </div>
   )
 }

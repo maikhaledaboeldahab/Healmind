@@ -9,9 +9,11 @@ import {
   faCalendarCheck,
   faArrowLeft,
   faUserDoctor,
+  faVideo,
 } from '@fortawesome/free-solid-svg-icons';
 import { upcomingSessions, sessionHistory } from '../../../../data/sessions';
 import { doctors, getDoctorById } from '../../../../data/doctors';
+import { getEligibleDoctorSession } from '../../../../shared/utils/videoWindow';
 import Button from '../../../../shared/components/Button/Button';
 import EmptyState from '../../../../shared/components/EmptyState/EmptyState';
 import styles from './Messages.module.css';
@@ -35,6 +37,17 @@ const DEFAULT_CONVERSATIONS = {
 export default function Messages() {
   const { doctorId } = useParams();
   const navigate = useNavigate();
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+
+  // Real-time interval to smoothly update video call window eligibility
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 10000); // Check every 10 seconds
+    return () => clearInterval(timer);
+  }, []);
+
+  const allSessions = useMemo(() => [...upcomingSessions, ...sessionHistory], []);
 
   // Find unique doctors associated with patient from upcoming and past sessions
   const associatedDoctorIds = useMemo(() => {
@@ -70,6 +83,12 @@ export default function Messages() {
   const activeMessages = threads[selectedDoctorId] || [
     { id: 1, from: 'doctor', text: `Hi, I am ${activeDoctor?.name}. How can I assist you with your mental wellness today?`, time: 'Just now' },
   ];
+
+  // Video call eligibility with active doctor
+  const videoEligibility = useMemo(() => {
+    if (!activeDoctor?.id) return { isAvailable: false, status: 'inactive', session: null };
+    return getEligibleDoctorSession(allSessions, activeDoctor.id, currentTime);
+  }, [allSessions, activeDoctor?.id, currentTime]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -197,6 +216,17 @@ export default function Messages() {
               </div>
 
               <div className={styles.headerActions}>
+                {videoEligibility.isAvailable && videoEligibility.session && (
+                  <Button
+                    size="sm"
+                    className={styles.videoJoinBtn}
+                    icon={<FontAwesomeIcon icon={faVideo} />}
+                    onClick={() => navigate(`/sessions/${videoEligibility.session.id}/video`)}
+                  >
+                    Join Video Call
+                  </Button>
+                )}
+
                 <Button
                   size="sm"
                   variant="outline"
