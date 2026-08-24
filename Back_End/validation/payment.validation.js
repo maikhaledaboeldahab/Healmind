@@ -45,7 +45,18 @@ const mockChargeSchema = Joi.object({
     })
 });
 
+const payBalanceSchema = Joi.object({
+  sessionId: Joi.string()
+    .regex(/^[0-9a-fA-F]{24}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Invalid session ID format.",
+      "any.required": "Session ID is required."
+    })
+});
+
 module.exports = {
   checkoutSessionSchema,
-  mockChargeSchema
+  mockChargeSchema,
+  payBalanceSchema
 };

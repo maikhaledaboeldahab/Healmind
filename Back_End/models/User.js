@@ -244,11 +244,19 @@ const doctorSchema = new mongoose.Schema({
         type: String,
         trim: true,
       },
+
+      isBooked: {
+        type: Boolean,
+        default: false,
+      },
     },
   ],
-});
+},
+  {
+    timestamps: true,
+  }
+);
 
-// Create Doctor Discriminator
 const Doctor = User.discriminator("doctor", doctorSchema);
 
 // =============================================

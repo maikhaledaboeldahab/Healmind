@@ -7,86 +7,96 @@ const { createSessionSchema, updateSessionSchema, endSessionSchema, rescheduleSe
 
 // Role: patient
 // المريض بيبعت طلب حجز بمعاد مقترح، والدكتور بعدين يأكد أو يرفض عن طريق updateSessionStatus
-exports.createSession = async (req, res) => {
-  try {
-    // Joi Validation
-    // ملحوظة: لو أسامي الفيلدز في createSessionSchema مختلفة عن اللي هنا، ظبطها حسب الـ schema بتاعتك
-    const { error, value } = createSessionSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: true,
-    });
+// exports.createSession = async (req, res) => {
+//   try {
+//     // Joi Validation
+//     // ملحوظة: لو أسامي الفيلدز في createSessionSchema مختلفة عن اللي هنا، ظبطها حسب الـ schema بتاعتك
+//     const { error, value } = createSessionSchema.validate(req.body, {
+//       abortEarly: false,
+//       stripUnknown: true,
+//     });
 
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        errors: error.details.map((err) => err.message),
-      });
-    }
+//     if (error) {
+//       return res.status(400).json({
+//         success: false,
+//         errors: error.details.map((err) => err.message),
+//       });
+//     }
 
-    const { doctorId, type, mode, scheduledTime, location } = value;
+//     const { doctorId, type, mode, scheduledTime, location } = value;
 
-    // ✅ لو الحجز بالكشف الفعلي، لازم يكون فيه عنوان
-    if (mode === "visit" && (!location || !location.address)) {
-      return res.status(400).json({
-        success: false,
-        message: "Location address is required when mode is 'visit'",
-      });
-    }
+//     // ✅ لو الحجز بالكشف الفعلي، لازم يكون فيه عنوان
+//     if (mode === "visit" && (!location || !location.address)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Location address is required when mode is 'visit'",
+//       });
+//     }
 
-    // تأكيد إن الدكتور موجود فعلاً وموافق عليه
-    const doctor = await Doctor.findById(doctorId);
-    if (!doctor) {
-      return res.status(404).json({
-        success: false,
-        message: "Doctor not found",
-      });
-    }
+//     // تأكيد إن الدكتور موجود فعلاً وموافق عليه
+//     const doctor = await Doctor.findById(doctorId);
+//     if (!doctor) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Doctor not found",
+//       });
+//     }
 
-    if (!doctor.isApproved) {
-      return res.status(400).json({
-        success: false,
-        message: "This doctor is not approved yet",
-      });
-    }
+//     if (!doctor.isApproved) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "This doctor is not approved yet",
+//       });
+//     }
 
-    const patient = await Patient.findById(req.user.id);
+//     const patient = await Patient.findById(req.user.id);
 
-    const session = await Session.create({
-      patientId: patient._id,
-      doctorId: doctor._id,
-      patientname: patient.name,
-      doctorname: doctor.name,
-      type,
-      mode,
-      scheduledTime,
-      location: mode === "visit" ? location : undefined,
-      status: "pending",
-    });
+//     const basePrice = doctor.sessionPrice || 0;
+//     const finalAmount = basePrice * 0.20;
+//     const balance = basePrice - finalAmount;
+//     const isBalancePrepaid = basePrice <= finalAmount;
 
-    // ✅ نبلغ الدكتور إن فيه طلب حجز جديد محتاج تأكيده
-    const io = req.app.get("io");
-    await createNotification(io, {
-      recipientId: doctor._id,
-      recipientModel: "doctor",
-      type: "session_booked",
-      title: "New Session Request",
-      message: `${patient.name} has requested a new session with you`,
-    });
+//     const session = await Session.create({
+//       patientId: patient._id,
+//       doctorId: doctor._id,
+//       patientname: patient.name,
+//       doctorname: doctor.name,
+//       type,
+//       mode,
+//       scheduledTime,
+//       location: mode === "visit" ? location : undefined,
+//       status: "pending",
+//       sessionPrice: basePrice,
+//       depositAmount: finalAmount,
+//       balance: balance,
+//       depositPaid: false,
+//       balancePaid: isBalancePrepaid,
+//     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Session request created successfully. Waiting for doctor confirmation.",
-      data: session,
-    });
-  } catch (error) {
-    console.error("❌ Error creating session:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error creating session",
-      error: error.message,
-    });
-  }
-};
+//     // ✅ نبلغ الدكتور إن فيه طلب حجز جديد محتاج تأكيده
+//     const io = req.app.get("io");
+//     await createNotification(io, {
+//       recipientId: doctor._id,
+//       recipientModel: "doctor",
+//       type: "session_booked",
+//       title: "New Session Request",
+//       message: `${patient.name} has requested a new session with you`,
+//     });
+
+//     return res.status(201).json({
+//       success: true,
+//       message: "Session request created successfully. Waiting for doctor confirmation.",
+//       data: session,
+//     });
+//   } catch (error) {
+//     console.error("❌ Error creating session:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Error creating session",
+//       error: error.message,
+//     });
+//   }
+// };
 
 //get all sessions
 // Admin role
@@ -173,6 +183,14 @@ exports.getSessionDetails = async (req, res) => {
     const userRole = req.user.role;
     const sessionId = req.params.sessionid;
 
+    const mongoose = require("mongoose");
+    if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid session ID format.",
+      });
+    }
+
     let query = {};
 
     if (userRole === "doctor") {
@@ -229,16 +247,33 @@ exports.updateSessionStatus = async (req, res) => {
         .json({ success: false, message: "Invalid status" });
     }
 
-    const session = await Session.findOneAndUpdate(
-      { _id: req.params.id, doctorId: req.user.id }, //req.user.id },  //for testing
-      { status },
-      { new: true },
-    );
+    const session = await Session.findOne({ _id: req.params.id, doctorId: req.user.id });
 
     if (!session)
       return res
         .status(404)
         .json({ success: false, message: "Session not found" });
+
+    if (status === "confirmed") {
+      if (!session.depositPaid || !session.balancePaid) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot confirm session until both deposit and remaining balance payments are completed."
+        });
+      }
+
+      // Mark the doctor's slot as unavailable/booked
+      if (session.slotId) {
+        await Doctor.updateOne(
+          { _id: session.doctorId, "slots._id": session.slotId },
+          { $set: { "slots.$.isBooked": true } }
+        );
+        console.log(`Slot ${session.slotId} for Doctor ${session.doctorId} marked as booked/unavailable upon confirmation.`);
+      }
+    }
+
+    session.status = status;
+    await session.save();
 
     // ✅ نبلغ المريض إن حالة السيشن اتغيرت
     const io = req.app.get("io");

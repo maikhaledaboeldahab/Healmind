@@ -52,11 +52,23 @@ const sessionSchema = new mongoose.Schema(
       default: null,
     },
 
+    sessionPrice: {
+      type: Number,
+      default: 0,
+    },
     depositAmount: {
       type: Number,
       default: 0,
     },
+    balance: {
+      type: Number,
+      default: 0,
+    },
     depositPaid: {
+      type: Boolean,
+      default: false,
+    },
+    balancePaid: {
       type: Boolean,
       default: false,
     },

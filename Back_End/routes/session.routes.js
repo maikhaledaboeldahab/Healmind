@@ -19,11 +19,13 @@ const {
 router.use(protect);
 
 // ✅ الراوت الجديد المطلوب إضافته
-router.post("/", protect, restrictTo("patient"), createSession);
+// router.post("/", protect, restrictTo("patient"), createSession);
 
 // باقي الراوتس بتاعتك زي ما هي (مثال تقريبي حسب الدوال الموجودة)
 router.get("/", getAllSessions);
 router.get("/my-sessions", getMySessions);
+router.get("/getMySessions", getMySessions);
+router.get("/getmysessions", getMySessions);
 router.get("/:sessionid", getSessionDetails);
 router.patch("/:id", restrictTo("doctor"), updateSessionStatus);
 router.post("/:id/report", restrictTo("doctor"), submitVisitReport);

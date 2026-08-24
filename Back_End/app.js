@@ -15,7 +15,13 @@ const connectedDB = require("./config/db");
 connectedDB();
 
 // Global Middleware
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    if (req.originalUrl.startsWith('/api/payments/webhook')) {
+      req.rawBody = buf;
+    }
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
@@ -53,6 +59,7 @@ app.use("/api/notifications", require("./routes/notification.routes"));
 app.use("/api/admin", require("./routes/admin.routes"));
 app.use("/api/ticket", require("./routes/ticket.routes"));
 app.use("/api/posts", require("./routes/post.routes"));
+app.use("/api/payments", require("./routes/payment.routes"));
 
 
 // ================================
@@ -100,6 +107,10 @@ app.set("io", io);
 // تشغيل منطق الشات وتوصيله بالـ io instance
 require("./sockets/chat.socket")(io);
 require("./sockets/Community.socket ")(io);
+
+// Start background session cleanup task
+const { startSessionCleanup } = require("./utils/sessionCleanup");
+startSessionCleanup(60000); // Check and expire pending sessions every 60 seconds
 
 const appServer = server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
