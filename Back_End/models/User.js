@@ -42,18 +42,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-
-    isActive: {
+     isActive: {
       type: Boolean,
-      default: true, //for testing
-    },
-
-    // ✅ ضروري عشان الشات يعرف يبعت للمستخدم لو أونلاين
-    // كانت الكود بيحاول يحفظها من غير ما تكون معرّفة في الـ schema
-    // فكان Mongoose بيتجاهلها بصمت (strict mode) ومكانتش بتتخزن خالص
-    socketId: {
-      type: String,
-      default: null,
+      default: true,
     },
   }, userOptions
 );
@@ -124,71 +115,95 @@ const Patient = User.discriminator("patient", patientSchema);
 // Doctor Schema (extends User)
 const doctorSchema = new mongoose.Schema(
   {
-    NationalId: { type: String, require: true, default: null, unique: true },
+    NationalId: {
+      type: String,
+      required: true,
+      default: null,
+      unique: true,
+    },
+
     specialization: {
       type: String,
       required: [true, "Specialization is required."],
       trim: true,
     },
+
     licenseNumber: {
       type: String,
       required: [true, "License number is required."],
       trim: true,
     },
+
     certificate: {
-      type: String, // File path after upload using Multer
+      type: String,
       required: [true, "Certificate is required for doctor registration."],
     },
+
     bio: {
       type: String,
       maxlength: [500, "Bio must not exceed 500 characters."],
       default: null,
     },
+
     yearsOfExperience: {
       type: Number,
       min: [0, "Years of experience cannot be negative."],
       default: 0,
     },
+
+    // Doctor approval
     isApproved: {
       type: Boolean,
-      default: true, // Requires admin approval //need to be edited // this is true just for testing
+      default: false,
     },
+
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+
     approvedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
+
     approvedAt: {
       type: Date,
       default: null,
     },
+
     sessionPrice: {
       type: Number,
       min: [0, "Session price cannot be negative."],
       default: 0,
     },
+
     slots: [
       {
-        day: { type: Date, required: true, default: null },
+        day: {
+          type: Date,
+          required: true,
+        },
+
         time: {
           type: String,
-          required: false,
           default: null,
         },
+
         location: {
           type: String,
-          required: [false, "Location is required."],
           trim: true,
         },
-        isBooked: {
-          type: Boolean,
-          default: false,
-        }
       },
     ],
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  }
 );
+
 const Doctor = User.discriminator("doctor", doctorSchema);
 
 // Admin Schema (extends User)
@@ -203,6 +218,10 @@ const adminSchema = new mongoose.Schema({
     ref: "User",
     default: null,
   },
+  isSuperAdmin: {
+  type: Boolean,
+  default: false,
+},
 });
 
 const Admin = User.discriminator("admin", adminSchema);
