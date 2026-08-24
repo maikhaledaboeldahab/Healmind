@@ -7,8 +7,8 @@ import { useAuth as useAdminAuth } from '../../../admin/hooks/useAuth';
 import styles from './SharedLogin.module.css';
 
 export default function SharedLogin() {
-  const { isAuthenticated: isUserAuth, login: userLogin } = useUserAuth();
-  const { isAuthenticated: isAdminAuth, login: adminLogin } = useAdminAuth();
+  const { isAuthenticated: isUserAuth, login: userLogin, logout: userLogout, user } = useUserAuth();
+  const { isAuthenticated: isAdminAuth, login: adminLogin, logout: adminLogout, admin } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -17,17 +17,46 @@ export default function SharedLogin() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If already authenticated, redirect to the appropriate dashboard
-  if (isAdminAuth) {
-    const from = location.state?.from?.pathname;
-    const redirectTo = from && from.startsWith('/admin') && from !== '/admin/login' ? from : '/admin';
-    return <Navigate to={redirectTo} replace />;
-  }
+  // If already authenticated, show choice instead of automatic trapping redirect loop
+  if (isUserAuth || isAdminAuth) {
+    const name = isUserAuth ? user?.fullName : admin?.name;
+    const userEmail = isUserAuth ? user?.email : admin?.email;
+    const dashboardPath = isUserAuth ? '/dashboard' : '/admin';
+    
+    const handleLogout = () => {
+      if (isUserAuth) {
+        userLogout();
+      } else {
+        adminLogout();
+      }
+    };
 
-  if (isUserAuth) {
-    const from = location.state?.from?.pathname;
-    const redirectTo = from && !from.startsWith('/admin') && from !== '/login' && from !== '/register' && from !== '/' ? from : '/dashboard';
-    return <Navigate to={redirectTo} replace />;
+    return (
+      <div className={styles.pageContainer}>
+        <div className={styles.card}>
+          <div className={styles.brand}>
+            <span className={styles.brandIcon}>
+              <FontAwesomeIcon icon={faLeaf} />
+            </span>
+            <span className={styles.brandName}>HealMind</span>
+          </div>
+
+          <h2 className={styles.title}>Already signed in</h2>
+          <p className={styles.subtitle} style={{ marginBottom: '24px' }}>
+            You are signed in as <strong>{name}</strong> ({userEmail}).
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <button onClick={() => navigate(dashboardPath)} className={styles.submitBtn}>
+              Go to Dashboard
+            </button>
+            <button onClick={handleLogout} className={styles.submitBtn} style={{ backgroundColor: '#6c757d' }}>
+              Sign Out / Switch Account
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e) => {

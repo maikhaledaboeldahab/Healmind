@@ -32,35 +32,35 @@ export default function PatientRoutes() {
     <Routes>
       {/* Public / Auth routes */}
       <Route element={<AuthLayout />}>
-        <Route path="/login" element={<SharedLogin />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="login" element={<SharedLogin />} />
+        <Route path="register" element={<Register />} />
       </Route>
+      <Route path="" element={<Navigate to="/login" replace />} />
 
       {/* User Protected Routes */}
       <Route element={<UserProtectedRoute />}>
         <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<UserDashboard />} />
-          <Route path="/doctors" element={<UserDoctors />} />
-          <Route path="/doctors/:doctorId" element={<UserDoctorDetails />} />
-          <Route path="/doctors/:doctorId/book" element={<BookAppointment />} />
-          <Route path="/payment/:bookingId" element={<Payment />} />
-          <Route path="/sessions/upcoming" element={<UpcomingSessions />} />
-          <Route path="/sessions/history" element={<SessionHistory />} />
-          <Route path="/sessions/:sessionId" element={<SessionReport />} />
-          <Route path="/sessions/:sessionId/rate" element={<RateDoctor />} />
-          <Route path="/sessions/:sessionId/video" element={<VideoSession />} />
-          <Route path="/live-chat/:sessionId" element={<LiveChat />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/messages/:doctorId" element={<Messages />} />
-          <Route path="/tickets" element={<TicketHistory />} />
-          <Route path="/tickets/new" element={<CreateTicket />} />
-          <Route path="/community" element={<UserCommunity />} />
-          <Route path="/ai-assistant" element={<AIAssistant />} />
-          <Route path="/contact" element={<ContactUs />} />
-          <Route path="/notifications" element={<UserNotifications />} />
-          <Route path="/payments/history" element={<PaymentHistory />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<UserDashboard />} />
+          <Route path="doctors" element={<UserDoctors />} />
+          <Route path="doctors/:doctorId" element={<UserDoctorDetails />} />
+          <Route path="doctors/:doctorId/book" element={<BookAppointment />} />
+          <Route path="payment/:bookingId" element={<Payment />} />
+          <Route path="sessions/upcoming" element={<UpcomingSessions />} />
+          <Route path="sessions/history" element={<SessionHistory />} />
+          <Route path="sessions/:sessionId" element={<SessionReport />} />
+          <Route path="sessions/:sessionId/rate" element={<RateDoctor />} />
+          <Route path="sessions/:sessionId/video" element={<VideoSession />} />
+          <Route path="live-chat/:sessionId" element={<LiveChat />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="messages/:doctorId" element={<Messages />} />
+          <Route path="tickets" element={<TicketHistory />} />
+          <Route path="tickets/new" element={<CreateTicket />} />
+          <Route path="community" element={<UserCommunity />} />
+          <Route path="ai-assistant" element={<AIAssistant />} />
+          <Route path="contact" element={<ContactUs />} />
+          <Route path="notifications" element={<UserNotifications />} />
+          <Route path="payments/history" element={<PaymentHistory />} />
+          <Route path="profile" element={<UserProfile />} />
         </Route>
       </Route>
     </Routes>
