@@ -9,11 +9,12 @@ const {
 
 // ⚠️ Adjust to match your existing auth middleware import/name
 const { protect } = require("../middleware/authMiddleware");
+const requireCommunityAccess = require("../middleware/communityAccess");
 
 router.use(protect);
 
-router.route("/").get(getComments).post(addComment);
-
-router.delete("/:id", deleteComment);
+router.get("/", getComments); // القراءة متاحة للكل
+router.post("/", requireCommunityAccess, addComment);
+router.delete("/:id", requireCommunityAccess, deleteComment);
 
 module.exports = router;

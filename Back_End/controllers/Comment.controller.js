@@ -1,13 +1,7 @@
 const Post = require("../models/post.model");
 const Comment = require("../models/Comment.model");
 const asyncHandler = require("../middleware/asyncHandler");
-// io is retrieved per-request from req.app.get("io") — see server.js (app.set("io", io))
 
-/**
- * @desc    Add a comment to a post
- * @route   POST /api/posts/:postId/comments
- * @access  Private
- */
 exports.addComment = asyncHandler(async (req, res) => {
   const { postId } = req.params;
   const { content, parentComment } = req.body;

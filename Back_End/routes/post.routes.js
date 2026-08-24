@@ -14,16 +14,22 @@ const commentRouter = require("./Comment.routes");
 
 // ⚠️ Adjust to match your existing auth middleware import/name
 const { protect } = require("../middleware/authMiddleware");
+const requireCommunityAccess = require("../middleware/communityAccess");
 
 router.use(protect); // every route below requires a logged-in user
 
 // Nested route: /api/posts/:postId/comments -> handled by comment.routes.js
 router.use("/:postId/comments", commentRouter);
 
-router.route("/").get(getFeed).post(createPost);
+// القراءة (GET) متاحة للكل من غير شرط الموافقة — عشان المريض يقدر
+// على الأقل يشوف الفيد وهو مستني موافقة الدكتور
+router.get("/", getFeed);
+router.get("/:id", getPostById);
 
-router.route("/:id").get(getPostById).patch(updatePost).delete(deletePost);
-
-router.post("/:id/like", toggleLike);
+// الكتابة (POST/PATCH/DELETE/like) محتاجة موافقة الدكتور لو المستخدم patient
+router.post("/", requireCommunityAccess, createPost);
+router.patch("/:id", requireCommunityAccess, updatePost);
+router.delete("/:id", requireCommunityAccess, deletePost);
+router.post("/:id/like", requireCommunityAccess, toggleLike);
 
 module.exports = router;

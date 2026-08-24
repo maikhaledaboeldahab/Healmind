@@ -2,9 +2,13 @@ const Post = require("../models/post.model");
 const Comment = require("../models/Comment.model");
 const asyncHandler = require("../middleware/asyncHandler");
 
+// io يتم الوصول له عن طريق req.app.get("io") — شايف server.js (app.set("io", io))
 
-
-
+/**
+ * @desc    Create a new post
+ * @route   POST /api/posts
+ * @access  Private (patient, doctor, admin)
+ */
 exports.createPost = asyncHandler(async (req, res) => {
   const { content, attachments } = req.body;
 
