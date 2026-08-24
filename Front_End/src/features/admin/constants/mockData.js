@@ -89,8 +89,12 @@ export const MOCK_PATIENTS = Array.from({ length: 32 }).map((_, i) => {
   }
 })
 
+const PREFERRED_TIMES = ['09:00 AM – 11:00 AM', '11:00 AM – 01:00 PM', '02:00 PM – 04:00 PM', '04:00 PM – 06:00 PM']
+
 export const MOCK_TICKETS = Array.from({ length: 28 }).map((_, i) => {
   const id = i + 1
+  // Every third ticket starts unassigned — freshly submitted by patient, not yet reviewed by admin
+  const isUnassigned = id % 3 === 0
   const statusCycle = [TICKET_STATUS.BOOKED, TICKET_STATUS.PAID, TICKET_STATUS.COMPLETED, TICKET_STATUS.CANCELLED]
   const decisionCycle = [TICKET_DECISION.PENDING, TICKET_DECISION.APPROVE, TICKET_DECISION.NEEDS_ANOTHER_SESSION, TICKET_DECISION.REJECT]
   const subjects = [
@@ -107,18 +111,24 @@ export const MOCK_TICKETS = Array.from({ length: 28 }).map((_, i) => {
   ]
   const createdDate = new Date(2026, (id % 12), (id % 27) + 1).toISOString()
   const updatedDate = new Date(2026, (id % 12), (id % 27) + 2).toISOString()
+  // Preferred date is 2–5 days after ticket creation (patient's requested evaluation window)
+  const preferredDate = new Date(2026, (id % 12), (id % 27) + 2 + (id % 4)).toISOString()
 
   return {
     id: `TCK-${pad(id)}`,
     patientId: `PAT-${pad((id % 32) + 1)}`,
-    doctorId: `DOC-${pad((id % 24) + 1)}`,
+    // null means admin has not assigned a doctor yet
+    doctorId: isUnassigned ? null : `DOC-${pad((id % 24) + 1)}`,
     subject: subjects[id % subjects.length],
     description: descriptions[id % descriptions.length],
     bookingDate: createdDate,
-    sessionDate: new Date(2026, (id % 12), (id % 27) + 3).toISOString(),
+    // preferredDate / preferredTime: patient-requested evaluation window
+    preferredDate,
+    preferredTime: PREFERRED_TIMES[id % PREFERRED_TIMES.length],
     paymentStatus: id % 4 === 0 ? PAYMENT_STATUS.PENDING : PAYMENT_STATUS.PAID,
     status: statusCycle[id % statusCycle.length],
-    decision: decisionCycle[id % decisionCycle.length],
+    // Unassigned tickets always start with pending decision
+    decision: isUnassigned ? TICKET_DECISION.PENDING : decisionCycle[id % decisionCycle.length],
     notes: 'Patient reported improved sleep patterns since last check-in.',
     createdAt: createdDate,
     updatedAt: updatedDate,

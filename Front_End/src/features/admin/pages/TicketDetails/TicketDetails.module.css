@@ -46,6 +46,23 @@
   text-decoration: underline;
 }
 
+/* Highlights the patient's requested date/time — key info for doctor assignment */
+.highlightRow {
+  background-color: var(--hm-surface-container-low);
+  border-radius: var(--hm-radius-sm, 6px);
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--hm-primary, #4a90d9) !important;
+}
+
+.highlightRow dt {
+  color: var(--hm-primary);
+  font-weight: 600;
+}
+
+.highlightRow dd {
+  color: var(--hm-on-surface);
+}
+
 .statusRow {
   display: flex;
   flex-direction: column;

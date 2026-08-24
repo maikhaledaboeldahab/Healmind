@@ -16,4 +16,12 @@ export const ticketService = {
     tickets = tickets.map((ticket) => (ticket.id === ticketId ? { ...ticket, ...payload } : ticket))
     return simulateLatency(tickets.find((ticket) => ticket.id === ticketId))
   },
+
+  // TODO: replace with real API call when backend endpoint is ready, e.g.:
+  // async assignDoctor(ticketId, doctorId) {
+  //   return apiClient.patch(`/tickets/${ticketId}/assign`, { doctorId }).then((res) => res.data)
+  // }
+  async assignDoctor(ticketId, doctorId) {
+    return this.update(ticketId, { doctorId })
+  },
 }
