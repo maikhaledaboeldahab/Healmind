@@ -7,6 +7,7 @@ import DataTable from '../../../../shared/components/DataTable/DataTable'
 import Pagination from '../../../../shared/components/AdminPagination/AdminPagination'
 import Button from '../../../../shared/components/AdminButton/AdminButton'
 import StatusBadge from '../../../../shared/components/StatusBadge/StatusBadge'
+import AssignDoctorModal from './AssignDoctorModal'
 import { ticketService } from '../../services/ticketService'
 import { patientService } from '../../services/patientService'
 import { doctorService } from '../../services/doctorService'
@@ -26,6 +27,7 @@ function Tickets() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState(STATUS_FILTER_ALL)
+  const [assigningTicket, setAssigningTicket] = useState(null)
 
   const debouncedSearch = useDebounce(searchTerm)
   const navigate = useNavigate()
@@ -41,8 +43,12 @@ function Tickets() {
     )
   }, [])
 
-  const findPatientName = (id) => patients.find((p) => p.id === id)?.name || id
-  const findDoctorName = (id) => doctors.find((d) => d.id === id)?.name || id
+  const findPatient = (id) => patients.find((p) => p.id === id) || null
+  const findPatientName = (id) => findPatient(id)?.name || id
+  const findDoctorName = (id) => {
+    if (!id) return 'Not Assigned'
+    return doctors.find((d) => d.id === id)?.name || id
+  }
 
   const filteredTickets = useMemo(() => {
     return tickets.filter((ticket) => {
@@ -51,7 +57,8 @@ function Tickets() {
       const search = debouncedSearch.toLowerCase()
       const matchesSearch =
         ticket.id.toLowerCase().includes(search) || patientName.includes(search) || subject.includes(search)
-      const matchesStatus = statusFilter === STATUS_FILTER_ALL || ticket.status === statusFilter || ticket.decision === statusFilter
+      const matchesStatus =
+        statusFilter === STATUS_FILTER_ALL || ticket.status === statusFilter || ticket.decision === statusFilter
       return matchesSearch && matchesStatus
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,21 +71,67 @@ function Tickets() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, statusFilter])
 
+  const handleAssigned = (updatedTicket) => {
+    setTickets((prev) => prev.map((t) => (t.id === updatedTicket.id ? updatedTicket : t)))
+    setAssigningTicket(null)
+  }
+
   const columns = [
     { key: 'id', header: 'Ticket ID' },
     { key: 'patient', header: 'Patient', render: (t) => findPatientName(t.patientId) },
     { key: 'subject', header: 'Subject', render: (t) => t.subject || 'Community Access Request' },
-    { key: 'doctor', header: 'Assigned Doctor', render: (t) => findDoctorName(t.doctorId) },
+    {
+      key: 'preferredDate',
+      header: 'Preferred Date',
+      render: (t) => (t.preferredDate ? formatDate(t.preferredDate) : '—'),
+    },
+    {
+      key: 'preferredTime',
+      header: 'Preferred Time',
+      render: (t) => t.preferredTime || '—',
+    },
+    {
+      key: 'doctor',
+      header: 'Assigned Doctor',
+      render: (t) =>
+        t.doctorId ? (
+          findDoctorName(t.doctorId)
+        ) : (
+          <StatusBadge status="unassigned" label="Not Assigned" tone="neutral" />
+        ),
+    },
     { key: 'createdAt', header: 'Created Date', render: (t) => formatDate(t.createdAt || t.bookingDate) },
-    { key: 'status', header: 'Session Status', render: (t) => <StatusBadge status={t.status} label={TICKET_STATUS_LABEL[t.status]} /> },
-    { key: 'decision', header: 'Doctor Decision', render: (t) => <StatusBadge status={t.decision} label={TICKET_DECISION_LABEL[t.decision]} /> },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (t) => <StatusBadge status={t.status} label={TICKET_STATUS_LABEL[t.status]} />,
+    },
+    {
+      key: 'decision',
+      header: 'Doctor Decision',
+      render: (t) => <StatusBadge status={t.decision} label={TICKET_DECISION_LABEL[t.decision]} />,
+    },
     {
       key: 'actions',
       header: '',
       render: (ticket) => (
-        <Button variant="ghost" onClick={() => navigate(buildPath(ROUTE_PATHS.TICKET_DETAILS, { ticketId: ticket.id }))}>
-          View
-        </Button>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <Button
+            variant="ghost"
+            onClick={() => navigate(buildPath(ROUTE_PATHS.TICKET_DETAILS, { ticketId: ticket.id }))}
+          >
+            View
+          </Button>
+          {!ticket.doctorId && (
+            <Button
+              variant="secondary"
+              icon="fa-solid fa-user-doctor"
+              onClick={() => setAssigningTicket(ticket)}
+            >
+              Assign Doctor
+            </Button>
+          )}
+        </div>
       ),
     },
   ]
@@ -109,6 +162,17 @@ function Tickets() {
 
       <DataTable columns={columns} rows={pageItems} isLoading={isLoading} emptyTitle="No tickets found" />
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={goToPage} />
+
+      {assigningTicket && (
+        <AssignDoctorModal
+          isOpen={!!assigningTicket}
+          onClose={() => setAssigningTicket(null)}
+          ticket={assigningTicket}
+          patient={findPatient(assigningTicket.patientId)}
+          doctors={doctors}
+          onAssigned={handleAssigned}
+        />
+      )}
     </div>
   )
 }
