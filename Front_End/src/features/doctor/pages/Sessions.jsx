@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import SessionRow from "../components/Doctor/SessionRow/SessionRow";
+import SessionRequestRow from "../components/Doctor/SessionRequestRow/SessionRequestRow";
 import FilterToolbar from "../../../shared/components/FilterToolbar/FilterToolbar";
 import Pagination from "../../../shared/components/DoctorPagination/DoctorPagination";
+import ConfirmModal from "../../../shared/components//ConfirmModal/ConfirmModal";
+import Toast from "../../../shared/components/DoctorToast/DoctorToast";
 import sessionStyles from "./Sessions.module.css";
 
 const dateOptions = ["Last 7 Days", "Last 30 Days", "Last 90 Days", "All Time"];
-const itemsPerPage = 2; // small on purpose, just to demo pagination with 5 sample rows
+const itemsPerPage = 2;
 
 const sampleSessions = [
   { id: 1, patientName: "Julian Vance", date: "Oct 24, 2023", time: "09:00 AM", sessionType: "Cognitive Behavioral Therapy (CBT)", status: "Completed", decision: "Approved" },
@@ -15,11 +18,24 @@ const sampleSessions = [
   { id: 5, patientName: "Sarah Jenkins", date: "Oct 22, 2023", time: "04:45 PM", sessionType: "Follow-up", status: "Completed", decision: "Approved" },
 ];
 
+const initialRequests = [
+  { id: 1, patientName: "Nora Sami", requestedDate: "Oct 26, 2023", requestedTime: "01:00 PM", message: "I've been struggling with sleep and constant worry about work. I'd like to talk through some coping strategies.", status: "pending" },
+  { id: 2, patientName: "Omar Khalil", requestedDate: "Oct 27, 2023", requestedTime: "10:00 AM", message: "First-time session — looking for support with managing stress after a recent job change.", status: "pending" },
+];
+
 const Sessions = () => {
+  const [activeTab, setActiveTab] = useState("history"); // "history" | "requests"
+
+  // History tab state
   const [searchValue, setSearchValue] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("Last 30 Days");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Requests tab state
+  const [requests, setRequests] = useState(initialRequests);
+  const [confirmAction, setConfirmAction] = useState(null); // { requestId, type: "accept" | "reject" }
+  const [toast, setToast] = useState({ show: false, message: "" });
 
   const filteredSessions = sampleSessions.filter((session) => {
     const matchesSearch = session.patientName
@@ -29,11 +45,15 @@ const Sessions = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Whenever the search term or filter changes, jump back to page 1 —
-  // otherwise you could be stuck on "page 3" of a list that now only has 1 page.
-  useEffect(() => {
+  const handleSearchChange = (value) => {
+    setSearchValue(value);
     setCurrentPage(1);
-  }, [searchValue, statusFilter]);
+  };
+
+  const handleFilterChange = (value) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  };
 
   const totalPages = Math.max(1, Math.ceil(filteredSessions.length / itemsPerPage));
   const paginatedSessions = filteredSessions.slice(
@@ -41,78 +61,156 @@ const Sessions = () => {
     currentPage * itemsPerPage
   );
 
+  const handleConfirmDecision = () => {
+    const { requestId, type } = confirmAction;
+
+    if (type === "accept") {
+      // TODO: replace with a real API call once the backend exists, e.g.
+      // await axios.patch(`/api/session-requests/${requestId}`, { status: "accepted" });
+      setRequests((prev) =>
+        prev.map((r) => (r.id === requestId ? { ...r, status: "accepted" } : r))
+      );
+      setToast({ show: true, message: "Session accepted. Video call is now available." });
+    } else {
+      // TODO: replace with a real API call once the backend exists, e.g.
+      // await axios.patch(`/api/session-requests/${requestId}`, { status: "rejected" });
+      setRequests((prev) => prev.filter((r) => r.id !== requestId));
+      setToast({ show: true, message: "Session request rejected." });
+    }
+
+    setConfirmAction(null);
+  };
+
   return (
     <div>
       <div className="mb-4">
-        <h3 className="fw-bold mb-1">Sessions History</h3>
-        <p className="text-muted mb-0">Manage and review your clinical session logs.</p>
+        <h3 className="fw-bold mb-1">Sessions</h3>
+        <p className="text-muted mb-0">Manage session requests and review your clinical history.</p>
       </div>
 
-      <FilterToolbar
-        searchValue={searchValue}
-        onSearchChange={setSearchValue}
-        searchPlaceholder="Filter by patient name..."
-        filters={["All", "Completed", "In-progress", "Cancelled"]}
-        activeFilter={statusFilter}
-        onFilterChange={setStatusFilter}
-      >
-        <select
-          className={sessionStyles.dateSelect}
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
+      <div className="d-flex gap-2 mb-4">
+        <button
+          className={`${sessionStyles.tabBtn} ${activeTab === "history" ? sessionStyles.tabActive : ""}`}
+          onClick={() => setActiveTab("history")}
         >
-          {dateOptions.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-      </FilterToolbar>
-
-      <div className="bg-white rounded-4 shadow-sm p-3 p-md-4">
-        <div className="table-responsive">
-          <table className="table align-middle mb-0">
-            <thead>
-              <tr>
-                <th>PATIENT</th>
-                <th>DATE</th>
-                <th>TIME</th>
-                <th>SESSION TYPE</th>
-                <th>STATUS</th>
-                <th>DECISION</th>
-                <th>ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedSessions.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="text-center text-muted py-4">
-                    No sessions found.
-                  </td>
-                </tr>
-              ) : (
-                paginatedSessions.map((session) => (
-                  <SessionRow key={session.id} {...session} />
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-          <span className="text-muted" style={{ fontSize: "0.85rem" }}>
-            Showing {filteredSessions.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}-
-            {Math.min(currentPage * itemsPerPage, filteredSessions.length)} of{" "}
-            {filteredSessions.length} sessions
-          </span>
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
+          History
+        </button>
+        <button
+          className={`${sessionStyles.tabBtn} ${activeTab === "requests" ? sessionStyles.tabActive : ""}`}
+          onClick={() => setActiveTab("requests")}
+        >
+          Requests
+          {requests.filter((r) => r.status === "pending").length > 0 && (
+            <span className={sessionStyles.tabBadge}>
+              {requests.filter((r) => r.status === "pending").length}
+            </span>
+          )}
+        </button>
       </div>
+
+      {activeTab === "history" ? (
+        <>
+          <FilterToolbar
+            searchValue={searchValue}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Filter by patient name..."
+            filters={["All", "Completed", "In-progress", "Cancelled"]}
+            activeFilter={statusFilter}
+            onFilterChange={handleFilterChange}
+          >
+            <select
+              className={sessionStyles.dateSelect}
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
+              {dateOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </FilterToolbar>
+
+          <div className="bg-white rounded-4 shadow-sm p-3 p-md-4">
+            <div className="table-responsive">
+              <table className="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>PATIENT</th>
+                    <th>DATE</th>
+                    <th>TIME</th>
+                    <th>SESSION TYPE</th>
+                    <th>STATUS</th>
+                    <th>DECISION</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedSessions.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="text-center text-muted py-4">
+                        No sessions found.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedSessions.map((session) => (
+                      <SessionRow key={session.id} {...session} />
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+              <span className="text-muted" style={{ fontSize: "0.85rem" }}>
+                Showing {filteredSessions.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}-
+                {Math.min(currentPage * itemsPerPage, filteredSessions.length)} of{" "}
+                {filteredSessions.length} sessions
+              </span>
+
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </div>
+        </>
+      ) : requests.length === 0 ? (
+        <div className="bg-white rounded-4 shadow-sm p-3 p-md-4 text-center text-muted py-5">
+          <i className="fa-regular fa-calendar-check fa-2x mb-2"></i>
+          <p className="mb-0">No pending session requests.</p>
+        </div>
+      ) : (
+        requests.map((request) => (
+          <SessionRequestRow
+            key={request.id}
+            {...request}
+            onAccept={() => setConfirmAction({ requestId: request.id, type: "accept" })}
+            onReject={() => setConfirmAction({ requestId: request.id, type: "reject" })}
+          />
+        ))
+      )}
+
+      <ConfirmModal
+        show={!!confirmAction}
+        title={confirmAction?.type === "accept" ? "Accept Session Request" : "Reject Session Request"}
+        message={
+          confirmAction?.type === "accept"
+            ? "This will confirm the session and unlock the video call at the scheduled time."
+            : "This will decline the request. The patient will be notified."
+        }
+        confirmText={confirmAction?.type === "accept" ? "Accept" : "Reject"}
+        confirmColor={confirmAction?.type === "accept" ? "primary" : "error"}
+        onConfirm={handleConfirmDecision}
+        onCancel={() => setConfirmAction(null)}
+      />
+
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        onClose={() => setToast({ show: false, message: "" })}
+      />
     </div>
   );
 };

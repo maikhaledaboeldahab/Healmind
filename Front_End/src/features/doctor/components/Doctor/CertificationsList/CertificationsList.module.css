@@ -1,0 +1,71 @@
+.card {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-surface);
+}
+
+.title {
+  font-family: var(--font-headline-md-family);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.addBtn {
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.certRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.certIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.certName {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.certMeta {
+  font-size: 0.75rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.viewBtn {
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.emptyState {
+  text-align: center;
+  color: var(--color-on-surface-variant);
+  padding: 24px 0;
+}

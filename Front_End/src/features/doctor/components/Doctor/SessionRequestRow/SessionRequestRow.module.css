@@ -1,0 +1,83 @@
+.row {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-surface);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.meta {
+  font-size: 0.78rem;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.viewMessageBtn {
+  background: transparent;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+}
+
+.message {
+  background-color: var(--color-surface-container-low);
+  border-radius: var(--radius);
+  padding: 12px;
+  font-size: 0.85rem;
+  color: var(--color-on-surface-variant);
+  margin: 12px 0 0;
+}
+
+.acceptBtn {
+  background-color: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.rejectBtn {
+  background-color: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.videoBtn {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
