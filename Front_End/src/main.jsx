@@ -4,11 +4,11 @@ import { BrowserRouter } from 'react-router-dom';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import './admin/styles/theme.css';
-import './doctor/styles/doctor.css';
+import './features/admin/styles/theme.css';
+import './features/doctor/styles/doctor.css';
 import './assets/global.css';
 
-import App from './App.jsx';
+import App from './app/App.jsx';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
