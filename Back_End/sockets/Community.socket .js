@@ -17,10 +17,16 @@ module.exports = (io) => {
     // socket.user / socket.userId / socket.role were already set by the
     // auth middleware in chat.socket.js before this handler ever runs.
 
+    // ℹ️ ملحوظة: مفيش هنا أي تحقق من communityAccess. الـ socket بيدير
+    // بس الغرف ومؤشرات الكتابة — مفيش أي "كتابة" فعلية بتحصل من جواه.
+    // كل الكتابة الحقيقية (بوست/كومنت) بتعدي على REST وبتتحقق هناك
+    // من requireCommunityAccess middleware. فكل المرضى — approved أو
+    // pending — بينضموا لغرفة community ويستقبلوا التحديثات لايف،
+    // حتى لو لسه مش مسموحلهم يكتبوا.
+
     // Every connected user auto-joins the main feed room, so they receive
     // newPost / postUpdated / postDeleted / postLiked / commentCountUpdated
     socket.join("community");
-    console.log(`🟢 [community] ${socket.user?.name} joined room "community" (socket id: ${socket.id})`); // ⚠️ TEMP: احذفي السطر ده بعد ما تتأكدي
 
     // =============================================
     // 📌 Join / Leave a specific post's room

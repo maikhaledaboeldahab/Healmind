@@ -1,13 +1,16 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const Session = require("../models/session.model");
+
 // role is determined by the discriminatorKey "role" in the schema options
 const userOptions = {
   discriminatorKey: "role",
   timestamps: true,
 };
 
-// base User Schema
+// =============================================
+// Base User Schema
+// =============================================
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -30,7 +33,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required."],
       minlength: [8, "Password must be at least 8 characters long."],
-      select: false, // Hide password from queries by default
+      select: false,
     },
 
     phone: {
@@ -42,16 +45,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-     isActive: {
+
+    isActive: {
       type: Boolean,
       default: true,
     },
-  }, userOptions
+  },
+  userOptions
 );
 
+// =============================================
+// Bcrypt
+// =============================================
 
-
-//!bycrpt
 // Pre-save Hook — Hash Password
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
@@ -62,169 +68,224 @@ userSchema.pre("save", async function () {
     throw error;
   }
 });
+
 // Instance Method — Compare Password
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
 const User = mongoose.model("User", userSchema);
 
-// Patient Schema (extends User)
-const patientSchema = new mongoose.Schema({
-  dateOfBirth: {
-    type: Date,
-    default: null,
-  },
-  gender: {
-    type: String,
-    enum: ["male", "female"],
-  },
-  // Sessions and tests will be linked through other models
-  therapistId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    default: null,
-  },
-  emergencyContact: {
-    name: {
-      type: String,
-      default: null,
-    },
-    phone: {
-      type: String,
-      default: null,
-    },
-  },
+// =============================================
+// Patient Schema
+// =============================================
 
-},
+const patientSchema = new mongoose.Schema(
   {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  });
-
-
-//Enable virual
-patientSchema.virtual("sessionHistory", {
-  ref: "Session",       // The model to use
-  localField: "_id",    // Find sessions where `patientId` matches the patient's `_id`
-  foreignField: "patientId",
-  // options: { sort: { scheduledTime: -1 } } // Optional: sort by latest sessions
-});
-
-const Patient = User.discriminator("patient", patientSchema);
-
-// Doctor Schema (extends User)
-const doctorSchema = new mongoose.Schema(
-  {
-    NationalId: {
-      type: String,
-      required: true,
-      default: null,
-      unique: true,
-    },
-
-    specialization: {
-      type: String,
-      required: [true, "Specialization is required."],
-      trim: true,
-    },
-
-    licenseNumber: {
-      type: String,
-      required: [true, "License number is required."],
-      trim: true,
-    },
-
-    certificate: {
-      type: String,
-      required: [true, "Certificate is required for doctor registration."],
-    },
-
-    bio: {
-      type: String,
-      maxlength: [500, "Bio must not exceed 500 characters."],
+    dateOfBirth: {
+      type: Date,
       default: null,
     },
 
-    yearsOfExperience: {
-      type: Number,
-      min: [0, "Years of experience cannot be negative."],
-      default: 0,
-    },
-
-    // Doctor approval
-    isApproved: {
-      type: Boolean,
-      default: false,
-    },
-
-    approvalStatus: {
+    gender: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
+      enum: ["male", "female"],
     },
 
-    approvedBy: {
+    therapistId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
 
-    approvedAt: {
-      type: Date,
+    emergencyContact: {
+      name: {
+        type: String,
+        default: null,
+      },
+
+      phone: {
+        type: String,
+        default: null,
+      },
+    },
+
+    // =============================================
+    // Community Access
+    // =============================================
+
+    communityAccess: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+
+    communityAccessDecidedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       default: null,
     },
 
-    sessionPrice: {
-      type: Number,
-      min: [0, "Session price cannot be negative."],
-      default: 0,
+    communityAccessDecidedAt: {
+      type: Date,
+      default: null,
     },
-
-    slots: [
-      {
-        day: {
-          type: Date,
-          required: true,
-        },
-
-        time: {
-          type: String,
-          default: null,
-        },
-
-        location: {
-          type: String,
-          trim: true,
-        },
-      },
-    ],
   },
   {
-    timestamps: true,
+    toJSON: {
+      virtuals: true,
+    },
+
+    toObject: {
+      virtuals: true,
+    },
   }
 );
 
+// =============================================
+// Patient Virtual
+// =============================================
+
+patientSchema.virtual("sessionHistory", {
+  ref: "Session",
+  localField: "_id",
+  foreignField: "patientId",
+});
+
+// Create Patient Discriminator
+const Patient = User.discriminator("patient", patientSchema);
+
+// =============================================
+// Doctor Schema
+// =============================================
+
+const doctorSchema = new mongoose.Schema({
+  NationalId: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+  },
+
+  specialization: {
+    type: String,
+    required: [true, "Specialization is required."],
+    trim: true,
+  },
+
+  licenseNumber: {
+    type: String,
+    required: [true, "License number is required."],
+    trim: true,
+  },
+
+  certificate: {
+    type: String,
+    required: [true, "Certificate is required for doctor registration."],
+  },
+
+  bio: {
+    type: String,
+    maxlength: [500, "Bio must not exceed 500 characters."],
+    default: null,
+  },
+
+  yearsOfExperience: {
+    type: Number,
+    min: [0, "Years of experience cannot be negative."],
+    default: 0,
+  },
+
+  // =============================================
+  // Doctor Approval
+  // =============================================
+
+  isApproved: {
+    type: Boolean,
+    default: false,
+  },
+
+  approvalStatus: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending",
+  },
+
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
+
+  approvedAt: {
+    type: Date,
+    default: null,
+  },
+
+  sessionPrice: {
+    type: Number,
+    min: [0, "Session price cannot be negative."],
+    default: 0,
+  },
+
+  slots: [
+    {
+      day: {
+        type: Date,
+        required: true,
+      },
+
+      time: {
+        type: String,
+        default: null,
+      },
+
+      location: {
+        type: String,
+        trim: true,
+      },
+    },
+  ],
+});
+
+// Create Doctor Discriminator
 const Doctor = User.discriminator("doctor", doctorSchema);
 
-// Admin Schema (extends User)
+// =============================================
+// Admin Schema
+// =============================================
+
 const adminSchema = new mongoose.Schema({
   permissions: {
     type: [String],
-    enum: ["manage_users", "approve_doctors", "manage_content", "view_reports"],
+    enum: [
+      "manage_users",
+      "approve_doctors",
+      "manage_content",
+      "view_reports",
+    ],
     default: ["manage_users", "approve_doctors"],
   },
+
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     default: null,
   },
+
   isSuperAdmin: {
-  type: Boolean,
-  default: false,
-},
+    type: Boolean,
+    default: false,
+  },
 });
 
+// Create Admin Discriminator
 const Admin = User.discriminator("admin", adminSchema);
+
+// =============================================
+// Exports
+// =============================================
+
 module.exports = {
   User,
   Patient,
