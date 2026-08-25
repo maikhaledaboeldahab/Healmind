@@ -1,0 +1,68 @@
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: var(--color-bg);
+}
+
+.panel {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-8);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-7);
+}
+
+.brandName {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.brandTag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.headline {
+  font-size: 2.25rem;
+  color: var(--color-white);
+  max-width: 420px;
+  margin-bottom: var(--space-4);
+  line-height: 1.2;
+}
+
+.subtext {
+  color: #cfe0d1;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.formSide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+@media (max-width: 900px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    padding: var(--space-6) var(--space-4);
+  }
+  .headline {
+    font-size: 1.75rem;
+  }
+}

@@ -1,0 +1,74 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hm-on-surface-variant);
+  padding-bottom: 4px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--hm-outline-variant);
+  border-radius: var(--hm-radius-md);
+  background-color: var(--hm-surface-container-lowest);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  position: relative;
+}
+
+.cell:hover:not(:disabled) {
+  border-color: var(--hm-secondary);
+}
+
+.emptyCell {
+  border: none;
+  background: transparent;
+  cursor: default;
+}
+
+.dayNumber {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dot {
+  font-size: 10px;
+  background-color: var(--hm-secondary);
+  color: var(--hm-on-secondary);
+  border-radius: var(--hm-radius-full);
+  padding: 1px 6px;
+}
+
+.today .dayNumber {
+  color: var(--hm-primary);
+}
+
+.today {
+  border-color: var(--hm-primary);
+}
+
+.selected {
+  background-color: var(--hm-primary);
+}
+
+.selected .dayNumber {
+  color: var(--hm-on-primary);
+}

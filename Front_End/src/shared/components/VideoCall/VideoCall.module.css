@@ -1,0 +1,165 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+  background-color: #0f172a;
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 520px;
+  height: 72vh;
+}
+
+.jitsiFrame {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  background-color: #0f172a;
+}
+
+.jitsiFrame :global(iframe) {
+  border: none;
+  width: 100%;
+  height: 100%;
+}
+
+.centerState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  padding: var(--space-6, 24px);
+  text-align: center;
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+  color: #f8fafc;
+}
+
+.errorIcon {
+  font-size: 3rem;
+  color: #f87171;
+  margin-bottom: var(--space-3, 12px);
+}
+
+.errorTitle {
+  font-size: var(--font-size-xl, 1.25rem);
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 var(--space-2, 8px);
+}
+
+.errorMessage {
+  font-size: var(--font-size-md, 1rem);
+  color: #cbd5e1;
+  max-width: 480px;
+  margin: 0 0 var(--space-4, 16px);
+  line-height: 1.5;
+}
+
+.errorActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+  flex-wrap: wrap;
+}
+
+.loadingSpinnerWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+}
+
+.loadingText {
+  font-size: var(--font-size-md, 1rem);
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background-color: #1e293b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  z-index: 10;
+}
+
+.topBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.roomBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-xs, 0.75rem);
+  color: #38bdf8;
+  background-color: rgba(56, 189, 248, 0.12);
+  padding: 2px 8px;
+  border-radius: var(--radius-full, 9999px);
+  font-weight: 500;
+}
+
+.liveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.leaveBtn {
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  padding: 6px 12px;
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.leaveBtn:hover {
+  background-color: #dc2626;
+}
+
+@media (max-width: 768px) {
+  .container {
+    height: 65vh;
+    min-height: 400px;
+    border-radius: var(--radius-lg, 12px);
+  }
+}

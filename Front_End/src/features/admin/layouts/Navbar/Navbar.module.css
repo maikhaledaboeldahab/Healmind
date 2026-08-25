@@ -1,0 +1,101 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+  background-color: var(--hm-surface-container-lowest);
+  border-bottom: 1px solid var(--hm-outline-variant);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.menuButton {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  color: var(--hm-on-surface-variant);
+  cursor: pointer;
+  display: none;
+}
+
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--hm-input-tint);
+  border-radius: var(--hm-radius-full);
+  padding: 9px 16px;
+  flex: 1;
+  max-width: 420px;
+  color: var(--hm-on-surface-variant);
+}
+
+.search {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+
+.rightSection {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.iconButton {
+  position: relative;
+  font-size: 18px;
+  color: var(--hm-on-surface-variant);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.iconButton:hover {
+  background-color: var(--hm-surface-container-low);
+  color: var(--hm-primary);
+}
+
+.badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background-color: var(--hm-error);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adminName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hm-on-surface);
+}
+
+@media (max-width: 992px) {
+  .menuButton {
+    display: inline-flex;
+  }
+  .adminName {
+    display: none;
+  }
+}

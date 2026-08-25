@@ -1,0 +1,65 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.fieldWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fieldWrap:focus-within {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(74, 101, 78, 0.12);
+}
+
+.fieldError {
+  border-color: var(--color-error);
+}
+
+.icon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.field {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 12px var(--space-3);
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+}
+
+.hasIcon {
+  padding-left: 40px;
+}
+
+.errorText {
+  font-size: 0.75rem;
+  color: var(--color-error);
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}

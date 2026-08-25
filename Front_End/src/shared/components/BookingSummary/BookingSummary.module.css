@@ -1,0 +1,105 @@
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  position: sticky;
+  top: var(--space-4);
+}
+
+.doctor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.name {
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.specialization {
+  font-size: 0.8125rem;
+  color: var(--color-secondary);
+  font-weight: 600;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: var(--space-4) 0;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rows li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.rows li span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-muted);
+}
+
+.total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-primary);
+}
+
+.depositHighlight {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.remainingMuted {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.totalLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.totalLabel span {
+  font-size: 0.9375rem;
+  color: var(--color-text);
+}
+
+.subtext {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.totalAmount {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+

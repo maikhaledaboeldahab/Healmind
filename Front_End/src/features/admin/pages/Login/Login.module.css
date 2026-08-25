@@ -1,0 +1,128 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--hm-background);
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+}
+
+.blobTop {
+  position: absolute;
+  top: -140px;
+  right: -120px;
+  width: 420px;
+  height: 420px;
+  border-radius: 42% 58% 65% 35% / 45% 45% 55% 55%;
+  background-color: var(--hm-tertiary-fixed);
+  opacity: 0.6;
+}
+
+.blobBottom {
+  position: absolute;
+  bottom: -160px;
+  left: -140px;
+  width: 460px;
+  height: 460px;
+  border-radius: 60% 40% 30% 70% / 55% 45% 55% 45%;
+  background-color: var(--hm-secondary-container);
+  opacity: 0.5;
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  background-color: var(--hm-surface-container-lowest);
+  border-radius: var(--hm-radius-xl);
+  box-shadow: var(--hm-shadow-hover);
+  padding: 44px 40px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.brandIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--hm-primary);
+  color: var(--hm-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brandName {
+  font-family: var(--hm-font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--hm-primary);
+}
+
+.title {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--hm-on-surface-variant);
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hm-on-surface-variant);
+}
+
+.input {
+  border: 1px solid var(--hm-outline-variant);
+  border-radius: var(--hm-radius);
+  padding: 12px 14px;
+  font-size: 14px;
+  background-color: var(--hm-surface-container-low);
+  transition: border-color 0.15s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--hm-primary);
+  background-color: var(--hm-surface-container-lowest);
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--hm-error);
+  font-size: 13px;
+  margin: -6px 0 0;
+}
+
+.footnote {
+  text-align: center;
+  color: var(--hm-outline);
+  font-size: 12px;
+  margin: 24px 0 0;
+}

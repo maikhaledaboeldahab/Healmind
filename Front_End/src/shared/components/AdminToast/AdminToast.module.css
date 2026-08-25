@@ -1,0 +1,66 @@
+.container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1100;
+  max-width: 360px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--hm-radius-md);
+  box-shadow: var(--hm-shadow-hover);
+  background-color: var(--hm-inverse-surface);
+  color: var(--hm-inverse-on-surface);
+  animation: slideIn 0.2s ease;
+}
+
+.message {
+  flex: 1;
+  font-size: 14px;
+}
+
+.dismiss {
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.dismiss:hover {
+  opacity: 1;
+}
+
+.success i {
+  color: #7fd4a8;
+}
+
+.danger i {
+  color: #ff9d9d;
+}
+
+.warning i {
+  color: #f6c76b;
+}
+
+.info i {
+  color: #9cc4ff;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

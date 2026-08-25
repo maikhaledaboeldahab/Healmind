@@ -1,0 +1,18 @@
+.toolbar {
+  margin-bottom: 16px;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.content {
+  color: var(--hm-on-surface-variant);
+  font-size: 13px;
+}

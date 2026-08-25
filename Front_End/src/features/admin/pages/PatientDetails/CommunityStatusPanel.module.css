@@ -1,0 +1,70 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.title {
+  font-size: 16px;
+}
+
+.notice {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background-color: var(--hm-surface-container-low);
+  border-radius: var(--hm-radius-md);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--hm-on-surface-variant);
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.notice i {
+  margin-top: 2px;
+  color: var(--hm-secondary);
+}
+
+.subheading {
+  font-size: 13px;
+  color: var(--hm-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 10px;
+}
+
+.emptyHint {
+  font-size: 13px;
+  color: var(--hm-on-surface-variant);
+}
+
+.historyList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--hm-outline-variant);
+  border-radius: var(--hm-radius-md);
+  flex-wrap: wrap;
+}
+
+.historyMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--hm-on-surface-variant);
+  text-align: right;
+}

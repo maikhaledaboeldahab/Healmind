@@ -1,0 +1,26 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 24px;
+  gap: 12px;
+}
+
+.code {
+  font-family: var(--hm-font-display);
+  font-size: 64px;
+  font-weight: 700;
+  color: var(--hm-primary-container);
+}
+
+.title {
+  font-size: 22px;
+}
+
+.description {
+  color: var(--hm-on-surface-variant);
+  max-width: 380px;
+  margin: 0 0 12px;
+}

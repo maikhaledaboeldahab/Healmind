@@ -1,0 +1,10 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px;
+  font-size: 12px;
+  color: var(--hm-on-surface-variant);
+  border-top: 1px solid var(--hm-outline-variant);
+  flex-wrap: wrap;
+  gap: 8px;
+}

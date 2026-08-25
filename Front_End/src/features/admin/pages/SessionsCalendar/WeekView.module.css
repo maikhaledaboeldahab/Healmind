@@ -1,0 +1,71 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.dayButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 6px;
+  border: 1px solid var(--hm-outline-variant);
+  border-radius: var(--hm-radius-md);
+  background-color: var(--hm-surface-container-lowest);
+  cursor: pointer;
+  position: relative;
+}
+
+.dayButton:hover {
+  border-color: var(--hm-secondary);
+}
+
+.weekday {
+  font-size: 11px;
+  color: var(--hm-on-surface-variant);
+}
+
+.dayNumber {
+  font-family: var(--hm-font-display);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.count {
+  font-size: 10px;
+  background-color: var(--hm-secondary);
+  color: var(--hm-on-secondary);
+  border-radius: var(--hm-radius-full);
+  padding: 0 6px;
+}
+
+.today {
+  border-color: var(--hm-primary);
+}
+
+.selected {
+  background-color: var(--hm-primary);
+}
+
+.selected .weekday,
+.selected .dayNumber {
+  color: var(--hm-on-primary);
+}
+
+.sessionList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.emptyHint {
+  color: var(--hm-on-surface-variant);
+  font-size: 13px;
+}
