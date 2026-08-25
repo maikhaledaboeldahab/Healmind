@@ -1,9 +1,14 @@
 import styles from "./SessionTimeline.module.css";
 
 // Props:
-// nextSession -> { date, title, goal } or null if none scheduled
+// nextSession -> { date, title, goal, isLive } or null if none scheduled
 // pastSessions -> array of { id, date, title, duration, summary }
-const SessionTimeline = ({ nextSession, pastSessions = [] }) => {
+// onJoinCall -> callback function when Join Video Call is clicked
+const SessionTimeline = ({ nextSession, pastSessions = [], onJoinCall }) => {
+  const handleJoinClick = () => {
+    onJoinCall?.(nextSession);
+  };
+
   return (
     <div className={`${styles.card} p-3 p-md-4 mb-4`}>
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -12,8 +17,19 @@ const SessionTimeline = ({ nextSession, pastSessions = [] }) => {
 
       {nextSession && (
         <div className={styles.nextSession}>
-          <span className={styles.nextLabel}>Next Session • {nextSession.date}</span>
-          <p className={styles.nextTitle}>{nextSession.title}</p>
+          <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+            <div>
+              <span className={styles.nextLabel}>Next Session • {nextSession.date}</span>
+              <p className={styles.nextTitle}>{nextSession.title}</p>
+            </div>
+            <button
+              className={`${styles.joinBtn} ${nextSession.isLive ? styles.joinBtnActive : ""}`}
+              onClick={handleJoinClick}
+            >
+              <i className="fa-solid fa-video me-2"></i>
+              Join Video Call
+            </button>
+          </div>
           <p className={styles.nextGoal}>{nextSession.goal}</p>
         </div>
       )}

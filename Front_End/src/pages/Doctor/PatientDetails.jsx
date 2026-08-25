@@ -4,6 +4,7 @@ import PatientHeader from "../../components/Doctor/PatientHeader/PatientHeader";
 import PatientOverview from "../../components/Doctor/PatientOverview/PatientOverview";
 import CommunityStatus from "../../components/Doctor/CommunityStatus/CommunityStatus";
 import SessionTimeline from "../../components/Doctor/SessionTimeline/SessionTimeline";
+import VideoCallModal from "../../components/Doctor/VideoCallModal/VideoCallModal";
 import Toast from "../../components/UI/Toast/Toast";
 
 const basePatient = {
@@ -28,6 +29,7 @@ const nextSession = {
   date: "In 3 days",
   title: "Reviewing Anxiety Triggers",
   goal: "Goal: Finalize the list of environmental stressors and practice Level 2 grounding.",
+  isLive: false,
 };
 
 const pastSessions = [
@@ -39,15 +41,17 @@ const PatientDetails = () => {
   const { id } = useParams();
   console.log("Viewing patient ID:", id);
 
-  // Status now lives in state, not a static constant — so a doctor's
-  // decision (Approve/Reject/Request Another Session) actually updates
-  // what's shown here, on the header badge and the Community Status card.
   const [status, setStatus] = useState("Approved");
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [showVideoCall, setShowVideoCall] = useState(false);
 
   const handleDecision = (newStatus, toastMessage) => {
     setStatus(newStatus);
     setToast({ show: true, message: toastMessage });
+  };
+
+  const handleJoinCall = (session) => {
+    setShowVideoCall(true);
   };
 
   return (
@@ -57,7 +61,7 @@ const PatientDetails = () => {
       <div className="row g-4">
         <div className="col-lg-8">
           <PatientOverview diagnosis={diagnosis} notes={notes} />
-          <SessionTimeline nextSession={nextSession} pastSessions={pastSessions} />
+          <SessionTimeline nextSession={nextSession} pastSessions={pastSessions} onJoinCall={handleJoinCall} />
         </div>
 
         <div className="col-lg-4">
@@ -66,6 +70,14 @@ const PatientDetails = () => {
           </div>
         </div>
       </div>
+
+      <VideoCallModal
+        show={showVideoCall}
+        onClose={() => setShowVideoCall(false)}
+        sessionId="6a8965eda6ce8b3fb9a9a1e8"
+        patientName={basePatient.patientName}
+        doctorName="Farah"
+      />
 
       <Toast
         show={toast.show}

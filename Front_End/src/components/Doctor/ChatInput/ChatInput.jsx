@@ -1,10 +1,21 @@
-import styles from "./ChatInput.module.css";
+import { useState, useRef, useEffect } from "react";
+import styles from "./Chatinput.module.css";
+
+const commonEmojis = [
+  "😊", "😃", "😌", "🙏", "👍", "❤️",
+  "💡", "🧠", "🌿", "✨", "💪", "🤝",
+  "🩺", "📝", "⭐", "☀️", "👏", "🌱",
+  "🧘", "💬", "🌻", "🕊️", "☕", "📖"
+];
 
 // Props:
 // value    -> current text in the input (controlled by parent)
 // onChange -> called as the user types
 // onSend   -> called when Enter is pressed or the send button is clicked
 const ChatInput = ({ value, onChange, onSend }) => {
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const pickerRef = useRef(null);
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -12,20 +23,58 @@ const ChatInput = ({ value, onChange, onSend }) => {
     }
   };
 
+  const handleEmojiSelect = (emoji) => {
+    onChange(value + emoji);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    if (showEmojiPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showEmojiPicker]);
+
   return (
-    <div className={`${styles.inputBar} d-flex align-items-center gap-2 p-3`}>
+    <div className={`${styles.inputBar} position-relative d-flex align-items-center gap-2 p-3`} ref={pickerRef}>
+      {showEmojiPicker && (
+        <div className={styles.emojiPopover}>
+          <div className={styles.emojiHeader}>Choose an Emoji</div>
+          <div className={styles.emojiGrid}>
+            {commonEmojis.map((emoji, index) => (
+              <button
+                key={index}
+                type="button"
+                className={styles.emojiBtn}
+                onClick={() => handleEmojiSelect(emoji)}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <button
-        className={styles.iconBtn}
-        onClick={() => console.log("Emoji picker clicked")}
+        type="button"
+        className={`${styles.iconBtn} ${showEmojiPicker ? styles.iconActive : ""}`}
+        onClick={() => setShowEmojiPicker((prev) => !prev)}
         aria-label="Add emoji"
+        title="Insert Emoji"
       >
         <i className="fa-regular fa-face-smile"></i>
       </button>
 
       <button
+        type="button"
         className={styles.iconBtn}
-        onClick={() => console.log("Attachment picker clicked")}
+        onClick={() => alert("Attachment upload dialog")}
         aria-label="Attach file"
+        title="Attach File"
       >
         <i className="fa-solid fa-paperclip"></i>
       </button>
@@ -40,6 +89,7 @@ const ChatInput = ({ value, onChange, onSend }) => {
       />
 
       <button
+        type="button"
         className={styles.sendBtn}
         onClick={onSend}
         disabled={!value.trim()}

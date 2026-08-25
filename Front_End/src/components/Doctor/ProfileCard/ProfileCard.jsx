@@ -30,17 +30,6 @@ const ProfileCard = ({ doctorName, title, avatarImg, verificationStatus }) => {
             <span className={`${styles.badge} ${status.className}`}>{status.text}</span>
           </div>
           <p className={styles.title}>{title}</p>
-
-          <div className="d-flex flex-wrap gap-2 mt-3">
-            <button className={styles.editBtn}>
-              <i className="fa-solid fa-pen me-2"></i>
-              Edit Profile
-            </button>
-            <button className={styles.publicLinkBtn}>
-              <i className="fa-solid fa-link me-2"></i>
-              Public Link
-            </button>
-          </div>
         </div>
       </div>
     </div>

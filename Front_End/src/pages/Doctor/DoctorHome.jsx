@@ -26,7 +26,7 @@ const recentPatients = [
 
 const stats = [
   { icon: "fa-users", label: "Total Patients", value: 124, badgeText: "+4 this week", badgeColor: "success" },
-  { icon: "fa-ticket", label: "Pending Tickets", value: 8, badgeText: "High Priority", badgeColor: "warning" },
+  { icon: "fa-ticket", label: "Pending Tickets", value: 2, badgeText: "Needs Review", badgeColor: "warning" },
   { icon: "fa-calendar-check", label: "Upcoming Sessions", value: upcomingSessions.length, badgeText: "Today", badgeColor: "neutral" },
 ];
 

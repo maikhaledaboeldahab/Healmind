@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import PatientCard from "../../components/Doctor/PatientCard/PatientCard";
 import FilterToolbar from "../../components/UI/FilterToolbar/FilterToolbar";
 
@@ -36,21 +35,6 @@ const DoctorPatients = () => {
             You have {samplePatients.length} active patient records.
           </p>
         </div>
-
-        <Link
-          to="/doctor/patients/new"
-          className="btn d-flex align-items-center gap-2 px-3 py-2"
-          style={{
-            backgroundColor: "var(--color-primary)",
-            color: "var(--color-on-primary)",
-            borderRadius: "var(--radius-full)",
-            fontWeight: 700,
-            fontSize: "0.9rem",
-          }}
-        >
-          <i className="fa-solid fa-plus"></i>
-          Add New Patient
-        </Link>
       </div>
 
       <FilterToolbar

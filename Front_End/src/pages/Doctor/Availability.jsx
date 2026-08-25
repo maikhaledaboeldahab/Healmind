@@ -6,10 +6,11 @@ import styles from "./Availability.module.css";
 const initialSlots = {
   "2023-10-17": [
     { id: 1, type: "available", start: "09:00", end: "10:30" },
-    { id: 2, type: "booked", start: "11:00", end: "12:00" },
+    { id: 2, type: "booked", patientName: "Sarah Jenkins", start: "11:00", end: "12:00" },
   ],
   "2023-10-19": [
     { id: 3, type: "available", start: "14:00", end: "15:00" },
+    { id: 4, type: "booked", patientName: "Omar Khalil", start: "16:00", end: "17:00" },
   ],
 };
 
@@ -141,6 +142,7 @@ const Availability = () => {
                     <TimeSlotCard
                       key={slot.id}
                       type={slot.type}
+                      patientName={slot.patientName}
                       start={slot.start}
                       end={slot.end}
                       onDelete={() => handleDeleteSlot(dateKey, slot.id)}

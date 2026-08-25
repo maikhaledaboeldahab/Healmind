@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import styles from "./SessionRow.module.css";
 
 // Props:
@@ -6,9 +7,23 @@ import styles from "./SessionRow.module.css";
 // sessionType -> e.g. "Cognitive Behavioral Therapy (CBT)"
 // status      -> "Completed" | "In-progress" | "Cancelled"
 // decision    -> "Approved" | "Pending" | "Rejected"
-const SessionRow = ({ patientName, date, time, sessionType, status, decision }) => {
+// onVideoCall -> optional callback
+const SessionRow = ({ patientName, date, time, sessionType, status, decision, onVideoCall }) => {
+  const navigate = useNavigate();
   const statusKey = status.toLowerCase().replace(/[\s-]/g, "");
   const decisionKey = decision.toLowerCase();
+
+  const handleVideoCall = () => {
+    if (onVideoCall) {
+      onVideoCall({ patientName, date, time });
+    } else {
+      alert(`Starting video session with ${patientName}...`);
+    }
+  };
+
+  const handleLiveChat = () => {
+    navigate("/doctor/livechat", { state: { patientName } });
+  };
 
   return (
     <tr>
@@ -29,9 +44,24 @@ const SessionRow = ({ patientName, date, time, sessionType, status, decision }) 
         <span className={styles.decisionText}>{decision}</span>
       </td>
       <td>
-        <button className={styles.actionsBtn} aria-label="Row actions">
-          <i className="fa-solid fa-ellipsis-vertical"></i>
-        </button>
+        <div className="d-flex align-items-center gap-2">
+          <button
+            className={styles.actionIconBtn}
+            onClick={handleVideoCall}
+            title="Start Video Call"
+            aria-label="Start Video Call"
+          >
+            <i className="fa-solid fa-video"></i>
+          </button>
+          <button
+            className={styles.actionIconBtn}
+            onClick={handleLiveChat}
+            title="Open Live Chat"
+            aria-label="Open Live Chat"
+          >
+            <i className="fa-solid fa-comment-dots"></i>
+          </button>
+        </div>
       </td>
     </tr>
   );
