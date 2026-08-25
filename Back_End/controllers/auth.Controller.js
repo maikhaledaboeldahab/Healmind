@@ -158,7 +158,7 @@ const registerDoctor = async (req, res) => {
     }
 
     // Store certificate path
-    const certificatePath = `uploads/certificates/${req.file.filename}`;
+    const certificatePath = req.file?.cloudinaryUrl || (req.file?.filename ? `uploads/certificates/${req.file.filename}` : "uploads/certificates/default.pdf");
 
     await Doctor.create({
       NationalId,

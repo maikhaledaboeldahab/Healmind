@@ -4,11 +4,26 @@ import { apiClient, simulateLatency } from './apiClient'
 
 let doctors = [...MOCK_DOCTORS]
 
+function normalizeDoctor(doc) {
+  if (!doc) return null
+  return {
+    ...doc,
+    id: doc.id || doc._id,
+    name: doc.name || doc.fullName || `Dr. ${doc.email?.split('@')[0]}`,
+    status: doc.status || doc.approvalStatus || (doc.isApproved ? DOCTOR_STATUS.VERIFIED : DOCTOR_STATUS.PENDING),
+    submittedDate: doc.submittedDate || doc.createdAt || new Date().toISOString(),
+    specialization: doc.specialization || 'General Psychology',
+    yearsOfExperience: doc.yearsOfExperience || doc.experienceYears || 1,
+    certificateUrl: doc.certificateUrl || doc.certificate || '#',
+  }
+}
+
 export const doctorService = {
   async getAll() {
     try {
       const res = await apiClient.get('/admin/doctors')
-      return res.data?.data || res.data || doctors
+      const raw = res.data?.data || res.data || doctors
+      return Array.isArray(raw) ? raw.map(normalizeDoctor) : doctors
     } catch {
       return simulateLatency([...doctors])
     }
@@ -17,7 +32,8 @@ export const doctorService = {
   async getPendingVerification() {
     try {
       const res = await apiClient.get('/admin/doctors/pending')
-      return res.data?.data || res.data
+      const raw = res.data?.data || res.data
+      return Array.isArray(raw) ? raw.map(normalizeDoctor) : doctors.filter((doc) => doc.status === DOCTOR_STATUS.PENDING)
     } catch {
       return simulateLatency(doctors.filter((doc) => doc.status === DOCTOR_STATUS.PENDING))
     }
@@ -26,7 +42,8 @@ export const doctorService = {
   async getById(doctorId) {
     try {
       const res = await apiClient.get(`/admin/doctors/${doctorId}`)
-      return res.data?.data || res.data
+      const raw = res.data?.data || res.data
+      return normalizeDoctor(raw) || (doctors.find((doc) => doc.id === doctorId) ?? null)
     } catch {
       return simulateLatency(doctors.find((doc) => doc.id === doctorId) ?? null)
     }
@@ -35,7 +52,7 @@ export const doctorService = {
   async create(payload) {
     try {
       const res = await apiClient.post('/admin/doctors', payload)
-      return res.data?.data || res.data
+      return normalizeDoctor(res.data?.data || res.data)
     } catch {
       const newDoctor = {
         id: `DOC-${String(doctors.length + 1).padStart(4, '0')}`,
@@ -53,8 +70,8 @@ export const doctorService = {
 
   async update(doctorId, payload) {
     try {
-      const res = await apiClient.put(`/admin/doctors/${doctorId}`, payload)
-      return res.data?.data || res.data
+      const res = await apiClient.patch(`/admin/doctors/${doctorId}`, payload)
+      return normalizeDoctor(res.data?.data || res.data)
     } catch {
       doctors = doctors.map((doc) => (doc.id === doctorId ? { ...doc, ...payload } : doc))
       return simulateLatency(doctors.find((doc) => doc.id === doctorId))
@@ -63,8 +80,8 @@ export const doctorService = {
 
   async approve(doctorId) {
     try {
-      const res = await apiClient.put(`/admin/doctors/${doctorId}/approve`)
-      return res.data?.data || res.data
+      const res = await apiClient.patch(`/admin/doctors/${doctorId}/approve`)
+      return normalizeDoctor(res.data?.data || res.data)
     } catch {
       return this.update(doctorId, { status: DOCTOR_STATUS.VERIFIED })
     }
@@ -72,8 +89,8 @@ export const doctorService = {
 
   async reject(doctorId) {
     try {
-      const res = await apiClient.put(`/admin/doctors/${doctorId}/reject`)
-      return res.data?.data || res.data
+      const res = await apiClient.patch(`/admin/doctors/${doctorId}/reject`)
+      return normalizeDoctor(res.data?.data || res.data)
     } catch {
       return this.update(doctorId, { status: DOCTOR_STATUS.REJECTED })
     }
@@ -81,8 +98,8 @@ export const doctorService = {
 
   async disable(doctorId) {
     try {
-      const res = await apiClient.put(`/admin/doctors/${doctorId}/disable`)
-      return res.data?.data || res.data
+      const res = await apiClient.patch(`/admin/doctors/${doctorId}/disable`)
+      return normalizeDoctor(res.data?.data || res.data)
     } catch {
       return this.update(doctorId, { status: DOCTOR_STATUS.DISABLED })
     }

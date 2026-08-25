@@ -162,7 +162,7 @@ const Patient = User.discriminator("patient", patientSchema);
 const doctorSchema = new mongoose.Schema({
   NationalId: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
     trim: true,
   },
@@ -175,7 +175,7 @@ const doctorSchema = new mongoose.Schema({
 
   licenseNumber: {
     type: String,
-    required: [true, "License number is required."],
+    required: [false, "License number is required."],
     trim: true,
   },
 
