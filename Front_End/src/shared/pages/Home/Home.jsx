@@ -4,25 +4,25 @@ import styles from "./Home.module.css";
 
 const features = [
   {
-    icon: "🧠",
+    icon: "fa-solid fa-brain",
     title: "Understand Yourself",
     description:
       "Learn more about your mental wellbeing through simple, accessible guidance.",
   },
   {
-    icon: "👩‍⚕️",
+    icon: "fa-solid fa-user-doctor",
     title: "Professional Support",
     description:
       "Connect with qualified mental health professionals when you need support.",
   },
   {
-    icon: "🤖",
+    icon: "fa-solid fa-robot",
     title: "AI Support",
     description:
       "Get immediate guidance and helpful resources through our AI assistant.",
   },
   {
-    icon: "🤝",
+    icon: "fa-solid fa-users",
     title: "A Supportive Community",
     description:
       "Share experiences, connect with others, and know that you are not alone.",
@@ -188,7 +188,9 @@ const Home = () => {
           <div className={styles.featuresGrid}>
             {features.map((feature) => (
               <article className={styles.featureCard} key={feature.title}>
-                <div className={styles.featureIcon}>{feature.icon}</div>
+                <div className={styles.featureIcon}>
+                  <i className={feature.icon}></i>
+                </div>
 
                 <h3>{feature.title}</h3>
 
