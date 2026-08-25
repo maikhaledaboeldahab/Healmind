@@ -1,39 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import SessionRow from "../components/Doctor/SessionRow/SessionRow";
 import SessionRequestRow from "../components/Doctor/SessionRequestRow/SessionRequestRow";
 import FilterToolbar from "../../../shared/components/FilterToolbar/FilterToolbar";
 import Pagination from "../../../shared/components/DoctorPagination/DoctorPagination";
-import ConfirmModal from "../../../shared/components//ConfirmModal/ConfirmModal";
+import ConfirmModal from "../../../shared/components/ConfirmModal/ConfirmModal";
 import Toast from "../../../shared/components/DoctorToast/DoctorToast";
+import VideoCall from "../../../shared/components/VideoCall/VideoCall";
+import { useDoctor } from "../context/DoctorContext";
 import sessionStyles from "./Sessions.module.css";
 
-const dateOptions = ["Last 7 Days", "Last 30 Days", "Last 90 Days", "All Time"];
-const itemsPerPage = 2;
+const itemsPerPage = 5;
 
 const sampleSessions = [
-  { id: 1, patientName: "Julian Vance", date: "Oct 24, 2023", time: "09:00 AM", sessionType: "Cognitive Behavioral Therapy (CBT)", status: "Completed", decision: "Approved" },
-  { id: 2, patientName: "Maya Rossi", date: "Oct 24, 2023", time: "11:30 AM", sessionType: "Intake Session", status: "In-progress", decision: "Pending" },
-  { id: 3, patientName: "David Chen", date: "Oct 23, 2023", time: "02:15 PM", sessionType: "Follow-up", status: "Cancelled", decision: "Rejected" },
-  { id: 4, patientName: "Leo Brooks", date: "Oct 23, 2023", time: "10:00 AM", sessionType: "Group Session", status: "Completed", decision: "Approved" },
-  { id: 5, patientName: "Sarah Jenkins", date: "Oct 22, 2023", time: "04:45 PM", sessionType: "Follow-up", status: "Completed", decision: "Approved" },
-];
-
-const initialRequests = [
-  { id: 1, patientName: "Nora Sami", requestedDate: "Oct 26, 2023", requestedTime: "01:00 PM", message: "I've been struggling with sleep and constant worry about work. I'd like to talk through some coping strategies.", status: "pending" },
-  { id: 2, patientName: "Omar Khalil", requestedDate: "Oct 27, 2023", requestedTime: "10:00 AM", message: "First-time session — looking for support with managing stress after a recent job change.", status: "pending" },
+  { id: 1, sessionId: "6a8965eda6ce8b3fb9a9a1e8", patientName: "Julian Vance", date: "Oct 24, 2023", time: "09:00 AM", sessionType: "Cognitive Behavioral Therapy (CBT)", status: "Completed", decision: "Approved" },
+  { id: 2, sessionId: "6a8965eda6ce8b3fb9a9a1e9", patientName: "Maya Rossi", date: "Oct 24, 2023", time: "11:30 AM", sessionType: "Intake Session", status: "In-progress", decision: "Pending" },
+  { id: 3, sessionId: "6a8965eda6ce8b3fb9a9a1ea", patientName: "David Chen", date: "Oct 23, 2023", time: "02:15 PM", sessionType: "Follow-up", status: "Cancelled", decision: "Rejected" },
+  { id: 4, sessionId: "6a8965eda6ce8b3fb9a9a1eb", patientName: "Leo Brooks", date: "Oct 23, 2023", time: "10:00 AM", sessionType: "Group Session", status: "Completed", decision: "Approved" },
+  { id: 5, sessionId: "6a8965eda6ce8b3fb9a9a1ec", patientName: "Sarah Jenkins", date: "Oct 22, 2023", time: "04:45 PM", sessionType: "Follow-up", status: "Completed", decision: "Approved" },
 ];
 
 const Sessions = () => {
-  const [activeTab, setActiveTab] = useState("history"); // "history" | "requests"
+  const location = useLocation();
+  const { requests, acceptSessionRequest, rejectSessionRequest } = useDoctor();
+
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "history"); // "history" | "requests"
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state]);
 
   // History tab state
   const [searchValue, setSearchValue] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [dateFilter, setDateFilter] = useState("Last 30 Days");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Video call modal state
+  const [activeVideoCall, setActiveVideoCall] = useState(null); // session object
+
   // Requests tab state
-  const [requests, setRequests] = useState(initialRequests);
   const [confirmAction, setConfirmAction] = useState(null); // { requestId, type: "accept" | "reject" }
   const [toast, setToast] = useState({ show: false, message: "" });
 
@@ -61,20 +68,18 @@ const Sessions = () => {
     currentPage * itemsPerPage
   );
 
+  const handleStartVideoCall = (session) => {
+    setActiveVideoCall(session);
+  };
+
   const handleConfirmDecision = () => {
     const { requestId, type } = confirmAction;
 
     if (type === "accept") {
-      // TODO: replace with a real API call once the backend exists, e.g.
-      // await axios.patch(`/api/session-requests/${requestId}`, { status: "accepted" });
-      setRequests((prev) =>
-        prev.map((r) => (r.id === requestId ? { ...r, status: "accepted" } : r))
-      );
-      setToast({ show: true, message: "Session accepted. Video call is now available." });
+      acceptSessionRequest(requestId);
+      setToast({ show: true, message: "Session accepted! Patient added to directory and video call is scheduled." });
     } else {
-      // TODO: replace with a real API call once the backend exists, e.g.
-      // await axios.patch(`/api/session-requests/${requestId}`, { status: "rejected" });
-      setRequests((prev) => prev.filter((r) => r.id !== requestId));
+      rejectSessionRequest(requestId);
       setToast({ show: true, message: "Session request rejected." });
     }
 
@@ -117,19 +122,7 @@ const Sessions = () => {
             filters={["All", "Completed", "In-progress", "Cancelled"]}
             activeFilter={statusFilter}
             onFilterChange={handleFilterChange}
-          >
-            <select
-              className={sessionStyles.dateSelect}
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-            >
-              {dateOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </FilterToolbar>
+          />
 
           <div className="bg-white rounded-4 shadow-sm p-3 p-md-4">
             <div className="table-responsive">
@@ -154,7 +147,11 @@ const Sessions = () => {
                     </tr>
                   ) : (
                     paginatedSessions.map((session) => (
-                      <SessionRow key={session.id} {...session} />
+                      <SessionRow
+                        key={session.id}
+                        {...session}
+                        onVideoCall={() => handleStartVideoCall(session)}
+                      />
                     ))
                   )}
                 </tbody>
@@ -188,8 +185,47 @@ const Sessions = () => {
             {...request}
             onAccept={() => setConfirmAction({ requestId: request.id, type: "accept" })}
             onReject={() => setConfirmAction({ requestId: request.id, type: "reject" })}
+            onVideoCall={() => handleStartVideoCall(request)}
           />
         ))
+      )}
+
+      {/* Unified Jitsi Video Call Component matching Patient view */}
+      {activeVideoCall && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.85)",
+            zIndex: 1060,
+            display: "flex",
+            flexDirection: "column",
+            padding: "20px",
+          }}
+        >
+          <div className="d-flex justify-content-between align-items-center mb-2 px-3">
+            <span className="text-white fw-bold">
+              <i className="fa-solid fa-video me-2 text-success"></i>
+              Clinical Video Call with {activeVideoCall.patientName}
+            </span>
+            <button
+              className="btn btn-sm btn-outline-light"
+              onClick={() => setActiveVideoCall(null)}
+            >
+              <i className="fa-solid fa-xmark me-1"></i> Close
+            </button>
+          </div>
+          <div className="flex-grow-1 rounded-4 overflow-hidden bg-dark">
+            <VideoCall
+              sessionId={activeVideoCall.sessionId || `healmind-session-${activeVideoCall.id}`}
+              onLeave={() => setActiveVideoCall(null)}
+              fallbackDisplayName="Dr. Farah"
+            />
+          </div>
+        </div>
       )}
 
       <ConfirmModal
@@ -197,7 +233,7 @@ const Sessions = () => {
         title={confirmAction?.type === "accept" ? "Accept Session Request" : "Reject Session Request"}
         message={
           confirmAction?.type === "accept"
-            ? "This will confirm the session and unlock the video call at the scheduled time."
+            ? "This will confirm the session, schedule the video call, and add the patient to your active patients directory."
             : "This will decline the request. The patient will be notified."
         }
         confirmText={confirmAction?.type === "accept" ? "Accept" : "Reject"}

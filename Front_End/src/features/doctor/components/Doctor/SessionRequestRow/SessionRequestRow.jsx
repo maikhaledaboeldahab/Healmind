@@ -4,8 +4,8 @@ import styles from "./SessionRequestRow.module.css";
 // Props:
 // patientName, requestedDate, requestedTime, message -> request details
 // status   -> "pending" | "accepted"
-// onAccept, onReject -> callbacks
-const SessionRequestRow = ({ patientName, requestedDate, requestedTime, message, status, onAccept, onReject }) => {
+// onAccept, onReject, onVideoCall -> callbacks
+const SessionRequestRow = ({ patientName, requestedDate, requestedTime, message, status, onAccept, onReject, onVideoCall }) => {
   const [showMessage, setShowMessage] = useState(false);
 
   return (
@@ -30,7 +30,7 @@ const SessionRequestRow = ({ patientName, requestedDate, requestedTime, message,
 
       <div className="d-flex gap-2 mt-3">
         {status === "accepted" ? (
-          <button className={styles.videoBtn}>
+          <button className={styles.videoBtn} onClick={onVideoCall}>
             <i className="fa-solid fa-video me-2"></i>
             Join Video Call
           </button>

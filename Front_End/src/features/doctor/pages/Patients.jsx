@@ -1,29 +1,27 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import PatientCard from "../components/Doctor/PatientCard/PatientCard";
 import FilterToolbar from "../../../shared/components/FilterToolbar/FilterToolbar";
-
-const samplePatients = [
-  { id: 1, patientName: "Arlo Sterling", age: 29, gender: "Male", status: "Approved", therapyType: "Cognitive Behavioral Therapy", lastSession: "Oct 24, 2023" },
-  { id: 2, patientName: "Evelyn Thorne", age: 64, gender: "Female", status: "Pending", therapyType: "Grief Counseling", lastSession: "Oct 21, 2023" },
-  { id: 3, patientName: "Marcus Vane", age: 42, gender: "Male", status: "Needs Another Session", therapyType: "Mindfulness Training", lastSession: "Oct 19, 2023" },
-];
+import { useDoctor } from "../context/DoctorContext";
 
 const DoctorPatients = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchValue, setSearchValue] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+  const { patients } = useDoctor();
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1000);
+    const timer = setTimeout(() => setIsLoading(false), 500);
     return () => clearTimeout(timer);
   }, []);
 
-  const filteredPatients = samplePatients.filter((patient) => {
+  const filteredPatients = patients.filter((patient) => {
     const matchesSearch = patient.patientName
       .toLowerCase()
       .includes(searchValue.toLowerCase());
-    const matchesFilter = activeFilter === "All" || patient.status === activeFilter;
+    const matchesFilter =
+      activeFilter === "All" ||
+      patient.status === activeFilter ||
+      patient.communityStatus === activeFilter;
     return matchesSearch && matchesFilter;
   });
 
@@ -33,24 +31,9 @@ const DoctorPatients = () => {
         <div>
           <h3 className="fw-bold mb-1">Patients Directory</h3>
           <p className="text-muted mb-0">
-            You have {samplePatients.length} active patient records.
+            You have {patients.length} active patient records.
           </p>
         </div>
-
-        <Link
-          to="/doctor/patients/new"
-          className="btn d-flex align-items-center gap-2 px-3 py-2"
-          style={{
-            backgroundColor: "var(--color-primary)",
-            color: "var(--color-on-primary)",
-            borderRadius: "var(--radius-full)",
-            fontWeight: 700,
-            fontSize: "0.9rem",
-          }}
-        >
-          <i className="fa-solid fa-plus"></i>
-          Add New Patient
-        </Link>
       </div>
 
       <FilterToolbar

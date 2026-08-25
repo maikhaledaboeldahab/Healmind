@@ -10,7 +10,6 @@ import Profile from "./Profile";
 import PatientDetails from "./PatientDetails";
 import LiveChat from "./LiveChat";
 import ChatBot from "./ChatBot";
-import DoctorVideoSession from "./DoctorVideoSession";
 
 const DoctorDashboard = () => {
   return (
@@ -27,17 +26,15 @@ const DoctorDashboard = () => {
             <Route path="patients" element={<Patients />} />
             <Route path="availability" element={<Availability />} />
             <Route path="sessions" element={<Session />} />
-            <Route path="sessions/:sessionId/video" element={<DoctorVideoSession />} />
             <Route path="profile" element={<Profile />} />
             <Route path="patients/:id" element={<PatientDetails />} />
             <Route path="livechat" element={<LiveChat />} />
-            <Route path="livechat/:patientId" element={<LiveChat />} />
             <Route path="chatbot" element={<ChatBot />} />
             <Route path="*" element={<Navigate to="dashboard" replace />} />
           </Routes>
         </main>
       </div>
-      <DoctorFooter/>
+      <DoctorFooter />
     </div>
   );
 };

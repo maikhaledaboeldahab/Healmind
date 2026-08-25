@@ -1,71 +1,117 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import PatientHeader from "../components/Doctor/PatientHeader/PatientHeader";
 import PatientOverview from "../components/Doctor/PatientOverview/PatientOverview";
 import CommunityStatus from "../components/Doctor/CommunityStatus/CommunityStatus";
 import SessionTimeline from "../components/Doctor/SessionTimeline/SessionTimeline";
+import VideoCall from "../../../shared/components/VideoCall/VideoCall";
 import Toast from "../../../shared/components/DoctorToast/DoctorToast";
-
-const basePatient = {
-  patientName: "Arlo Sterling",
-  age: 29,
-  gender: "Male",
-  phone: "+20 100 123 4567",
-  email: "arlo.sterling@email.com",
-  therapyType: "Cognitive Behavioral Therapy",
-  patientSince: "Jan 2023",
-};
-
-const diagnosis =
-  "Generalized Anxiety Disorder with mild depressive episodes. Responding well to weekly CBT sessions.";
-
-const notes = [
-  { id: 1, date: "Oct 24, 2023", text: "Patient reports improved sleep patterns. Continuing current treatment plan." },
-  { id: 2, date: "Oct 10, 2023", text: "Discussed coping strategies for work-related stress triggers." },
-];
-
-const nextSession = {
-  date: "In 3 days",
-  title: "Reviewing Anxiety Triggers",
-  goal: "Goal: Finalize the list of environmental stressors and practice Level 2 grounding.",
-};
-
-const pastSessions = [
-  { id: 1, date: "Oct 12, 2023", duration: "45 minutes", title: "Introduction to Breathwork", summary: "Successful identification of physiological precursors to panic episodes. Arlo responded well to box breathing." },
-  { id: 2, date: "Sep 28, 2023", duration: "50 minutes", title: "Initial Assessment", summary: "First session — established baseline anxiety triggers and treatment goals." },
-];
+import { useDoctor } from "../context/DoctorContext";
 
 const PatientDetails = () => {
   const { id } = useParams();
-  console.log("Viewing patient ID:", id);
+  const navigate = useNavigate();
+  const { patients, updatePatientCommunityStatus } = useDoctor();
 
-  // Status now lives in state, not a static constant — so a doctor's
-  // decision (Approve/Reject/Request Another Session) actually updates
-  // what's shown here, on the header badge and the Community Status card.
-  const [status, setStatus] = useState("Approved");
+  // Find patient from dynamic context or fallback
+  const patient = patients.find((p) => String(p.id) === String(id)) || patients[0] || {
+    id: 1,
+    patientName: "Arlo Sterling",
+    age: 29,
+    gender: "Male",
+    phone: "+20 100 123 4567",
+    email: "arlo.sterling@email.com",
+    therapyType: "Cognitive Behavioral Therapy",
+    status: "Approved",
+    communityStatus: "Approved",
+    patientSince: "Jan 2023",
+    diagnosis: "Generalized Anxiety Disorder with mild depressive episodes.",
+    notes: [],
+    pastSessions: [],
+    nextSession: null,
+  };
+
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [showVideoCall, setShowVideoCall] = useState(false);
 
   const handleDecision = (newStatus, toastMessage) => {
-    setStatus(newStatus);
+    updatePatientCommunityStatus(patient.id, newStatus);
     setToast({ show: true, message: toastMessage });
+  };
+
+  const handleJoinCall = (session) => {
+    const activeSession = session || patient.nextSession;
+    if (activeSession && !activeSession.isLive) {
+      setToast({
+        show: true,
+        message: `Session is scheduled for (${activeSession.date}). Video call will become active at the scheduled session time.`,
+      });
+      return;
+    }
+    setShowVideoCall(true);
   };
 
   return (
     <div>
-      <PatientHeader {...basePatient} status={status} />
+      <PatientHeader {...patient} status={patient.communityStatus || patient.status} />
 
       <div className="row g-4">
         <div className="col-lg-8">
-          <PatientOverview diagnosis={diagnosis} notes={notes} />
-          <SessionTimeline nextSession={nextSession} pastSessions={pastSessions} />
+          <PatientOverview diagnosis={patient.diagnosis} notes={patient.notes || []} />
+          <SessionTimeline
+            nextSession={patient.nextSession}
+            pastSessions={patient.pastSessions || []}
+            onJoinCall={handleJoinCall}
+          />
         </div>
 
         <div className="col-lg-4">
           <div style={{ position: "sticky", top: "20px" }}>
-            <CommunityStatus status={status} onDecision={handleDecision} />
+            <CommunityStatus
+              status={patient.communityStatus || patient.status}
+              onDecision={handleDecision}
+            />
           </div>
         </div>
       </div>
+
+      {/* Unified Video Call Overlay matching Patient Portal */}
+      {showVideoCall && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.85)",
+            zIndex: 1060,
+            display: "flex",
+            flexDirection: "column",
+            padding: "20px",
+          }}
+        >
+          <div className="d-flex justify-content-between align-items-center mb-2 px-3">
+            <span className="text-white fw-bold">
+              <i className="fa-solid fa-video me-2 text-success"></i>
+              Clinical Video Call with {patient.patientName}
+            </span>
+            <button
+              className="btn btn-sm btn-outline-light"
+              onClick={() => setShowVideoCall(false)}
+            >
+              <i className="fa-solid fa-xmark me-1"></i> Close
+            </button>
+          </div>
+          <div className="flex-grow-1 rounded-4 overflow-hidden bg-dark">
+            <VideoCall
+              sessionId={`healmind-session-${patient.id}`}
+              onLeave={() => setShowVideoCall(false)}
+              fallbackDisplayName="Dr. Farah"
+            />
+          </div>
+        </div>
+      )}
 
       <Toast
         show={toast.show}

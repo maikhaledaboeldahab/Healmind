@@ -1,11 +1,13 @@
-import { useNavigate } from "react-router-dom";
 import styles from "./SessionTimeline.module.css";
 
 // Props:
-// nextSession -> { id, date, title, goal } or null if none scheduled
+// nextSession -> { date, title, goal, isLive } or null if none scheduled
 // pastSessions -> array of { id, date, title, duration, summary }
-const SessionTimeline = ({ nextSession, pastSessions = [] }) => {
-  const navigate = useNavigate();
+// onJoinCall -> callback function when Join Video Call is clicked
+const SessionTimeline = ({ nextSession, pastSessions = [], onJoinCall }) => {
+  const handleJoinClick = () => {
+    onJoinCall?.(nextSession);
+  };
 
   return (
     <div className={`${styles.card} p-3 p-md-4 mb-4`}>
@@ -15,20 +17,19 @@ const SessionTimeline = ({ nextSession, pastSessions = [] }) => {
 
       {nextSession && (
         <div className={styles.nextSession}>
-          <div className="d-flex justify-content-between align-items-center mb-1">
-            <span className={styles.nextLabel}>Next Session • {nextSession.date}</span>
+          <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+            <div>
+              <span className={styles.nextLabel}>Next Session • {nextSession.date}</span>
+              <p className={styles.nextTitle}>{nextSession.title}</p>
+            </div>
             <button
-              type="button"
-              className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 px-2 py-1"
-              style={{ fontSize: '0.75rem', borderRadius: '20px' }}
-              onClick={() => navigate(`/doctor/sessions/${nextSession.id || 1}/video`)}
-              title="Join Next Session"
+              className={`${styles.joinBtn} ${nextSession.isLive ? styles.joinBtnActive : ""}`}
+              onClick={handleJoinClick}
             >
-              <i className="fa-solid fa-video"></i>
-              <span>Join Call</span>
+              <i className="fa-solid fa-video me-2"></i>
+              Join Video Call
             </button>
           </div>
-          <p className={styles.nextTitle}>{nextSession.title}</p>
           <p className={styles.nextGoal}>{nextSession.goal}</p>
         </div>
       )}

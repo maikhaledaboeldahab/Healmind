@@ -77,3 +77,48 @@
   padding: 8px;
   min-width: 180px;
 }
+
+.notifDropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: -60px;
+  width: 320px;
+  background-color: #fff;
+  border-radius: var(--radius-md, 12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--color-outline-variant, #e0e0e0);
+  z-index: 1060;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.notifList {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.notifItem {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background-color: #fff;
+}
+
+.notifItem:hover {
+  background-color: var(--color-surface-container-low, #f4f6f4);
+}
+
+.notifUnread {
+  background-color: var(--color-surface-container-lowest, #f0f8f2);
+  border-left: 3px solid var(--color-primary, #1e4d2b);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

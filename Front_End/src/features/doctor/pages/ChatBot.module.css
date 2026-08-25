@@ -1,0 +1,125 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 160px);
+  max-width: 720px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding-bottom: var(--space-3, 12px);
+}
+
+.iconWrap {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--color-accent, #e8ede8);
+  color: var(--color-primary, #1e4d2b);
+  font-size: 1.25rem;
+}
+
+.subtext {
+  color: var(--color-text-muted, #6c757d);
+  font-size: 0.875rem;
+}
+
+.thread {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+  padding: var(--space-3, 12px) 0;
+}
+
+.bubbleAssistant,
+.bubbleUser {
+  max-width: 75%;
+  padding: 12px var(--space-3, 12px);
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.bubbleAssistant {
+  align-self: flex-start;
+  background-color: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-bottom-left-radius: 4px;
+}
+
+.bubbleUser {
+  align-self: flex-end;
+  background-color: var(--color-primary, #1e4d2b);
+  color: var(--color-white, #ffffff);
+  border-bottom-right-radius: 4px;
+}
+
+.prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+  padding: var(--space-2, 8px) 0 var(--space-3, 12px);
+}
+
+.prompts button {
+  background-color: var(--color-accent, #e8ede8);
+  color: var(--color-primary, #1e4d2b);
+  border: none;
+  border-radius: var(--radius-pill, 9999px);
+  padding: 8px var(--space-3, 16px);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.prompts button:hover {
+  background-color: #c7ddc9;
+}
+
+.composer {
+  display: flex;
+  gap: var(--space-2, 8px);
+  padding-top: var(--space-2, 8px);
+  border-top: 1px solid var(--color-border, #e0e0e0);
+}
+
+.composer input {
+  flex: 1;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: var(--radius-pill, 9999px);
+  padding: 12px var(--space-4, 18px);
+  font-size: 0.9375rem;
+  outline: none;
+}
+
+.composer input:focus {
+  border-color: var(--color-secondary, #2e7d32);
+}
+
+.composer button {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--color-primary, #1e4d2b);
+  color: var(--color-white, #ffffff);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.composer button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

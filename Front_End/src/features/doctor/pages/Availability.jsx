@@ -3,14 +3,19 @@ import TimeSlotCard from "../components/Doctor/TimeSlotCard/TimeSlotCard";
 import SlotModal from "../components/Doctor/SlotModal/SlotModal";
 import styles from "./Availability.module.css";
 
-const initialSlots = {
-  "2023-10-17": [
-    { id: 1, type: "available", start: "09:00", end: "10:30" },
-    { id: 2, type: "booked", start: "11:00", end: "12:00" },
-  ],
-  "2023-10-19": [
-    { id: 3, type: "available", start: "14:00", end: "15:00" },
-  ],
+const getMonday = (date) => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d;
+};
+
+const formatDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 const getWeekDates = (startDate) => {
@@ -21,19 +26,36 @@ const getWeekDates = (startDate) => {
   });
 };
 
-const getMonday = (date) => {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  return d;
+const generateDynamicInitialSlots = () => {
+  const monday = getMonday(new Date());
+  const dates = getWeekDates(monday);
+  const slotsMap = {};
+
+  if (dates[1]) {
+    slotsMap[formatDateKey(dates[1])] = [
+      { id: 1, type: "available", start: "09:00", end: "10:30" },
+      { id: 2, type: "booked", patientName: "Sarah Jenkins", start: "11:00", end: "12:00" },
+    ];
+  }
+  if (dates[3]) {
+    slotsMap[formatDateKey(dates[3])] = [
+      { id: 3, type: "available", start: "14:00", end: "15:00" },
+      { id: 4, type: "booked", patientName: "Omar Khalil", start: "16:00", end: "17:00" },
+    ];
+  }
+  if (dates[4]) {
+    slotsMap[formatDateKey(dates[4])] = [
+      { id: 5, type: "available", start: "10:00", end: "11:30" },
+    ];
+  }
+  return slotsMap;
 };
 
 const dayLabels = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
 const Availability = () => {
-  const [weekStart, setWeekStart] = useState(getMonday(new Date("2023-10-16")));
-  const [slots, setSlots] = useState(initialSlots);
+  const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
+  const [slots, setSlots] = useState(generateDynamicInitialSlots);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -141,6 +163,7 @@ const Availability = () => {
                     <TimeSlotCard
                       key={slot.id}
                       type={slot.type}
+                      patientName={slot.patientName}
                       start={slot.start}
                       end={slot.end}
                       onDelete={() => handleDeleteSlot(dateKey, slot.id)}

@@ -5,45 +5,49 @@ import TodaysSessions from "../components/Doctor/TodaySessions/TodaySessions";
 import UpcomingSessions from "../components/Doctor/UpcomingSessions/UpcomingSessions";
 import RecentPatients from "../components/Doctor/RecentPatients/RecentPatients";
 import QuickActions from "../components/Doctor/QuickActions/QuickActions";
-
-const todaysSessions = [
-  { id: 1, time: "09:00 AM", duration: "50 mins", patientName: "Sarah Jenkins", sessionType: "Weekly Therapy • Anxiety Management", status: "Confirmed" },
-  { id: 2, time: "10:30 AM", duration: "40 mins", patientName: "Marcus Thorne", sessionType: "Introductory Call • Depression Screening", status: "New Patient" },
-  { id: 3, time: "01:45 PM", duration: "45 mins", patientName: "Elena Rodriguez", sessionType: "Follow-up • Grief Counseling", status: "Pending" },
-];
-
-const upcomingSessions = [
-  { id: 4, time: "09:30 AM", duration: "50 mins", patientName: "Omar Khalil", sessionType: "Weekly Therapy • Stress Management", status: "Confirmed" },
-  { id: 5, time: "12:00 PM", duration: "45 mins", patientName: "Layla Hassan", sessionType: "Follow-up • Anxiety Management", status: "Confirmed" },
-  { id: 6, time: "02:30 PM", duration: "40 mins", patientName: "Ahmed Al-Rashid", sessionType: "Introductory Call • Bipolar Disorder", status: "New Patient" },
-];
-
-const recentPatients = [
-  { id: 1, patientName: "David Chen", note: "New message regarding medication", lastVisit: "10 minutes ago" },
-  { id: 2, patientName: "Sarah Jenkins", note: "Session notes finalized", lastVisit: "Yesterday, 4:30 PM" },
-  { id: 3, patientName: "Omar Khalil", note: "Profile updated", lastVisit: "2 days ago" },
-];
-
-const stats = [
-  { icon: "fa-users", label: "Total Patients", value: 124, badgeText: "+4 this week", badgeColor: "success" },
-  { icon: "fa-ticket", label: "Pending Tickets", value: 8, badgeText: "High Priority", badgeColor: "warning" },
-  { icon: "fa-calendar-check", label: "Upcoming Sessions", value: upcomingSessions.length, badgeText: "Today", badgeColor: "neutral" },
-];
+import { useDoctor } from "../context/DoctorContext";
 
 const DoctorHome = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const { patients, requests, todaysSessions, upcomingSessions, recentPatients } = useDoctor();
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200);
+    const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
+
+  const pendingRequestsCount = requests.filter((r) => r.status === "pending").length;
+
+  const dynamicStats = [
+    {
+      icon: "fa-users",
+      label: "Total Patients",
+      value: patients.length,
+      badgeText: `Active (${patients.filter((p) => p.status === "Approved").length})`,
+      badgeColor: "success",
+    },
+    {
+      icon: "fa-ticket",
+      label: "Pending Requests",
+      value: pendingRequestsCount,
+      badgeText: pendingRequestsCount > 0 ? "Needs Review" : "Up to Date",
+      badgeColor: pendingRequestsCount > 0 ? "warning" : "success",
+    },
+    {
+      icon: "fa-calendar-check",
+      label: "Upcoming Sessions",
+      value: upcomingSessions.length + todaysSessions.length,
+      badgeText: "Today",
+      badgeColor: "neutral",
+    },
+  ];
 
   return (
     <div>
       <WelcomeCard doctorName="Farah" sessionsToday={todaysSessions.length} />
 
       <div className="row g-3 mb-4">
-        {stats.map((item) => (
+        {dynamicStats.map((item) => (
           <div className="col-12 col-md-4" key={item.label}>
             <StatCard {...item} isLoading={isLoading} />
           </div>

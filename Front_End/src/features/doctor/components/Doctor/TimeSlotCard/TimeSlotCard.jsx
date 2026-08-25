@@ -1,6 +1,6 @@
 import styles from "./TimeSlotCard.module.css";
 
-const TimeSlotCard = ({ type, start, end, onDelete, onEdit }) => {
+const TimeSlotCard = ({ type, patientName, start, end, onDelete, onEdit }) => {
   const isBooked = type === "booked";
 
   const handleDeleteClick = (e) => {
@@ -15,7 +15,9 @@ const TimeSlotCard = ({ type, start, end, onDelete, onEdit }) => {
       style={{ cursor: isBooked ? "default" : "pointer" }}
     >
       <div>
-        <span className={styles.slotType}>{isBooked ? "Booked" : "Available"}</span>
+        <span className={styles.slotType}>
+          {isBooked ? (patientName ? `Booked with ${patientName}` : "Booked") : "Available"}
+        </span>
         <span className={styles.slotTime}>
           {start} - {end}
         </span>

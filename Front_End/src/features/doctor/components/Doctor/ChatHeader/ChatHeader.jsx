@@ -5,7 +5,8 @@ import styles from "./ChatHeader.module.css";
 // avatarImg   -> optional photo URL
 // isOnline    -> boolean, shows/hides the green status dot
 // sessionTime -> formatted string, e.g. "13:36" (mm:ss elapsed)
-const ChatHeader = ({ patientName, avatarImg, isOnline, sessionTime }) => {
+// onEndChat   -> callback when doctor clicks End Chat
+const ChatHeader = ({ patientName, avatarImg, isOnline, sessionTime, onEndChat }) => {
   return (
     <div className={`${styles.header} d-flex justify-content-between align-items-center px-3 px-md-4 py-3`}>
       <div className="d-flex align-items-center gap-3">
@@ -33,9 +34,16 @@ const ChatHeader = ({ patientName, avatarImg, isOnline, sessionTime }) => {
           <span className={styles.timerValue}>{sessionTime}</span>
         </div>
 
-        <button className={styles.iconBtn} aria-label="More options">
-          <i className="fa-solid fa-ellipsis-vertical"></i>
-        </button>
+        {onEndChat && (
+          <button
+            className={styles.endChatBtn}
+            onClick={onEndChat}
+            title="End Session & Record Duration"
+          >
+            <i className="fa-solid fa-circle-stop me-1"></i>
+            <span className="d-none d-sm-inline">End Chat</span>
+          </button>
+        )}
       </div>
     </div>
   );

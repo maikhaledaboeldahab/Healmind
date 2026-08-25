@@ -3,8 +3,8 @@ import styles from "./QuickActions.module.css";
 
 const actions = [
   { icon: "fa-calendar-days", title: "Setup Availability", description: "Update your booking slots", path: "/doctor/availability" },
-  { icon: "fa-ticket", title: "Review Tickets", description: "Check unresolved inquiries", path: "/doctor/patients" },
-  { icon: "fa-file-lines", title: "Patient Reports", description: "Sign off on monthly notes", path: "/doctor/patients" },
+  { icon: "fa-ticket", title: "Review Tickets", description: "Check unresolved inquiries", path: "/doctor/sessions", state: { tab: "requests" } },
+  { icon: "fa-file-lines", title: "Patient Reports", description: "View all active patient records", path: "/doctor/patients" },
 ];
 
 const QuickActions = () => {
@@ -14,7 +14,7 @@ const QuickActions = () => {
 
       <div className="d-flex flex-column gap-2">
         {actions.map((action) => (
-          <Link to={action.path} key={action.title} className={styles.actionItem}>
+          <Link to={action.path} state={action.state} key={action.title} className={styles.actionItem}>
             <div className={styles.iconBox}>
               <i className={`fa-solid ${action.icon}`}></i>
             </div>
