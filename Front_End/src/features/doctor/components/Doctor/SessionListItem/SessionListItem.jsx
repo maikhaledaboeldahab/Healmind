@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import styles from "./SessionListItem.module.css";
 
 // Props:
@@ -8,8 +7,7 @@ import styles from "./SessionListItem.module.css";
 // time         -> single combined string, e.g. "09:00 AM"
 // duration     -> e.g. "50 mins"
 // status       -> e.g. "Confirmed" | "In-Session" | "Waiting"
-const SessionListItem = ({ id, patientName, sessionType, time, duration, status }) => {
-  const navigate = useNavigate();
+const SessionListItem = ({ patientName, sessionType, time, duration, status }) => {
   const statusKey = status.toLowerCase().replace(/[\s-]/g, "");
 
   return (
@@ -30,17 +28,6 @@ const SessionListItem = ({ id, patientName, sessionType, time, duration, status 
         <span className={`${styles.status} ${styles[statusKey] || ""}`}>
           {status}
         </span>
-        {id && (
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-primary p-1 d-inline-flex align-items-center justify-content-center"
-            style={{ borderRadius: '50%', width: '32px', height: '32px' }}
-            onClick={() => navigate(`/doctor/sessions/${id}/video`)}
-            title="Join Video Session"
-          >
-            <i className="fa-solid fa-video" style={{ fontSize: '0.75rem' }}></i>
-          </button>
-        )}
       </div>
     </div>
   );

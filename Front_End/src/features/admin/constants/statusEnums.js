@@ -32,6 +32,8 @@ export const PATIENT_STATUS = {
 }
 
 export const TICKET_STATUS = {
+  AWAITING_ASSIGNMENT: 'awaiting_assignment',
+  UNDER_EVALUATION: 'under_evaluation',
   BOOKED: 'booked',
   PAID: 'paid',
   COMPLETED: 'completed',
@@ -39,6 +41,8 @@ export const TICKET_STATUS = {
 }
 
 export const TICKET_STATUS_LABEL = {
+  [TICKET_STATUS.AWAITING_ASSIGNMENT]: 'Awaiting Assignment',
+  [TICKET_STATUS.UNDER_EVALUATION]: 'Under Evaluation',
   [TICKET_STATUS.BOOKED]: 'Booked',
   [TICKET_STATUS.PAID]: 'Paid',
   [TICKET_STATUS.COMPLETED]: 'Completed',
@@ -131,6 +135,8 @@ export const STATUS_TONE_MAP = {
   [COMMUNITY_STATUS.NEEDS_ANOTHER_SESSION]: 'warning',
   [COMMUNITY_STATUS.REJECTED]: 'danger',
 
+  [TICKET_STATUS.AWAITING_ASSIGNMENT]: 'warning',
+  [TICKET_STATUS.UNDER_EVALUATION]: 'info',
   [TICKET_STATUS.COMPLETED]: 'success',
   [TICKET_STATUS.PAID]: 'info',
   [TICKET_STATUS.BOOKED]: 'warning',

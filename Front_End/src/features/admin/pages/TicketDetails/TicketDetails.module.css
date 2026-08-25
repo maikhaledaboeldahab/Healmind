@@ -37,6 +37,13 @@
   font-weight: 600;
 }
 
+.highlightRow {
+  background-color: var(--hm-surface-container-low);
+  border-radius: var(--hm-radius-md);
+  padding: 8px 10px !important;
+  border-bottom: none !important;
+}
+
 .link {
   cursor: pointer;
   color: var(--hm-primary);

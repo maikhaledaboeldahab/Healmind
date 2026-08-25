@@ -91,8 +91,6 @@ export const MOCK_PATIENTS = Array.from({ length: 32 }).map((_, i) => {
 
 export const MOCK_TICKETS = Array.from({ length: 28 }).map((_, i) => {
   const id = i + 1
-  const statusCycle = [TICKET_STATUS.BOOKED, TICKET_STATUS.PAID, TICKET_STATUS.COMPLETED, TICKET_STATUS.CANCELLED]
-  const decisionCycle = [TICKET_DECISION.PENDING, TICKET_DECISION.APPROVE, TICKET_DECISION.NEEDS_ANOTHER_SESSION, TICKET_DECISION.REJECT]
   const subjects = [
     'Community Access Request',
     'Requesting Peer Discussion Access',
@@ -105,23 +103,34 @@ export const MOCK_TICKETS = Array.from({ length: 28 }).map((_, i) => {
     'Requesting community discussion access to interact with peers experiencing similar challenges.',
     'Wishes to share progress and engage with community support posts.',
   ]
+  const preferredTimes = ['9:00 AM – 11:00 AM', '2:00 PM – 4:00 PM', '10:00 AM – 12:00 PM', '5:00 PM – 7:00 PM']
   const createdDate = new Date(2026, (id % 12), (id % 27) + 1).toISOString()
   const updatedDate = new Date(2026, (id % 12), (id % 27) + 2).toISOString()
+  const preferredDate = new Date(2026, (id % 12), (id % 27) + 4).toISOString()
+
+  // Unassigned tickets: every 3rd ticket has no doctor yet
+  const isUnassigned = id % 3 === 0
+
+  // Assigned tickets cycle through evaluation and completed states
+  const assignedStatusCycle = [TICKET_STATUS.UNDER_EVALUATION, TICKET_STATUS.COMPLETED, TICKET_STATUS.COMPLETED, TICKET_STATUS.CANCELLED]
+  const assignedDecisionCycle = [TICKET_DECISION.PENDING, TICKET_DECISION.APPROVE, TICKET_DECISION.NEEDS_ANOTHER_SESSION, TICKET_DECISION.REJECT]
 
   return {
     id: `TCK-${pad(id)}`,
     patientId: `PAT-${pad((id % 32) + 1)}`,
-    doctorId: `DOC-${pad((id % 24) + 1)}`,
+    doctorId: isUnassigned ? null : `DOC-${pad((id % 24) + 1)}`,
     subject: subjects[id % subjects.length],
     description: descriptions[id % descriptions.length],
+    preferredDate,
+    preferredTime: preferredTimes[id % preferredTimes.length],
     bookingDate: createdDate,
     sessionDate: new Date(2026, (id % 12), (id % 27) + 3).toISOString(),
     paymentStatus: id % 4 === 0 ? PAYMENT_STATUS.PENDING : PAYMENT_STATUS.PAID,
-    status: statusCycle[id % statusCycle.length],
-    decision: decisionCycle[id % decisionCycle.length],
-    notes: 'Patient reported improved sleep patterns since last check-in.',
+    status: isUnassigned ? TICKET_STATUS.AWAITING_ASSIGNMENT : assignedStatusCycle[id % assignedStatusCycle.length],
+    decision: isUnassigned ? TICKET_DECISION.PENDING : assignedDecisionCycle[id % assignedDecisionCycle.length],
+    notes: isUnassigned ? '' : 'Patient reported improved sleep patterns since last check-in.',
     createdAt: createdDate,
-    updatedAt: updatedDate,
+    updatedAt: isUnassigned ? null : updatedDate,
   }
 })
 
