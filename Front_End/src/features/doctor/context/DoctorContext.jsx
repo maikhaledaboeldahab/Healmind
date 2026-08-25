@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import api from '../../../shared/services/api';
 
 const DoctorContext = createContext(null);
 
@@ -159,6 +160,38 @@ export const DoctorProvider = ({ children }) => {
   const [todaysSessions, setTodaysSessions] = useState(INITIAL_TODAY_SESSIONS);
   const [upcomingSessions, setUpcomingSessions] = useState(INITIAL_UPCOMING_SESSIONS);
   const [certifications, setCertifications] = useState(INITIAL_CERTIFICATIONS);
+
+  // Fetch real data from Backend if available
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchDoctorData() {
+      try {
+        const [patientsRes, sessionsRes] = await Promise.allSettled([
+          api.get('/doctor/my-patients'),
+          api.get('/session/doctor/my-sessions'),
+        ]);
+
+        if (isMounted && patientsRes.status === 'fulfilled' && patientsRes.value.data) {
+          const livePatients = patientsRes.value.data.patients || patientsRes.value.data.data;
+          if (Array.isArray(livePatients) && livePatients.length > 0) {
+            setPatients(livePatients);
+          }
+        }
+
+        if (isMounted && sessionsRes.status === 'fulfilled' && sessionsRes.value.data) {
+          const liveSessions = sessionsRes.value.data.sessions || sessionsRes.value.data.data;
+          if (Array.isArray(liveSessions)) {
+            setTodaysSessions(liveSessions.filter((s) => s.isToday));
+            setUpcomingSessions(liveSessions.filter((s) => !s.isToday));
+          }
+        }
+      } catch {
+        // Maintain fallback states
+      }
+    }
+    fetchDoctorData();
+    return () => { isMounted = false; };
+  }, []);
 
   // Sync to local storage
   useEffect(() => {

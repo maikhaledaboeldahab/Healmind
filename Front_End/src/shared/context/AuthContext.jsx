@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import api from '../services/api';
 import { currentUser as dummyUser } from '../../data/user';
 
 const AuthContext = createContext(null);
@@ -17,22 +18,82 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
 
   const login = async (credentials) => {
-    // Frontend-only simulation. Replace with real API call via services/auth.service.js
-    const loggedInUser = { ...dummyUser, email: credentials.email };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(loggedInUser));
-    setUser(loggedInUser);
-    return loggedInUser;
+    setLoading(true);
+    try {
+      const response = await api.post('/auth/login', credentials);
+      const data = response.data;
+      const rawUser = data.user || data.data?.user;
+      const token = data.token || data.accessToken || data.data?.token;
+      const displayName = rawUser?.name || rawUser?.fullName || credentials.email.split('@')[0];
+      const loggedInUser = { ...dummyUser, ...rawUser, name: displayName, fullName: displayName, email: credentials.email };
+
+      if (token) {
+        window.localStorage.setItem('healmind_token', token);
+      }
+      const fullUserData = { ...loggedInUser, token };
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(fullUserData));
+      setUser(fullUserData);
+      return fullUserData;
+    } catch (err) {
+      if (err.response) {
+        const errorList = err.response.data?.errors;
+        const msg = Array.isArray(errorList) && errorList.length > 0 
+          ? errorList.join(' • ') 
+          : (err.response.data?.message || 'Invalid credentials or request error.');
+        throw new Error(msg);
+      }
+      // Offline fallback only when backend server is unreached
+      console.warn('Backend server unreached, using offline fallback session:', err.message);
+      const fallbackName = credentials.email.split('@')[0];
+      const loggedInUser = { ...dummyUser, fullName: fallbackName, name: fallbackName, email: credentials.email };
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(loggedInUser));
+      setUser(loggedInUser);
+      return loggedInUser;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const register = async (formData) => {
-    const newUser = { ...dummyUser, ...formData };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    setUser(newUser);
-    return newUser;
+    setLoading(true);
+    try {
+      const endpoint = formData.role === 'doctor' ? '/auth/register/doctor' : '/auth/register/patient';
+      const response = await api.post(endpoint, formData);
+      const data = response.data;
+      const rawUser = data.user || data.data?.user;
+      const token = data.token || data.accessToken || data.data?.token;
+      const displayName = rawUser?.name || rawUser?.fullName || formData.fullName || formData.name;
+      const newUser = { ...dummyUser, ...formData, ...rawUser, name: displayName, fullName: displayName };
+
+      if (token) {
+        window.localStorage.setItem('healmind_token', token);
+      }
+      const fullUserData = { ...newUser, token };
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(fullUserData));
+      setUser(fullUserData);
+      return fullUserData;
+    } catch (err) {
+      if (err.response) {
+        const errorList = err.response.data?.errors;
+        const msg = Array.isArray(errorList) && errorList.length > 0 
+          ? errorList.join(' • ') 
+          : (err.response.data?.message || 'Registration failed. Please check input values.');
+        throw new Error(msg);
+      }
+      console.warn('Backend server unreached, using offline fallback registration:', err.message);
+      const newUser = { ...dummyUser, ...formData };
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+      setUser(newUser);
+      return newUser;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {
     window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem('healmind_token');
+    window.sessionStorage.removeItem('healmind_admin_token');
     setUser(null);
   };
 

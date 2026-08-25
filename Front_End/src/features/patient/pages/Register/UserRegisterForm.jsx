@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../../shared/context/AuthContext';
@@ -8,6 +9,7 @@ import styles from './Register.module.css';
 export default function UserRegisterForm({ onBack }) {
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
+  const [apiError, setApiError] = useState('');
   const {
     register,
     handleSubmit,
@@ -18,14 +20,26 @@ export default function UserRegisterForm({ onBack }) {
   const password = watch('password');
 
   const onSubmit = async (data) => {
-    await registerUser({
-      fullName: data.fullName,
-      email: data.email,
-      age: Number(data.age),
-      gender: data.gender,
-      phone: data.phone,
-    });
-    navigate('/dashboard', { replace: true });
+    setApiError('');
+    try {
+      const cleanPhone = (data.phone || '').replace(/[\s-]/g, '');
+      const cleanGender = (data.gender || 'female').toLowerCase();
+
+      await registerUser({
+        name: data.fullName,
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        age: Number(data.age),
+        gender: cleanGender,
+        phone: cleanPhone,
+        role: 'patient',
+      });
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      setApiError(err.message || 'Registration failed. Please check your inputs.');
+    }
   };
 
   return (
@@ -38,6 +52,12 @@ export default function UserRegisterForm({ onBack }) {
 
       <h2 className={styles.title}>Create your account</h2>
       <p className={styles.subtitle}>Start your journey toward better mental wellness.</p>
+
+      {apiError && (
+        <div style={{ padding: '12px 16px', backgroundColor: '#f8d7da', color: '#721c24', borderRadius: '8px', marginBottom: '16px', fontSize: '14px', lineHeight: '1.5' }}>
+          {apiError}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
         <Input
@@ -67,6 +87,10 @@ export default function UserRegisterForm({ onBack }) {
             {...register('password', {
               required: 'Password is required',
               minLength: { value: 8, message: 'At least 8 characters' },
+              pattern: {
+                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_#])/,
+                message: 'Must contain uppercase, lowercase, number, and special character (@$!%*?&_#)',
+              },
             })}
           />
           <Input
@@ -96,9 +120,8 @@ export default function UserRegisterForm({ onBack }) {
             </label>
             <select id="gender" className={styles.select} {...register('gender', { required: true })}>
               <option value="">Select</option>
-              <option value="Female">Female</option>
-              <option value="Male">Male</option>
-              <option value="Other">Other</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
             </select>
           </div>
         </div>

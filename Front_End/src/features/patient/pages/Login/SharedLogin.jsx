@@ -73,6 +73,7 @@ export default function SharedLogin() {
         const redirectTo = from && from.startsWith('/admin') && from !== '/admin/login' ? from : '/admin';
         navigate(redirectTo, { replace: true });
       } else if (cleanEmail.startsWith('doctor') || cleanEmail.includes('doctor@healmind.com') || cleanEmail === 'farah@healmind.com') {
+        await userLogin({ email: cleanEmail, password, role: 'doctor' });
         const from = location.state?.from?.pathname;
         const redirectTo = from && from.startsWith('/doctor') && from !== '/doctor/login' ? from : '/doctor/dashboard';
         navigate(redirectTo, { replace: true });

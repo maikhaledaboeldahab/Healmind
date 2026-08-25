@@ -1,29 +1,47 @@
 import { MOCK_TICKETS } from '../constants/mockData'
-import { simulateLatency } from './apiClient'
+import { apiClient, simulateLatency } from './apiClient'
 
 let tickets = [...MOCK_TICKETS]
 
 export const ticketService = {
   async getAll() {
-    return simulateLatency([...tickets])
+    try {
+      const res = await apiClient.get('/ticket/all-tickets')
+      return res.data?.data || res.data?.tickets || res.data || tickets
+    } catch {
+      return simulateLatency([...tickets])
+    }
   },
 
   async getById(ticketId) {
-    return simulateLatency(tickets.find((ticket) => ticket.id === ticketId) ?? null)
+    try {
+      const res = await apiClient.get(`/ticket/${ticketId}`)
+      return res.data?.data || res.data || (tickets.find((ticket) => ticket.id === ticketId) ?? null)
+    } catch {
+      return simulateLatency(tickets.find((ticket) => ticket.id === ticketId) ?? null)
+    }
   },
 
   async update(ticketId, payload) {
-    tickets = tickets.map((ticket) => (ticket.id === ticketId ? { ...ticket, ...payload } : ticket))
-    return simulateLatency(tickets.find((ticket) => ticket.id === ticketId))
+    try {
+      const res = await apiClient.put(`/ticket/${ticketId}`, payload)
+      return res.data?.data || res.data
+    } catch {
+      tickets = tickets.map((ticket) => (ticket.id === ticketId ? { ...ticket, ...payload } : ticket))
+      return simulateLatency(tickets.find((ticket) => ticket.id === ticketId))
+    }
   },
 
-  /** Assign a doctor to a community access ticket.
-   *  TODO: Replace with a real API call when the backend endpoint is ready. */
   async assignDoctor(ticketId, doctorId) {
-    return this.update(ticketId, {
-      doctorId,
-      status: 'under_evaluation',
-      updatedAt: new Date().toISOString(),
-    })
+    try {
+      const res = await apiClient.put(`/ticket/${ticketId}/assign-doctor`, { doctorId })
+      return res.data?.data || res.data
+    } catch {
+      return this.update(ticketId, {
+        doctorId,
+        status: 'under_evaluation',
+        updatedAt: new Date().toISOString(),
+      })
+    }
   },
 }

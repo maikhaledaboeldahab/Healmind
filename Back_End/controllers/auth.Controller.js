@@ -22,7 +22,13 @@ const sendTokenResponse = (res, statusCode, user, message) => {
     accessToken,
     refreshToken,
     expiresIn: process.env.JWT_EXPIRES_IN || "1d",
-
+    user: {
+      id: user._id,
+      name: user.name,
+      fullName: user.name,
+      email: user.email,
+      role: user.role,
+    },
   });
 };
 // POST /auth/register/patient
