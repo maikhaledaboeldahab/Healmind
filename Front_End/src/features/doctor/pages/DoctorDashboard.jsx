@@ -10,11 +10,17 @@ import Profile from "./Profile";
 import PatientDetails from "./PatientDetails";
 import LiveChat from "./LiveChat";
 import ChatBot from "./ChatBot";
+import { useAuth } from "../../../shared/context/AuthContext";
+import { useDoctor } from "../context/DoctorContext";
 
 const DoctorDashboard = () => {
+  const { user } = useAuth();
+  const { profile } = useDoctor();
+  const doctorName = profile?.name || user?.name || user?.fullName || "Doctor";
+
   return (
     <div className="dashboard-wrapper">
-      <DoctorNavbar doctorName="Farah" />
+      <DoctorNavbar doctorName={doctorName} />
 
       <div className="d-flex flex-grow-1">
         <DoctorSidebar />

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import TimeSlotCard from "../components/Doctor/TimeSlotCard/TimeSlotCard";
 import SlotModal from "../components/Doctor/SlotModal/SlotModal";
+import { useDoctor } from "../context/DoctorContext";
 import styles from "./Availability.module.css";
 
 const getMonday = (date) => {
@@ -26,36 +27,11 @@ const getWeekDates = (startDate) => {
   });
 };
 
-const generateDynamicInitialSlots = () => {
-  const monday = getMonday(new Date());
-  const dates = getWeekDates(monday);
-  const slotsMap = {};
-
-  if (dates[1]) {
-    slotsMap[formatDateKey(dates[1])] = [
-      { id: 1, type: "available", start: "09:00", end: "10:30" },
-      { id: 2, type: "booked", patientName: "Sarah Jenkins", start: "11:00", end: "12:00" },
-    ];
-  }
-  if (dates[3]) {
-    slotsMap[formatDateKey(dates[3])] = [
-      { id: 3, type: "available", start: "14:00", end: "15:00" },
-      { id: 4, type: "booked", patientName: "Omar Khalil", start: "16:00", end: "17:00" },
-    ];
-  }
-  if (dates[4]) {
-    slotsMap[formatDateKey(dates[4])] = [
-      { id: 5, type: "available", start: "10:00", end: "11:30" },
-    ];
-  }
-  return slotsMap;
-};
-
 const dayLabels = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
 const Availability = () => {
+  const { slots: apiSlots, addSlot, deleteSlot, editSlot } = useDoctor();
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
-  const [slots, setSlots] = useState(generateDynamicInitialSlots);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -78,11 +54,8 @@ const Availability = () => {
     setWeekStart(next);
   };
 
-  const handleDeleteSlot = (dateKey, slotId) => {
-    setSlots((prev) => ({
-      ...prev,
-      [dateKey]: prev[dateKey].filter((s) => s.id !== slotId),
-    }));
+  const handleDeleteSlot = async (dateKey, slotId) => {
+    await deleteSlot(slotId);
   };
 
   const handleOpenAddModal = (dateKey) => {
@@ -101,22 +74,13 @@ const Availability = () => {
 
   const handleCloseModal = () => setModalOpen(false);
 
-  const handleSaveSlot = ({ start, end }) => {
-    setSlots((prev) => {
-      const daySlots = prev[modalDateKey] || [];
-
-      if (modalMode === "edit") {
-        return {
-          ...prev,
-          [modalDateKey]: daySlots.map((s) =>
-            s.id === modalSlot.id ? { ...s, start, end } : s
-          ),
-        };
-      }
-
-      const newSlot = { id: Date.now(), type: "available", start, end };
-      return { ...prev, [modalDateKey]: [...daySlots, newSlot] };
-    });
+  const handleSaveSlot = async ({ start, end }) => {
+    const timeStr = `${start} - ${end}`;
+    if (modalMode === "edit" && modalSlot) {
+      await editSlot(modalSlot.id || modalSlot._id, { day: modalDateKey, time: timeStr });
+    } else {
+      await addSlot({ day: modalDateKey, time: timeStr, location: "Online Video Room" });
+    }
     setModalOpen(false);
   };
 
@@ -143,7 +107,19 @@ const Availability = () => {
       <div className="row g-3">
         {weekDates.map((date, index) => {
           const dateKey = formatDateKey(date);
-          const daySlots = slots[dateKey] || [];
+          const daySlots = (apiSlots || [])
+            .filter((s) => {
+              if (!s.day) return false;
+              const sDateKey = new Date(s.day).toISOString().split("T")[0];
+              return sDateKey === dateKey;
+            })
+            .map((s) => ({
+              id: s._id || s.id,
+              type: s.isBooked ? "booked" : "available",
+              patientName: s.patientName || "Booked Patient",
+              start: s.time?.split("-")?.[0]?.trim() || s.time || "09:00",
+              end: s.time?.split("-")?.[1]?.trim() || "10:00",
+            }));
 
           return (
             <div className="col" key={dateKey}>

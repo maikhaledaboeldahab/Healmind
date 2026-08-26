@@ -225,7 +225,7 @@ const doctorSchema = new mongoose.Schema({
   sessionPrice: {
     type: Number,
     min: [0, "Session price cannot be negative."],
-    default: 0,
+    default: 500,
   },
 
   slots: [

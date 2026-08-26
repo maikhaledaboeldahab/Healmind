@@ -6,13 +6,15 @@ import styles from './DoctorCard.module.css';
 
 export default function DoctorCard({ doctor }) {
   const navigate = useNavigate();
+  const displayRating = doctor.rating ? (typeof doctor.rating === 'number' ? doctor.rating.toFixed(1) : doctor.rating) : 'New';
+  const imageUrl = doctor.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name || 'Doctor')}&background=2c5282&color=fff&size=400`;
 
   return (
     <div className={styles.card}>
       <div className={styles.imageWrap}>
-        <img src={doctor.image} alt={doctor.name} className={styles.image} />
+        <img src={imageUrl} alt={doctor.name} className={styles.image} />
         <span className={styles.rating}>
-          <FontAwesomeIcon icon={faStar} /> {doctor.rating.toFixed(1)}
+          <FontAwesomeIcon icon={faStar} /> {displayRating}
         </span>
       </div>
 

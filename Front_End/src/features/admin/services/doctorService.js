@@ -4,17 +4,37 @@ import { apiClient, simulateLatency } from './apiClient'
 
 let doctors = [...MOCK_DOCTORS]
 
+function getFullCertUrl(cert) {
+  if (!cert || cert === '#') return '#'
+  if (cert.startsWith('http://') || cert.startsWith('https://') || cert.startsWith('data:')) {
+    return cert
+  }
+  const cleanPath = cert.startsWith('/') ? cert : `/${cert}`
+  return `http://localhost:3000${cleanPath}`
+}
+
 function normalizeDoctor(doc) {
   if (!doc) return null
+  const cert = doc.certificateUrl || doc.certificate || '#'
+  
+  let status = DOCTOR_STATUS.PENDING
+  if (doc.isActive === false || doc.status === 'disabled' || doc.status === DOCTOR_STATUS.DISABLED) {
+    status = DOCTOR_STATUS.DISABLED
+  } else if (doc.status === DOCTOR_STATUS.REJECTED || doc.approvalStatus === 'rejected') {
+    status = DOCTOR_STATUS.REJECTED
+  } else if (doc.isApproved || doc.status === 'verified' || doc.approvalStatus === 'approved') {
+    status = DOCTOR_STATUS.VERIFIED
+  }
+
   return {
     ...doc,
     id: doc.id || doc._id,
     name: doc.name || doc.fullName || `Dr. ${doc.email?.split('@')[0]}`,
-    status: doc.status || doc.approvalStatus || (doc.isApproved ? DOCTOR_STATUS.VERIFIED : DOCTOR_STATUS.PENDING),
+    status,
     submittedDate: doc.submittedDate || doc.createdAt || new Date().toISOString(),
     specialization: doc.specialization || 'General Psychology',
     yearsOfExperience: doc.yearsOfExperience || doc.experienceYears || 1,
-    certificateUrl: doc.certificateUrl || doc.certificate || '#',
+    certificateUrl: getFullCertUrl(cert),
   }
 }
 
@@ -83,7 +103,7 @@ export const doctorService = {
       const res = await apiClient.patch(`/admin/doctors/${doctorId}/approve`)
       return normalizeDoctor(res.data?.data || res.data)
     } catch {
-      return this.update(doctorId, { status: DOCTOR_STATUS.VERIFIED })
+      return this.update(doctorId, { status: DOCTOR_STATUS.VERIFIED, isApproved: true })
     }
   },
 
@@ -98,16 +118,18 @@ export const doctorService = {
 
   async disable(doctorId) {
     try {
-      const res = await apiClient.patch(`/admin/doctors/${doctorId}/disable`)
-      return normalizeDoctor(res.data?.data || res.data)
+      const res = await apiClient.patch(`/admin/users/${doctorId}/deactivate`)
+      const raw = res.data?.data || res.data
+      return normalizeDoctor({ ...raw, isActive: false, status: 'disabled' })
     } catch {
-      return this.update(doctorId, { status: DOCTOR_STATUS.DISABLED })
+      return this.update(doctorId, { status: DOCTOR_STATUS.DISABLED, isActive: false })
     }
   },
 
   async remove(doctorId) {
     try {
-      const res = await apiClient.delete(`/admin/doctors/${doctorId}`)
+      const res = await apiClient.delete(`/admin/users/${doctorId}`)
+      doctors = doctors.filter((doc) => doc.id !== doctorId)
       return res.data
     } catch {
       doctors = doctors.filter((doc) => doc.id !== doctorId)

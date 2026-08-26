@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass, faXmark, faArrowUpWideShort } from '@fortawesome/free-solid-svg-icons';
-import { doctors, specialties } from '../../../../data/doctors';
+import api from '../../../../shared/services/api';
+import { doctors as dummyDoctors, specialties } from '../../../../data/doctors';
 import DoctorCard from '../../../../shared/components/DoctorCard/DoctorCard';
 import EmptyState from '../../../../shared/components/EmptyState/EmptyState';
+import Loader from '../../../../shared/components/Loader/Loader';
 import { useDebounce } from '../../../../shared/hooks/useDebounce';
 import { cx } from '../../../../shared/utils/classNames';
 import styles from './Doctors.module.css';
@@ -15,20 +17,80 @@ const SORT_OPTIONS = [
   { value: 'fee', label: 'Lowest Fee' },
 ];
 
+function getDoctorImage(d) {
+  if (d?.profileImage) {
+    return d.profileImage.startsWith('http')
+      ? d.profileImage
+      : `http://localhost:3000/${d.profileImage.replace(/^\//, '')}`;
+  }
+  const name = d?.name || 'Doctor';
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2c5282&color=fff&size=400`;
+}
+
+function normalizeDoctorDoc(d) {
+  if (!d) return null;
+  const spec = d.specialization || 'Clinical Specialist';
+  const name = d.name || d.fullName || `Dr. ${d.email?.split('@')[0]}`;
+  const ratingVal = d.rating !== undefined ? d.rating : (d.ratingsAverage !== undefined ? d.ratingsAverage : null);
+
+  return {
+    id: d._id || d.id,
+    name,
+    specialization: spec,
+    experience: d.yearsOfExperience !== undefined ? d.yearsOfExperience : (d.experienceYears || 0),
+    fee: d.sessionPrice !== undefined ? d.sessionPrice : 0,
+    rating: ratingVal,
+    reviewsCount: d.reviewsCount || d.ratingsQuantity || 0,
+    image: getDoctorImage(d),
+    tags: ['All', spec],
+    bio: d.bio || 'No biography provided yet.',
+    verified: d.isApproved || d.approvalStatus === 'approved',
+  };
+}
+
 export default function Doctors() {
   const [searchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [activeTag, setActiveTag] = useState('All');
   const [sortBy, setSortBy] = useState('rating');
+  const [doctorsList, setDoctorsList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const debouncedQuery = useDebounce(query);
 
+  useEffect(() => {
+    async function loadBackendDoctors() {
+      setIsLoading(true);
+      try {
+        let res;
+        try {
+          res = await api.get('/doctor/list');
+        } catch {
+          res = await api.get('/admin/doctors');
+        }
+        const raw = res.data?.data || res.data;
+        if (Array.isArray(raw) && raw.length > 0) {
+          const approved = raw.filter((d) => d.isApproved || d.approvalStatus === 'approved' || d.status === 'verified');
+          const target = approved.length > 0 ? approved : raw;
+          setDoctorsList(target.map(normalizeDoctorDoc));
+        } else {
+          setDoctorsList([]);
+        }
+      } catch {
+        setDoctorsList([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadBackendDoctors();
+  }, []);
+
   const filtered = useMemo(() => {
-    let result = doctors.filter((doc) => {
+    let result = doctorsList.filter((doc) => {
       const matchesQuery =
         !debouncedQuery ||
         doc.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
         doc.specialization.toLowerCase().includes(debouncedQuery.toLowerCase());
-      const matchesTag = activeTag === 'All' || doc.tags.includes(activeTag);
+      const matchesTag = activeTag === 'All' || doc.tags.includes(activeTag) || doc.specialization.includes(activeTag);
       return matchesQuery && matchesTag;
     });
 
@@ -40,7 +102,7 @@ export default function Doctors() {
     });
 
     return result;
-  }, [debouncedQuery, activeTag, sortBy]);
+  }, [doctorsList, debouncedQuery, activeTag, sortBy]);
 
   return (
     <div className={styles.page}>

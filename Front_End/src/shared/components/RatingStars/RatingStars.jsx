@@ -38,7 +38,7 @@ export default function RatingStars({
           </button>
         );
       })}
-      {!interactive && <span className={styles.value}>{value.toFixed(1)}</span>}
+      {!interactive && <span className={styles.value}>{(value ?? 0).toFixed(1)}</span>}
     </div>
   );
 }

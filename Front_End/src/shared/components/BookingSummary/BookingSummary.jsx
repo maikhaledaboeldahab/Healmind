@@ -11,10 +11,14 @@ export default function BookingSummary({ doctor, date, time }) {
     doctor.fee || doctor.sessionPrice
   );
 
+  const avatarUrl = doctor.image && !doctor.image.includes('unsplash.com')
+    ? doctor.image
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name || 'Doctor')}&background=2c5282&color=fff&size=200`;
+
   return (
     <div className={styles.card}>
       <div className={styles.doctor}>
-        <img src={doctor.image} alt={doctor.name} className={styles.avatar} />
+        <img src={avatarUrl} alt={doctor.name} className={styles.avatar} />
         <div>
           <h4 className={styles.name}>{doctor.name}</h4>
           <p className={styles.specialization}>{doctor.specialization}</p>

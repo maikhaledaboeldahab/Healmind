@@ -9,24 +9,16 @@ const checkoutSessionSchema = Joi.object({
       "any.required": "Doctor ID is required."
     }),
   slotId: Joi.string()
-    .regex(/^[0-9a-fA-F]{24}$/)
     .required()
     .messages({
-      "string.pattern.base": "Invalid slot ID format.",
       "any.required": "Slot ID is required."
     }),
   type: Joi.string()
     .valid("urgent", "followup")
-    .optional()
-    .messages({
-      "any.only": "Session type must be either 'urgent' or 'followup'."
-    }),
+    .optional(),
   mode: Joi.string()
-    .valid("visit", "chat", "video")
-    .optional()
-    .messages({
-      "any.only": "Session mode must be either 'visit' or 'chat'."
-    }),
+    .valid("visit", "chat", "video", "online")
+    .optional(),
   depositAmount: Joi.number()
     .min(0)
     .optional()

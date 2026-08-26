@@ -1,17 +1,76 @@
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClockRotateLeft, faCircleCheck, faDollarSign, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { getDoctorById, getAvailableSlots } from '../../../../data/doctors';
+import api from '../../../../shared/services/api';
 import RatingStars from '../../../../shared/components/RatingStars/RatingStars';
 import Button from '../../../../shared/components/Button/Button';
 import EmptyState from '../../../../shared/components/EmptyState/EmptyState';
+import Loader from '../../../../shared/components/Loader/Loader';
 import styles from './DoctorDetails.module.css';
+
+function getDoctorImage(d) {
+  if (d?.profileImage) {
+    return d.profileImage.startsWith('http')
+      ? d.profileImage
+      : `http://localhost:3000/${d.profileImage.replace(/^\//, '')}`;
+  }
+  const name = d?.name || 'Doctor';
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2c5282&color=fff&size=500`;
+}
 
 export default function DoctorDetails() {
   const { doctorId } = useParams();
   const navigate = useNavigate();
-  const doctor = getDoctorById(doctorId);
-  const availability = getAvailableSlots();
+  const [doctor, setDoctor] = useState(null);
+  const [slots, setSlots] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadDoctorDetails() {
+      setIsLoading(true);
+      try {
+        let docRes;
+        try {
+          docRes = await api.get(`/doctor/public/${doctorId}`);
+        } catch {
+          docRes = await api.get(`/admin/doctors/${doctorId}`);
+        }
+        const slotsRes = await api.get(`/doctor/${doctorId}/available-slots`).catch(() => null);
+
+        if (docRes && docRes.data) {
+          const d = docRes.data.data || docRes.data;
+          const ratingVal = d.rating !== undefined ? d.rating : (d.ratingsAverage !== undefined ? d.ratingsAverage : null);
+          setDoctor({
+            id: d._id || d.id,
+            name: d.name || `Dr. ${d.email?.split('@')[0]}`,
+            specialization: d.specialization || 'Clinical Specialist',
+            experience: d.yearsOfExperience !== undefined ? d.yearsOfExperience : (d.experience || 0),
+            fee: d.sessionPrice !== undefined ? d.sessionPrice : 0,
+            rating: ratingVal,
+            image: getDoctorImage(d),
+            about: d.bio || 'No biography provided yet.',
+            stats: { patients: d.patientsCount || 0 },
+            verified: d.isApproved || d.approvalStatus === 'approved',
+          });
+        }
+
+        if (slotsRes && slotsRes.data) {
+          const rawSlots = slotsRes.data.slots || slotsRes.data.data || [];
+          setSlots(rawSlots);
+        }
+      } catch (err) {
+        console.warn('Doctor details fetch error:', err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadDoctorDetails();
+  }, [doctorId]);
+
+  if (isLoading) {
+    return <Loader label="Loading specialist profile..." />;
+  }
 
   if (!doctor) {
     return (
@@ -39,7 +98,7 @@ export default function DoctorDetails() {
             </div>
             <div className={styles.metaItem}>
               <FontAwesomeIcon icon={faDollarSign} />
-              <span>${doctor.fee} / session</span>
+              <span>{doctor.fee} EGP / session</span>
             </div>
             <div className={styles.metaItem}>
               <FontAwesomeIcon icon={faUsers} />
@@ -66,21 +125,20 @@ export default function DoctorDetails() {
         </section>
 
         <section className={styles.card}>
-          <h2>Available This Week</h2>
-          <div className={styles.availability}>
-            {availability.map((day) => (
-              <div key={day.date} className={styles.day}>
-                <p className={styles.dayLabel}>{day.label}</p>
-                <div className={styles.slots}>
-                  {day.slots.map((slot) => (
-                    <span key={slot} className={styles.slot}>
-                      {slot}
-                    </span>
-                  ))}
-                </div>
+          <h2>Available Time Slots</h2>
+          {slots.length === 0 ? (
+            <p className="text-muted my-3">No available slots at the moment.</p>
+          ) : (
+            <div className={styles.availability}>
+              <div className={styles.slots}>
+                {slots.map((slot) => (
+                  <span key={slot._id || slot.id} className={styles.slot}>
+                    {slot.day} - {slot.time || 'Available'}
+                  </span>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
           <Button variant="outline" fullWidth onClick={() => navigate(`/doctors/${doctor.id}/book`)}>
             Select Date &amp; Time
           </Button>

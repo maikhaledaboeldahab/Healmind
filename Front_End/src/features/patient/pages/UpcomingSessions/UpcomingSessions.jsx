@@ -1,14 +1,55 @@
-import { useLocation } from 'react-router-dom';
-import { upcomingSessions } from '../../../../data/sessions';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import api from '../../../../shared/services/api';
+import { upcomingSessions as dummySessions } from '../../../../data/sessions';
 import SessionCard from '../../../../shared/components/SessionCard/SessionCard';
 import EmptyState from '../../../../shared/components/EmptyState/EmptyState';
 import Button from '../../../../shared/components/Button/Button';
-import { useNavigate } from 'react-router-dom';
+import Loader from '../../../../shared/components/Loader/Loader';
 import styles from './UpcomingSessions.module.css';
+
+function normalizeSession(s) {
+  if (!s) return null;
+  return {
+    id: s._id || s.id,
+    doctorId: s.doctorId?._id || s.doctorId || 'doc-1',
+    doctorName: s.doctorId?.name || s.doctorname || 'Doctor',
+    doctorImage: s.doctorId?.profileImage || null,
+    date: s.scheduledTime ? new Date(s.scheduledTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming',
+    time: s.scheduledTime ? new Date(s.scheduledTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Scheduled',
+    status: s.status ? (s.status.charAt(0).toUpperCase() + s.status.slice(1)) : 'Confirmed',
+    depositPaid: s.depositPaid || false,
+    depositAmount: s.depositAmount || 70,
+    remainingBalance: s.balance || 280,
+    sessionPrice: s.sessionPrice || 350,
+  };
+}
 
 export default function UpcomingSessions() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const [sessionsList, setSessionsList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadSessions() {
+      setIsLoading(true);
+      try {
+        const res = await api.get('/session/my-sessions');
+        const raw = res.data?.sessions || res.data?.data || res.data;
+        if (Array.isArray(raw) && raw.length > 0) {
+          setSessionsList(raw.map(normalizeSession));
+        } else {
+          setSessionsList([]);
+        }
+      } catch {
+        setSessionsList([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadSessions();
+  }, []);
 
   return (
     <div className={styles.page}>
@@ -30,9 +71,11 @@ export default function UpcomingSessions() {
         </div>
       )}
 
-      {upcomingSessions.length ? (
+      {isLoading ? (
+        <Loader label="Loading upcoming sessions..." />
+      ) : sessionsList.length ? (
         <div className={styles.list}>
-          {upcomingSessions.map((session) => (
+          {sessionsList.map((session) => (
             <SessionCard key={session.id} session={session} />
           ))}
         </div>

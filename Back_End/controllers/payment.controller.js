@@ -160,9 +160,10 @@ exports.createCheckoutSession = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("Error initiating checkout session:", error);
     return res.status(500).json({
       success: false,
-      message: "Error initiating checkout session.",
+      message: error.message || "Error initiating checkout session.",
       error: error.message
     });
   }

@@ -3,195 +3,227 @@ import api from '../../../shared/services/api';
 
 const DoctorContext = createContext(null);
 
-const INITIAL_PATIENTS = [
-  {
-    id: 1,
-    patientName: 'Arlo Sterling',
-    age: 29,
-    gender: 'Male',
-    phone: '+20 100 123 4567',
-    email: 'arlo.sterling@email.com',
-    therapyType: 'Cognitive Behavioral Therapy',
-    status: 'Approved',
-    communityStatus: 'Approved',
-    patientSince: 'Jan 2023',
-    lastSession: 'Today, 10:30 AM',
-    diagnosis: 'Generalized Anxiety Disorder with mild depressive episodes. Responding well to weekly CBT grounding techniques.',
-    notes: [
-      { id: 1, date: 'Oct 24, 2023', text: 'Patient reports improved sleep patterns. Continuing current treatment plan.' },
-      { id: 2, date: 'Oct 10, 2023', text: 'Discussed coping strategies for work-related stress triggers.' },
-    ],
-    nextSession: {
-      date: 'In 3 days',
-      title: 'Reviewing Anxiety Triggers',
-      goal: 'Goal: Finalize the list of environmental stressors and practice Level 2 grounding.',
-      isLive: false,
-    },
-    pastSessions: [
-      { id: 101, date: 'Oct 12, 2023', duration: '45 minutes', title: 'Introduction to Breathwork', summary: 'Successful identification of physiological precursors to panic episodes. Arlo responded well to box breathing.' },
-      { id: 102, date: 'Sep 28, 2023', duration: '50 minutes', title: 'Initial Assessment', summary: 'First session — established baseline anxiety triggers and treatment goals.' },
-    ],
-  },
-  {
-    id: 2,
-    patientName: 'Sarah Jenkins',
-    age: 28,
-    gender: 'Female',
-    phone: '+20 101 234 5678',
-    email: 'sarah.j@example.com',
-    therapyType: 'Weekly Therapy • Anxiety Management',
-    status: 'Approved',
-    communityStatus: 'Approved',
-    patientSince: 'Mar 2023',
-    lastSession: 'Yesterday, 4:30 PM',
-    diagnosis: 'Mild Social Anxiety and Performance Apprehension. Practicing assertive communication skills.',
-    notes: [
-      { id: 1, date: 'Oct 20, 2023', text: 'Notable reduction in panic spikes before team meetings.' },
-    ],
-    nextSession: {
-      date: 'Tomorrow, 09:00 AM',
-      title: 'Grounding & Boundary Setting',
-      goal: 'Goal: Review workplace communication logs.',
-      isLive: false,
-    },
-    pastSessions: [
-      { id: 201, date: 'Oct 15, 2023', duration: '50 minutes', title: 'Weekly Therapy', summary: 'Patient reported notable reduction in stress.' },
-    ],
-  },
-  {
-    id: 3,
-    patientName: 'Evelyn Thorne',
-    age: 64,
-    gender: 'Female',
-    phone: '+20 102 345 6789',
-    email: 'evelyn.t@example.com',
-    therapyType: 'Grief Counseling',
-    status: 'Pending',
-    communityStatus: 'Pending',
-    patientSince: 'Jun 2023',
-    lastSession: 'Oct 21, 2023',
-    diagnosis: 'Complicated Bereavement Support. Ongoing emotional processing sessions.',
-    notes: [
-      { id: 1, date: 'Oct 21, 2023', text: 'Patient expressed readiness to start gentle social activities.' },
-    ],
-    nextSession: {
-      date: 'Next Week',
-      title: 'Emotional Integration',
-      goal: 'Goal: Structured reflection exercises.',
-      isLive: false,
-    },
-    pastSessions: [
-      { id: 301, date: 'Oct 07, 2023', duration: '40 minutes', title: 'Grief Counseling Follow-up', summary: 'Explored legacy memory books.' },
-    ],
-  },
-  {
-    id: 4,
-    patientName: 'Marcus Vane',
-    age: 42,
-    gender: 'Male',
-    phone: '+20 103 456 7890',
-    email: 'marcus.v@example.com',
-    therapyType: 'Mindfulness Training',
-    status: 'Needs Another Session',
-    communityStatus: 'Rejected',
-    patientSince: 'Aug 2023',
-    lastSession: 'Oct 19, 2023',
-    diagnosis: 'Occupational Burnout Syndrome. Mindfulness and sleep hygiene restructuring.',
-    notes: [
-      { id: 1, date: 'Oct 19, 2023', text: 'Workload remains heavy; scheduled extra check-in session.' },
-    ],
-    nextSession: null,
-    pastSessions: [
-      { id: 401, date: 'Oct 05, 2023', duration: '45 minutes', title: 'Mindfulness Basics', summary: 'Introduced progressive muscle relaxation.' },
-    ],
-  },
-];
+const INITIAL_PATIENTS = [];
+const INITIAL_REQUESTS = [];
+const INITIAL_TODAY_SESSIONS = [];
+const INITIAL_UPCOMING_SESSIONS = [];
+const INITIAL_CERTIFICATIONS = [];
 
-const INITIAL_REQUESTS = [
-  { id: 1, patientName: 'Nora Sami', age: 31, gender: 'Female', requestedDate: 'Tomorrow', requestedTime: '01:00 PM', message: 'I have been struggling with sleep and constant worry about work. I would like to talk through some coping strategies.', status: 'pending', therapyType: 'Stress Management' },
-  { id: 2, patientName: 'Omar Khalil', age: 35, gender: 'Male', requestedDate: 'In 2 days', requestedTime: '10:00 AM', message: 'First-time session — looking for support with managing stress after a recent job change.', status: 'pending', therapyType: 'Anxiety Management' },
-];
+function normalizePatientDoc(p) {
+  if (!p) return null;
+  const birthYear = p.dateOfBirth ? new Date(p.dateOfBirth).getFullYear() : null;
+  const age = birthYear ? new Date().getFullYear() - birthYear : (p.age || 25);
+  const statusStr = p.communityAccess === 'approved' || p.status === 'Approved' 
+    ? 'Approved' 
+    : (p.communityAccess === 'rejected' ? 'Rejected' : 'Pending');
 
-const INITIAL_TODAY_SESSIONS = [
-  { id: 1, time: '09:00 AM', duration: '50 mins', patientName: 'Sarah Jenkins', sessionType: 'Weekly Therapy • Anxiety Management', status: 'Confirmed', sessionId: 'ses-101' },
-  { id: 2, time: '10:30 AM', duration: '40 mins', patientName: 'Arlo Sterling', sessionType: 'Cognitive Behavioral Therapy', status: 'Confirmed', sessionId: 'ses-102' },
-  { id: 3, time: '01:45 PM', duration: '45 mins', patientName: 'Evelyn Thorne', sessionType: 'Grief Counseling', status: 'Pending', sessionId: 'ses-103' },
-];
-
-const INITIAL_UPCOMING_SESSIONS = [
-  { id: 4, time: '09:30 AM', duration: '50 mins', patientName: 'Marcus Vane', sessionType: 'Mindfulness Training', status: 'Confirmed', sessionId: 'ses-104' },
-  { id: 5, time: '12:00 PM', duration: '45 mins', patientName: 'Layla Hassan', sessionType: 'Follow-up • Anxiety Management', status: 'Confirmed', sessionId: 'ses-105' },
-];
-
-const INITIAL_CERTIFICATIONS = [
-  {
-    id: 1,
-    name: 'Board Certified Clinical Psychologist',
-    issueDate: 'March 2018',
-    docId: 'BCP-9920-EG',
-    issuer: 'Egyptian Board of Psychology & Mental Health',
-    fileUrl: 'https://images.unsplash.com/photo-1589330694653-ded6df03f754?w=800&auto=format&fit=crop&q=80',
-    fileName: 'Board_Certification_Farah.pdf',
-    type: 'pdf',
-  },
-  {
-    id: 2,
-    name: 'Cognitive Behavioral Therapy (CBT) Master Specialist',
-    issueDate: 'June 2021',
-    docId: 'CBT-4412-INTL',
-    issuer: 'International Institute of Cognitive Therapy',
-    fileUrl: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=80',
-    fileName: 'CBT_Master_Certificate.pdf',
-    type: 'pdf',
-  },
-];
+  return {
+    id: p._id || p.id,
+    patientName: p.name || p.fullName || `Patient ${p.email?.split('@')[0]}`,
+    age,
+    gender: p.gender ? (p.gender.charAt(0).toUpperCase() + p.gender.slice(1)) : 'Patient',
+    phone: p.phone || '+20 100 000 0000',
+    email: p.email || '',
+    therapyType: p.therapyType || 'Clinical Therapy',
+    status: statusStr,
+    communityStatus: statusStr,
+    patientSince: p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recent',
+    lastSession: 'Registered Patient',
+    diagnosis: p.medicalNotes || 'Patient registered in HealMind system.',
+    notes: [],
+    pastSessions: [],
+  };
+}
 
 export const DoctorProvider = ({ children }) => {
-  const [patients, setPatients] = useState(() => {
-    const saved = localStorage.getItem('healmind_doctor_patients');
-    return saved ? JSON.parse(saved) : INITIAL_PATIENTS;
-  });
+  const [profile, setProfile] = useState(null);
+  const [slots, setSlotsState] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [requests, setRequests] = useState([]);
 
-  const [requests, setRequests] = useState(() => {
-    const saved = localStorage.getItem('healmind_doctor_requests');
-    return saved ? JSON.parse(saved) : INITIAL_REQUESTS;
-  });
+  useEffect(() => {
+    try {
+      localStorage.removeItem('healmind_doctor_patients');
+      localStorage.removeItem('healmind_doctor_requests');
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
 
+  const [allSessions, setAllSessions] = useState([]);
   const [todaysSessions, setTodaysSessions] = useState(INITIAL_TODAY_SESSIONS);
   const [upcomingSessions, setUpcomingSessions] = useState(INITIAL_UPCOMING_SESSIONS);
   const [certifications, setCertifications] = useState(INITIAL_CERTIFICATIONS);
 
-  // Fetch real data from Backend if available
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchDoctorData() {
-      try {
-        const [patientsRes, sessionsRes] = await Promise.allSettled([
-          api.get('/doctor/my-patients'),
-          api.get('/session/doctor/my-sessions'),
-        ]);
+  // Fetch real data from Backend APIs
+  const fetchDoctorData = async () => {
+    try {
+      const [profileRes, slotsRes, sessionsRes, ticketsRes, patientsRes] = await Promise.allSettled([
+        api.get('/doctor'),
+        api.get('/doctor/slots'),
+        api.get('/session/my-sessions'),
+        api.get('/ticket/admin/pending'),
+        api.get('/admin/patients'),
+      ]);
 
-        if (isMounted && patientsRes.status === 'fulfilled' && patientsRes.value.data) {
-          const livePatients = patientsRes.value.data.patients || patientsRes.value.data.data;
-          if (Array.isArray(livePatients) && livePatients.length > 0) {
-            setPatients(livePatients);
-          }
+      if (profileRes.status === 'fulfilled' && profileRes.value.data) {
+        const d = profileRes.value.data.data || profileRes.value.data.user || profileRes.value.data;
+        setProfile(d);
+        if (d.certificate) {
+          const certUrl = d.certificate.startsWith('http')
+            ? d.certificate
+            : `http://localhost:3000/${d.certificate.replace(/^\//, '')}`;
+          setCertifications([
+            {
+              id: 1,
+              name: `${d.specialization || 'Medical'} Professional Certificate`,
+              issueDate: 'Verified',
+              docId: d.licenseNumber || 'LIC-VERIFIED',
+              issuer: 'Ministry of Health / Medical Syndicate',
+              fileUrl: certUrl,
+              fileName: 'Doctor_Certificate.pdf',
+              type: 'pdf',
+            },
+          ]);
         }
-
-        if (isMounted && sessionsRes.status === 'fulfilled' && sessionsRes.value.data) {
-          const liveSessions = sessionsRes.value.data.sessions || sessionsRes.value.data.data;
-          if (Array.isArray(liveSessions)) {
-            setTodaysSessions(liveSessions.filter((s) => s.isToday));
-            setUpcomingSessions(liveSessions.filter((s) => !s.isToday));
-          }
-        }
-      } catch {
-        // Maintain fallback states
       }
+
+      if (slotsRes.status === 'fulfilled' && slotsRes.value.data) {
+        const liveSlots = slotsRes.value.data.slots || slotsRes.value.data.data || [];
+        setSlotsState(liveSlots);
+      }
+
+      if (patientsRes.status === 'fulfilled' && patientsRes.value.data) {
+        const rawPatients = patientsRes.value.data.data || patientsRes.value.data;
+        if (Array.isArray(rawPatients) && rawPatients.length > 0) {
+          setPatients(rawPatients.map(normalizePatientDoc));
+        }
+      }
+
+      if (sessionsRes.status === 'fulfilled' && sessionsRes.value.data) {
+        const liveSessions = sessionsRes.value.data.sessions || sessionsRes.value.data.data || sessionsRes.value.data;
+        if (Array.isArray(liveSessions)) {
+          const formatted = liveSessions.map((s, idx) => ({
+            id: s._id || s.id || idx + 1,
+            sessionId: s._id || s.id || `ses-${idx + 1}`,
+            patientName: s.patientId?.name || s.patientName || `Patient ${idx + 1}`,
+            date: s.scheduledTime ? new Date(s.scheduledTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Scheduled',
+            time: s.scheduledTime ? new Date(s.scheduledTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '10:00 AM',
+            sessionType: s.type || s.sessionType || 'Therapy Session',
+            status: s.status ? (s.status.charAt(0).toUpperCase() + s.status.slice(1)) : 'Confirmed',
+            decision: s.doctorDecision || 'Approved',
+          }));
+          setAllSessions(formatted);
+          const today = new Date().toISOString().split('T')[0];
+          setTodaysSessions(formatted.filter((s) => s.scheduledTime?.startsWith(today) || s.isToday));
+          setUpcomingSessions(formatted.filter((s) => !s.scheduledTime?.startsWith(today) && !s.isToday));
+
+          // Also merge patients from sessions if not already added
+          const sessionPatients = liveSessions.map((s) => s.patientId).filter(Boolean);
+          if (sessionPatients.length > 0) {
+            setPatients((prev) => {
+              const existingIds = new Set(prev.map((p) => String(p.id)));
+              const newDocs = sessionPatients
+                .filter((p) => !existingIds.has(String(p._id || p.id)))
+                .map(normalizePatientDoc);
+              return [...prev, ...newDocs];
+            });
+          }
+        }
+      }
+
+      if (ticketsRes.status === 'fulfilled' && ticketsRes.value.data) {
+        const liveTickets = ticketsRes.value.data.data || ticketsRes.value.data;
+        if (Array.isArray(liveTickets) && liveTickets.length > 0) {
+          setRequests(
+            liveTickets.map((t) => ({
+              id: t._id || t.id,
+              patientName: t.patientId?.name || t.patientName || 'Patient Request',
+              age: 30,
+              gender: t.patientId?.gender || 'Unknown',
+              requestedDate: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Pending',
+              requestedTime: '10:00 AM',
+              message: t.description || t.notes || 'Community mental health access request.',
+              status: t.status || 'pending',
+              therapyType: 'Clinical Assessment',
+            }))
+          );
+        }
+      }
+    } catch (err) {
+      console.warn('Backend API fetch error in DoctorContext:', err.message);
     }
+  };
+
+  useEffect(() => {
     fetchDoctorData();
-    return () => { isMounted = false; };
   }, []);
+
+  // Update profile via API
+  const updateProfile = async (updateData) => {
+    try {
+      const res = await api.patch('/doctor', updateData);
+      const updated = res.data?.data || updateData;
+      setProfile((prev) => ({ ...prev, ...updated }));
+      return updated;
+    } catch (err) {
+      setProfile((prev) => ({ ...prev, ...updateData }));
+    }
+  };
+
+  // Availability Slot Operations
+  const addSlot = async (slotData) => {
+    try {
+      const res = await api.post('/doctor/slots', { slots: [slotData] });
+      const newSlots = res.data?.data || res.data?.slots;
+      if (Array.isArray(newSlots)) {
+        setSlotsState(newSlots);
+      } else {
+        setSlotsState((prev) => [...prev, { _id: Date.now(), ...slotData }]);
+      }
+    } catch {
+      setSlotsState((prev) => [...prev, { _id: Date.now(), ...slotData }]);
+    }
+  };
+
+  const deleteSlot = async (slotId) => {
+    try {
+      await api.delete(`/doctor/slots/${slotId}`);
+      setSlotsState((prev) => prev.filter((s) => (s._id || s.id) !== slotId));
+    } catch {
+      setSlotsState((prev) => prev.filter((s) => (s._id || s.id) !== slotId));
+    }
+  };
+
+  const editSlot = async (slotId, slotData) => {
+    try {
+      const res = await api.patch(`/doctor/slots/${slotId}`, slotData);
+      const updated = res.data?.data;
+      setSlotsState((prev) =>
+        prev.map((s) => ((s._id || s.id) === slotId ? { ...s, ...updated } : s))
+      );
+    } catch {
+      setSlotsState((prev) =>
+        prev.map((s) => ((s._id || s.id) === slotId ? { ...s, ...slotData } : s))
+      );
+    }
+  };
+
+  const updateSessionStatus = async (sessionId, status) => {
+    try {
+      await api.patch(`/session/${sessionId}`, { status });
+    } catch (err) {
+      console.warn('Update session status API error:', err.message);
+    }
+  };
+
+  const submitSessionReport = async (sessionId, reportData) => {
+    try {
+      await api.post(`/session/${sessionId}/report`, reportData);
+    } catch (err) {
+      console.warn('Submit session report API error:', err.message);
+    }
+  };
 
   // Sync to local storage
   useEffect(() => {
@@ -253,74 +285,31 @@ export const DoctorProvider = ({ children }) => {
   };
 
   // Accept a session request: updates request, adds to sessions, and ensures patient is in patient directory
-  const acceptSessionRequest = (requestId) => {
+  const acceptSessionRequest = async (requestId) => {
+    try {
+      await api.patch(`/session/${requestId}`, { status: 'confirmed' });
+    } catch (err) {
+      console.warn('Accept session API call fallback:', err.message);
+    }
+
     const targetRequest = requests.find((r) => r.id === requestId);
-    if (!targetRequest) return;
+    if (targetRequest) {
+      setRequests((prev) => prev.map((r) => (r.id === requestId ? { ...r, status: 'accepted' } : r)));
+    }
 
-    // 1. Mark request as accepted
-    setRequests((prev) =>
-      prev.map((r) => (r.id === requestId ? { ...r, status: 'accepted' } : r))
-    );
-
-    // 2. Add to upcoming sessions
-    const newSession = {
-      id: Date.now(),
-      time: targetRequest.requestedTime || '11:00 AM',
-      duration: '45 mins',
-      patientName: targetRequest.patientName,
-      sessionType: targetRequest.therapyType || 'Clinical Session',
-      status: 'Confirmed',
-      sessionId: `ses-${Date.now()}`,
-    };
-    setTodaysSessions((prev) => [newSession, ...prev]);
-
-    // 3. Add / update patient in the patients directory
-    setPatients((prev) => {
-      const exists = prev.find((p) => p.patientName.toLowerCase() === targetRequest.patientName.toLowerCase());
-      if (exists) {
-        return prev.map((p) =>
-          p.patientName.toLowerCase() === targetRequest.patientName.toLowerCase()
-            ? { ...p, status: 'Approved', communityStatus: p.communityStatus || 'Approved' }
-            : p
-        );
-      }
-
-      const newPatient = {
-        id: Date.now(),
-        patientName: targetRequest.patientName,
-        age: targetRequest.age || 30,
-        gender: targetRequest.gender || 'Female',
-        phone: '+20 100 000 0000',
-        email: `${targetRequest.patientName.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-        therapyType: targetRequest.therapyType || 'Clinical Therapy',
-        status: 'Approved',
-        communityStatus: 'Approved',
-        patientSince: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        lastSession: 'Session Scheduled',
-        diagnosis: targetRequest.message || 'New intake session scheduled.',
-        notes: [
-          {
-            id: 1,
-            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            text: `Intake Request Message: "${targetRequest.message}"`,
-          },
-        ],
-        nextSession: {
-          date: targetRequest.requestedDate,
-          title: `${targetRequest.therapyType || 'Therapy'} Intake`,
-          goal: 'Initial clinical assessment & goal setting.',
-          isLive: false,
-        },
-        pastSessions: [],
-      };
-
-      return [newPatient, ...prev];
-    });
+    fetchDoctorData();
   };
 
   // Reject a session request
-  const rejectSessionRequest = (requestId) => {
+  const rejectSessionRequest = async (requestId) => {
+    try {
+      await api.patch(`/session/${requestId}`, { status: 'rejected' });
+    } catch (err) {
+      console.warn('Reject session API call fallback:', err.message);
+    }
+
     setRequests((prev) => prev.filter((r) => r.id !== requestId));
+    fetchDoctorData();
   };
 
   // Dynamically calculate recent patients based on active list & latest interactions
@@ -334,12 +323,21 @@ export const DoctorProvider = ({ children }) => {
   }, [patients]);
 
   const value = {
+    profile,
+    slots,
     patients,
     requests,
+    allSessions,
     todaysSessions,
     upcomingSessions,
     certifications,
     recentPatients,
+    updateProfile,
+    addSlot,
+    deleteSlot,
+    editSlot,
+    updateSessionStatus,
+    submitSessionReport,
     updatePatientCommunityStatus,
     addPatientSessionHistory,
     acceptSessionRequest,

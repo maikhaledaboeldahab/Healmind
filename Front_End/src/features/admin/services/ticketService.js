@@ -6,8 +6,9 @@ let tickets = [...MOCK_TICKETS]
 export const ticketService = {
   async getAll() {
     try {
-      const res = await apiClient.get('/ticket/all-tickets')
-      return res.data?.data || res.data?.tickets || res.data || tickets
+      const res = await apiClient.get('/ticket/admin/pending')
+      const raw = res.data?.data || res.data?.tickets || res.data
+      return Array.isArray(raw) ? raw : tickets
     } catch {
       return simulateLatency([...tickets])
     }
@@ -24,7 +25,7 @@ export const ticketService = {
 
   async update(ticketId, payload) {
     try {
-      const res = await apiClient.put(`/ticket/${ticketId}`, payload)
+      const res = await apiClient.patch(`/ticket/${ticketId}`, payload)
       return res.data?.data || res.data
     } catch {
       tickets = tickets.map((ticket) => (ticket.id === ticketId ? { ...ticket, ...payload } : ticket))
@@ -34,7 +35,7 @@ export const ticketService = {
 
   async assignDoctor(ticketId, doctorId) {
     try {
-      const res = await apiClient.put(`/ticket/${ticketId}/assign-doctor`, { doctorId })
+      const res = await apiClient.patch(`/ticket/admin/${ticketId}/assign`, { doctorId })
       return res.data?.data || res.data
     } catch {
       return this.update(ticketId, {

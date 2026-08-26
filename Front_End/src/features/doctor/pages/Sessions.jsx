@@ -12,17 +12,9 @@ import sessionStyles from "./Sessions.module.css";
 
 const itemsPerPage = 5;
 
-const sampleSessions = [
-  { id: 1, sessionId: "6a8965eda6ce8b3fb9a9a1e8", patientName: "Julian Vance", date: "Oct 24, 2023", time: "09:00 AM", sessionType: "Cognitive Behavioral Therapy (CBT)", status: "Completed", decision: "Approved" },
-  { id: 2, sessionId: "6a8965eda6ce8b3fb9a9a1e9", patientName: "Maya Rossi", date: "Oct 24, 2023", time: "11:30 AM", sessionType: "Intake Session", status: "In-progress", decision: "Pending" },
-  { id: 3, sessionId: "6a8965eda6ce8b3fb9a9a1ea", patientName: "David Chen", date: "Oct 23, 2023", time: "02:15 PM", sessionType: "Follow-up", status: "Cancelled", decision: "Rejected" },
-  { id: 4, sessionId: "6a8965eda6ce8b3fb9a9a1eb", patientName: "Leo Brooks", date: "Oct 23, 2023", time: "10:00 AM", sessionType: "Group Session", status: "Completed", decision: "Approved" },
-  { id: 5, sessionId: "6a8965eda6ce8b3fb9a9a1ec", patientName: "Sarah Jenkins", date: "Oct 22, 2023", time: "04:45 PM", sessionType: "Follow-up", status: "Completed", decision: "Approved" },
-];
-
 const Sessions = () => {
   const location = useLocation();
-  const { requests, acceptSessionRequest, rejectSessionRequest } = useDoctor();
+  const { allSessions, requests, acceptSessionRequest, rejectSessionRequest } = useDoctor();
 
   const [activeTab, setActiveTab] = useState(location.state?.tab || "history"); // "history" | "requests"
 
@@ -44,8 +36,10 @@ const Sessions = () => {
   const [confirmAction, setConfirmAction] = useState(null); // { requestId, type: "accept" | "reject" }
   const [toast, setToast] = useState({ show: false, message: "" });
 
-  const filteredSessions = sampleSessions.filter((session) => {
-    const matchesSearch = session.patientName
+  const sessionsList = allSessions || [];
+
+  const filteredSessions = sessionsList.filter((session) => {
+    const matchesSearch = (session.patientName || '')
       .toLowerCase()
       .includes(searchValue.toLowerCase());
     const matchesStatus = statusFilter === "All" || session.status === statusFilter;

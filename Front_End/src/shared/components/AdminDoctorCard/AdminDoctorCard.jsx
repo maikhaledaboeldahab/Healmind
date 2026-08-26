@@ -25,7 +25,18 @@ function AdminDoctorCard({ doctor, onApprove, onReject, onViewDetails }) {
         <span>
           <i className="fa-regular fa-calendar" aria-hidden="true" /> Submitted {formatDate(doctor.submittedDate)}
         </span>
-        <a href={doctor.certificateUrl} className={styles.certLink} onClick={(e) => e.preventDefault()}>
+        <a
+          href={doctor.certificateUrl !== '#' ? doctor.certificateUrl : undefined}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.certLink}
+          onClick={(e) => {
+            if (!doctor.certificateUrl || doctor.certificateUrl === '#') {
+              e.preventDefault()
+              alert('No certificate document uploaded for this doctor.')
+            }
+          }}
+        >
           <i className="fa-regular fa-file-lines" aria-hidden="true" /> View certificate
         </a>
       </div>

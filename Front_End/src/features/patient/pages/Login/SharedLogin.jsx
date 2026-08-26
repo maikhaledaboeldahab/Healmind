@@ -19,9 +19,11 @@ export default function SharedLogin() {
 
   // If already authenticated, show choice instead of automatic trapping redirect loop
   if (isUserAuth || isAdminAuth) {
-    const name = isUserAuth ? user?.fullName : admin?.name;
+    const name = isUserAuth ? (user?.name || user?.fullName) : admin?.name;
     const userEmail = isUserAuth ? user?.email : admin?.email;
-    const dashboardPath = isUserAuth ? '/dashboard' : '/admin';
+    const dashboardPath = user?.role === 'doctor' 
+      ? '/doctor/dashboard' 
+      : (isUserAuth ? '/dashboard' : '/admin');
     
     const handleLogout = () => {
       if (isUserAuth) {
@@ -66,22 +68,27 @@ export default function SharedLogin() {
 
     try {
       const cleanEmail = email.trim().toLowerCase();
-      // Role detection logic based on email format
+      
       if (cleanEmail.startsWith('admin') || cleanEmail.includes('admin@healmind.com')) {
         await adminLogin({ email: cleanEmail, password });
         const from = location.state?.from?.pathname;
         const redirectTo = from && from.startsWith('/admin') && from !== '/admin/login' ? from : '/admin';
         navigate(redirectTo, { replace: true });
-      } else if (cleanEmail.startsWith('doctor') || cleanEmail.includes('doctor@healmind.com') || cleanEmail === 'farah@healmind.com') {
-        await userLogin({ email: cleanEmail, password, role: 'doctor' });
-        const from = location.state?.from?.pathname;
-        const redirectTo = from && from.startsWith('/doctor') && from !== '/doctor/login' ? from : '/doctor/dashboard';
-        navigate(redirectTo, { replace: true });
       } else {
-        await userLogin({ email: cleanEmail, password });
-        const from = location.state?.from?.pathname;
-        const redirectTo = from && !from.startsWith('/admin') && !from.startsWith('/doctor') && from !== '/login' && from !== '/register' && from !== '/' ? from : '/dashboard';
-        navigate(redirectTo, { replace: true });
+        const loggedUser = await userLogin({ email: cleanEmail, password });
+        const userRole = loggedUser?.role || (cleanEmail.startsWith('doctor') ? 'doctor' : 'patient');
+
+        if (userRole === 'doctor') {
+          const from = location.state?.from?.pathname;
+          const redirectTo = from && from.startsWith('/doctor') && from !== '/doctor/login' ? from : '/doctor/dashboard';
+          navigate(redirectTo, { replace: true });
+        } else if (userRole === 'admin') {
+          navigate('/admin', { replace: true });
+        } else {
+          const from = location.state?.from?.pathname;
+          const redirectTo = from && !from.startsWith('/admin') && !from.startsWith('/doctor') && from !== '/login' && from !== '/register' && from !== '/' ? from : '/dashboard';
+          navigate(redirectTo, { replace: true });
+        }
       }
     } catch (err) {
       setError(err.message || 'Unable to sign in. Please check your credentials.');

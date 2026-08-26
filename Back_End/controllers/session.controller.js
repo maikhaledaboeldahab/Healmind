@@ -146,26 +146,18 @@ exports.getMySessions = async (req, res) => {
       if (endDate) query.scheduledTime.$lte = new Date(endDate);
     }
 
-    // Fetch only the specific fields needed from the database
+    // Fetch full session objects with populated patient and doctor details
     const sessions = await Session.find(query)
-      .select('_id scheduledTime patientname doctorname')
-      .sort({ scheduledTime: 1 });
+      .populate('patientId', 'name email phone gender dateOfBirth')
+      .populate('doctorId', 'name email specialization sessionPrice profileImage')
+      .sort({ scheduledTime: -1 });
 
-    // Map through the array and format each object exactly how you want it
-    const formattedSessions = sessions.map(session => {
-      // Determine which name to show based on the current user's role
-      const displayName = req.user.role === 'doctor'
-        ? session.patientname
-        : session.doctorname;
-
-      return {
-        sessionId: session._id,
-        name: displayName,
-        time: session.scheduledTime
-      };
+    return res.status(200).json({
+      success: true,
+      count: sessions.length,
+      sessions,
+      data: sessions,
     });
-
-    return res.status(200).json({ success: true, data: formattedSessions });
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -255,10 +247,10 @@ exports.updateSessionStatus = async (req, res) => {
         .json({ success: false, message: "Session not found" });
 
     if (status === "confirmed") {
-      if (!session.depositPaid || !session.balancePaid) {
+      if (!session.depositPaid) {
         return res.status(400).json({
           success: false,
-          message: "Cannot confirm session until both deposit and remaining balance payments are completed."
+          message: "Cannot confirm session until deposit payment is completed."
         });
       }
 

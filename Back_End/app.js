@@ -60,6 +60,7 @@ app.use("/api/admin", require("./routes/admin.routes"));
 app.use("/api/ticket", require("./routes/ticket.routes"));
 app.use("/api/posts", require("./routes/post.routes"));
 app.use("/api/payments", require("./routes/payment.routes"));
+app.use("/api/payment", require("./routes/payment.routes"));
 
 
 // ================================

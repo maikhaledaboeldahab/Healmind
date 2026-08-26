@@ -6,10 +6,13 @@ import UpcomingSessions from "../components/Doctor/UpcomingSessions/UpcomingSess
 import RecentPatients from "../components/Doctor/RecentPatients/RecentPatients";
 import QuickActions from "../components/Doctor/QuickActions/QuickActions";
 import { useDoctor } from "../context/DoctorContext";
+import { useAuth } from "../../../shared/context/AuthContext";
 
 const DoctorHome = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const { patients, requests, todaysSessions, upcomingSessions, recentPatients } = useDoctor();
+  const { user } = useAuth();
+  const { profile, patients, requests, todaysSessions, upcomingSessions, recentPatients } = useDoctor();
+  const doctorName = profile?.name || user?.name || user?.fullName || "Doctor";
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -44,7 +47,7 @@ const DoctorHome = () => {
 
   return (
     <div>
-      <WelcomeCard doctorName="Farah" sessionsToday={todaysSessions.length} />
+      <WelcomeCard doctorName={doctorName} sessionsToday={todaysSessions.length} />
 
       <div className="row g-3 mb-4">
         {dynamicStats.map((item) => (

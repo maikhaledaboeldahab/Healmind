@@ -7,11 +7,15 @@ const {
 
 } = require("../controllers/Profile.controller");
 
-const { updateDoctorProfile, getPatientHistory, setSlots, getSlots, deleteAllSlots, deleteSlot, editSlot, getAvailableSlots } = require("../controllers/doctor.controller");
+const { updateDoctorProfile, getPatientHistory, setSlots, getSlots, deleteAllSlots, deleteSlot, editSlot, getAvailableSlots, getPublicDoctors, getPublicDoctorById } = require("../controllers/doctor.controller");
 
 const { protect, restrictTo } = require("../middleware/authMiddleware");
 
 const { uploadProfileImage } = require("../middleware/uploadMiddleware");
+
+// Public / Patient Doctors List & Single Doctor Details
+router.get("/list", protect, getPublicDoctors);
+router.get("/public/:id", protect, getPublicDoctorById);
 
 // Get Profile
 router.get("/", protect, getProfile);

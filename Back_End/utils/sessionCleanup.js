@@ -3,16 +3,16 @@ const { Doctor } = require("../models/User");
 
 const expirePendingSessions = async () => {
   try {
-    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const now = new Date();
 
     // Find sessions in "pending" status where:
-    // 1. depositPaid is false AND they were created more than 15 minutes ago
+    // 1. depositPaid is false AND they were created more than 1 day (24 hours) ago
     // 2. OR scheduledTime is in the past (outdated session request)
     const expiredSessions = await Session.find({
       status: "pending",
       $or: [
-        { depositPaid: false, createdAt: { $lt: fifteenMinutesAgo } },
+        { depositPaid: false, createdAt: { $lt: oneDayAgo } },
         { scheduledTime: { $lt: now } }
       ]
     });

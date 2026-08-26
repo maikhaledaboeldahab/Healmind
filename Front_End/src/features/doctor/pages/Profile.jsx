@@ -21,10 +21,27 @@ const recentEarnings = [
 ];
 
 const Profile = () => {
-  const { certifications } = useDoctor();
+  const { profile, updateProfile, certifications } = useDoctor();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [viewingDoc, setViewingDoc] = useState(null);
   const [toast, setToast] = useState({ show: false, message: "" });
+
+  const doctorInfo = {
+    email: profile?.email || "doctor@healmind.com",
+    phone: profile?.phone || "+20 100 123 4567",
+    specialization: profile?.specialization || "Clinical Psychology",
+    yearsExperience: String(profile?.yearsOfExperience || 5),
+  };
+
+  const handleSaveInfo = async (data) => {
+    await updateProfile({
+      email: data.email,
+      phone: data.phone,
+      specialization: data.specialization,
+      yearsOfExperience: Number(data.yearsExperience),
+    });
+    setToast({ show: true, message: "Profile updated successfully!" });
+  };
 
   const handlePasswordSave = () => {
     setShowPasswordModal(false);
@@ -40,14 +57,14 @@ const Profile = () => {
       <h3 className="fw-bold mb-4">My Professional Profile</h3>
 
       <ProfileCard
-        doctorName="Farah"
-        title="Clinical Psychologist"
-        verificationStatus="approved"
+        doctorName={profile?.name || profile?.fullName || "Doctor"}
+        title={profile?.specialization || "Clinical Specialist"}
+        verificationStatus={profile?.isApproved ? "approved" : "pending"}
       />
 
       <div className="row g-4">
         <div className="col-lg-8">
-          <PersonalInfo initialData={initialInfo} onSave={(data) => console.log("Saved:", data)} />
+          <PersonalInfo initialData={doctorInfo} onSave={handleSaveInfo} />
           <CertificationsList
             certifications={certifications}
             onViewDocument={handleViewDocument}

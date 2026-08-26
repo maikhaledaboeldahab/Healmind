@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -9,16 +10,16 @@ import {
   faRobot,
   faBell,
 } from '@fortawesome/free-solid-svg-icons';
+import api from '../../../../shared/services/api';
 import { useAuth } from '../../../../shared/context/AuthContext';
 import { useNotifications } from '../../../../shared/context/NotificationContext';
-import { upcomingSessions } from '../../../../data/sessions';
-import { tickets } from '../../../../data/tickets';
 import StatCard from '../../../../shared/components/StatCard/StatCard';
 import SessionCard from '../../../../shared/components/SessionCard/SessionCard';
 import TicketCard from '../../../../shared/components/TicketCard/TicketCard';
 import NotificationCard from '../../../../shared/components/NotificationCard/NotificationCard';
 import Button from '../../../../shared/components/Button/Button';
 import EmptyState from '../../../../shared/components/EmptyState/EmptyState';
+import Loader from '../../../../shared/components/Loader/Loader';
 import styles from './Dashboard.module.css';
 
 const QUICK_ACTIONS = [
@@ -28,14 +29,77 @@ const QUICK_ACTIONS = [
   { label: 'Community', icon: faUsers, to: '/community' },
 ];
 
+function normalizeSession(s) {
+  if (!s) return null;
+  return {
+    id: s._id || s.id,
+    doctorId: s.doctorId?._id || s.doctorId || 'doc-1',
+    doctorName: s.doctorId?.name || s.doctorname || 'Doctor',
+    doctorImage: s.doctorId?.profileImage || null,
+    date: s.scheduledTime ? new Date(s.scheduledTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Upcoming',
+    time: s.scheduledTime ? new Date(s.scheduledTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Scheduled',
+    status: s.status ? (s.status.charAt(0).toUpperCase() + s.status.slice(1)) : 'Confirmed',
+    depositPaid: s.depositPaid || false,
+    depositAmount: s.depositAmount || 70,
+    remainingBalance: s.balance || 280,
+    sessionPrice: s.sessionPrice || 350,
+  };
+}
+
+function normalizeTicket(t) {
+  if (!t) return null;
+  return {
+    id: t._id || t.id,
+    subject: t.subject || 'Community Access Request',
+    description: t.description || t.notes || 'Ticket submitted for mental health support.',
+    status: t.status === 'completed' || t.status === 'Closed' ? 'Closed' : 'Open',
+    createdAt: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Recent',
+  };
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const { notifications, markAsRead } = useNotifications();
   const navigate = useNavigate();
 
-  const activeTickets = tickets.filter((t) => t.status === 'Open' || t.status === 'In Progress');
-  const confirmedUpcomingSessions = upcomingSessions.filter(
-    (s) => s.status?.toLowerCase() === 'confirmed' && s.depositPaid !== false
+  const [liveSessions, setLiveSessions] = useState([]);
+  const [liveTickets, setLiveTickets] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      setIsLoading(true);
+      try {
+        const [sessionsRes, ticketsRes] = await Promise.allSettled([
+          api.get('/session/my-sessions'),
+          api.get('/ticket/patient'),
+        ]);
+
+        if (sessionsRes.status === 'fulfilled' && sessionsRes.value.data) {
+          const rawS = sessionsRes.value.data.sessions || sessionsRes.value.data.data || sessionsRes.value.data;
+          if (Array.isArray(rawS)) {
+            setLiveSessions(rawS.map(normalizeSession));
+          }
+        }
+
+        if (ticketsRes.status === 'fulfilled' && ticketsRes.value.data) {
+          const rawT = ticketsRes.value.data.data || ticketsRes.value.data.tickets || ticketsRes.value.data;
+          if (Array.isArray(rawT)) {
+            setLiveTickets(rawT.map(normalizeTicket));
+          }
+        }
+      } catch (err) {
+        console.warn('Dashboard fetch error:', err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadDashboardData();
+  }, []);
+
+  const activeTickets = liveTickets.filter((t) => t.status === 'Open' || t.status === 'In Progress');
+  const confirmedUpcomingSessions = liveSessions.filter(
+    (s) => s.status?.toLowerCase() === 'confirmed' || s.status?.toLowerCase() === 'pending'
   );
 
   return (

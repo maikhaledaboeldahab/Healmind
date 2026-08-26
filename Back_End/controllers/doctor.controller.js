@@ -248,6 +248,46 @@ const getAvailableSlots = async (req, res) => {
   }
 };
 
+const getPublicDoctors = async (req, res) => {
+  try {
+    const doctors = await Doctor.find()
+      .select("-password")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: doctors.length,
+      data: doctors,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getPublicDoctorById = async (req, res) => {
+  try {
+    const doctor = await Doctor.findById(req.params.id).select("-password");
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found.",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: doctor,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   updateDoctorProfile,
   getPatientHistory,
@@ -256,6 +296,8 @@ module.exports = {
   deleteAllSlots,
   deleteSlot,
   editSlot,
-  getAvailableSlots
+  getAvailableSlots,
+  getPublicDoctors,
+  getPublicDoctorById,
 };
 

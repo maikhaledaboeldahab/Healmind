@@ -29,7 +29,7 @@ const sessionSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: ["visit", "chat", "video"], // ✅ ضفنا video كنوع جديد
+      enum: ["visit", "chat", "video", "online"],
       required: true,
     },
     //-----------------

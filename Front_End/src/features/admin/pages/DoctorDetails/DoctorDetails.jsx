@@ -109,7 +109,18 @@ function DoctorDetails() {
             </div>
           </dl>
 
-          <a href={doctor.certificateUrl} className={styles.certLink} onClick={(e) => e.preventDefault()}>
+          <a
+            href={doctor.certificateUrl !== '#' ? doctor.certificateUrl : undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.certLink}
+            onClick={(e) => {
+              if (!doctor.certificateUrl || doctor.certificateUrl === '#') {
+                e.preventDefault()
+                alert('No certificate document uploaded for this doctor.')
+              }
+            }}
+          >
             <i className="fa-regular fa-file-lines" aria-hidden="true" /> View Certificate
           </a>
         </Card>
