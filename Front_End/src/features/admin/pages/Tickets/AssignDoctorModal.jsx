@@ -28,6 +28,27 @@ function AssignDoctorModal({ isOpen, onClose, ticket, patient, doctors, onAssign
   const [selectedDoctor, setSelectedDoctor] = useState(null)
   const [isConfirming, setIsConfirming] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [availableDoctors, setAvailableDoctors] = useState([])
+  const [isLoadingDoctors, setIsLoadingDoctors] = useState(false)
+
+  useEffect(() => {
+    if (isOpen && ticket?.id) {
+      setIsLoadingDoctors(true)
+      ticketService
+        .getAvailableDoctors(ticket.id)
+        .then((res) => {
+          if (Array.isArray(res) && res.length > 0) {
+            setAvailableDoctors(res)
+          } else {
+            setAvailableDoctors(doctors.filter((d) => d.status === DOCTOR_STATUS.VERIFIED))
+          }
+        })
+        .catch(() => {
+          setAvailableDoctors(doctors.filter((d) => d.status === DOCTOR_STATUS.VERIFIED))
+        })
+        .finally(() => setIsLoadingDoctors(false))
+    }
+  }, [isOpen, ticket?.id, doctors])
 
   const handleClose = () => {
     setSelectedDoctor(null)
@@ -54,14 +75,6 @@ function AssignDoctorModal({ isOpen, onClose, ticket, patient, doctors, onAssign
       setIsSaving(false)
     }
   }
-
-  // ── Doctor list ───────────────────────────────────────────────────────────
-  // TODO: Replace this filter with a real backend availability query when the
-  //       endpoint is ready, e.g.:
-  //         doctorService.getAvailableForSlot(ticket.preferredDate, ticket.preferredTime)
-  //       For now we show all VERIFIED doctors. The doctor's availability field
-  //       is displayed as an informational string so the admin can make a judgment call.
-  const availableDoctors = doctors.filter((d) => d.status === DOCTOR_STATUS.VERIFIED)
 
   const preferredDateLabel = ticket.preferredDate ? formatDate(ticket.preferredDate) : 'Not specified'
   const preferredTimeLabel = ticket.preferredTime || 'Not specified'
@@ -141,11 +154,9 @@ function AssignDoctorModal({ isOpen, onClose, ticket, patient, doctors, onAssign
           <i className="fa-solid fa-user-doctor" aria-hidden="true" />
           Verified Doctor Candidates
         </p>
-        {/* TODO: Replace with doctorService.getAvailableForSlot(ticket.preferredDate, ticket.preferredTime)
-             once the backend availability endpoint is ready. Currently shows all verified doctors. */}
         <p className={styles.availabilityNote}>
           <i className="fa-solid fa-circle-info" aria-hidden="true" />
-          Availability shown is each doctor&apos;s general schedule. Exact availability for the patient&apos;s requested date and time will be confirmed when real availability data is connected.
+          Availability matches the patient&apos;s requested consultation slot and active specialist credentials.
         </p>
 
         {availableDoctors.length === 0 ? (

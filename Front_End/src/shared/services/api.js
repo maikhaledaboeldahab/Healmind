@@ -8,24 +8,23 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  let token = null;
-
-  try {
-    const stored = window.localStorage.getItem('healmind_auth_user');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      token = parsed?.token || parsed?.accessToken || parsed?.jwt;
-    }
-  } catch {
-    // Ignore JSON parse errors
+  // If sending FormData (e.g. file uploads), allow axios/browser to set boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
   }
 
+  let token = window.localStorage.getItem('healmind_token');
+
   if (!token) {
-    token =
-      window.localStorage.getItem('healmind_token') ||
-      window.localStorage.getItem('token') ||
-      window.sessionStorage.getItem('healmind_admin_token') ||
-      window.sessionStorage.getItem('token');
+    try {
+      const stored = window.localStorage.getItem('healmind_auth_user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        token = parsed?.token || parsed?.accessToken || parsed?.jwt;
+      }
+    } catch {
+      // Ignore JSON parse errors
+    }
   }
 
   if (token) {
@@ -41,10 +40,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       window.localStorage.removeItem('healmind_token');
       window.localStorage.removeItem('healmind_auth_user');
-      window.sessionStorage.removeItem('healmind_admin_token');
     }
     return Promise.reject(error);
   }
 );
 
+export { api, api as apiClient };
 export default api;

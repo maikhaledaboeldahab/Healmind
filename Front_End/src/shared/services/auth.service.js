@@ -1,10 +1,11 @@
 import api from './api';
 
-// These call the real backend once it is available.
-// Until then, AuthContext simulates these flows on the frontend.
-
 export const loginRequest = (credentials) => api.post('/auth/login', credentials);
 
-export const registerRequest = (payload) => api.post('/auth/register', payload);
+export const registerPatientRequest = (payload) => api.post('/auth/register/patient', payload);
 
-export const fetchProfile = () => api.get('/auth/me');
+export const registerDoctorRequest = (formData) => api.post('/auth/register/doctor', formData);
+
+export const fetchProfile = () => api.get('/profile');
+
+export const logoutRequest = () => api.post('/auth/logout');

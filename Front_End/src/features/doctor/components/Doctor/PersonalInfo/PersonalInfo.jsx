@@ -11,10 +11,8 @@ const PersonalInfo = ({ initialData, onSave }) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    // TODO: replace with a real API call once the backend exists, e.g.
-    // await axios.patch('/api/doctor/profile', formData);
-    onSave?.(formData);
+  const handleSave = async () => {
+    await onSave?.(formData);
   };
 
   return (

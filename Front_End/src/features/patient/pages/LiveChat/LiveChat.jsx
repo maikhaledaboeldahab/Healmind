@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperclip, faPaperPlane, faCircle } from '@fortawesome/free-solid-svg-icons';
-import { upcomingSessions } from '../../../../data/sessions';
-import { getDoctorById } from '../../../../data/doctors';
+import api from '../../../../shared/services/api';
 import styles from './LiveChat.module.css';
 
 const INITIAL_MESSAGES = [
@@ -13,8 +12,28 @@ const INITIAL_MESSAGES = [
 
 export default function LiveChat() {
   const { sessionId } = useParams();
-  const session = upcomingSessions.find((s) => s.id === sessionId);
-  const doctor = session ? getDoctorById(session.doctorId) : null;
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadSession() {
+      try {
+        const res = await api.get(`/session/${sessionId}`);
+        if (mounted) setSession(res.data?.data || res.data);
+      } catch {
+        // Ignore error
+      }
+    }
+    if (sessionId) loadSession();
+    return () => {
+      mounted = false;
+    };
+  }, [sessionId]);
+
+  const doctor = session?.doctorId || {
+    name: session?.doctorName || 'Your Specialist',
+    image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&h=100&fit=crop&crop=faces',
+  };
 
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [draft, setDraft] = useState('');

@@ -1,20 +1,37 @@
-import { MOCK_NOTIFICATIONS } from '../constants/mockData'
-import { simulateLatency } from './apiClient'
+import { apiClient } from './apiClient';
 
-let notifications = [...MOCK_NOTIFICATIONS]
+export function normalizeNotification(n) {
+  if (!n) return null;
+  return {
+    ...n,
+    id: n._id || n.id,
+    title: n.title || 'Notification',
+    message: n.message || '',
+    type: n.type || 'system',
+    isRead: Boolean(n.isRead),
+    createdAt: n.createdAt || new Date().toISOString(),
+    link: n.link || null,
+  };
+}
 
 export const notificationService = {
   async getAll() {
-    return simulateLatency([...notifications])
+    const res = await apiClient.get('/notifications');
+    const raw = res.data?.data || res.data?.notifications || res.data;
+    return Array.isArray(raw) ? raw.map(normalizeNotification) : [];
   },
 
   async markAsRead(notificationId) {
-    notifications = notifications.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
-    return simulateLatency(notifications.find((n) => n.id === notificationId))
+    const res = await apiClient.patch(`/notifications/${notificationId}/read`);
+    const raw = res.data?.data || res.data;
+    return normalizeNotification(raw);
   },
 
   async markAllAsRead() {
-    notifications = notifications.map((n) => ({ ...n, isRead: true }))
-    return simulateLatency([...notifications])
+    const res = await apiClient.patch('/notifications/read-all');
+    const raw = res.data?.data || res.data;
+    return Array.isArray(raw) ? raw.map(normalizeNotification) : [];
   },
-}
+};
+
+export default notificationService;

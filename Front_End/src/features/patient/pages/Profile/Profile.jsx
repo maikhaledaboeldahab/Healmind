@@ -20,11 +20,50 @@ export default function Profile() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { isSubmitting, isDirty },
-  } = useForm({ defaultValues: user });
+  } = useForm({
+    defaultValues: {
+      fullName: user?.fullName || user?.name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      age: user?.age || '',
+    },
+  });
 
   const onSubmit = async (data) => {
-    updateProfile(data);
+    try {
+      const payload = {
+        name: data.fullName,
+        email: data.email,
+        phone: data.phone,
+      };
+      const res = await api.put('/profile/profile', payload);
+      const updated = res.data?.data || res.data;
+      updateProfile({ ...data, name: data.fullName, ...updated });
+      alert('Profile updated successfully.');
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Failed to update profile.');
+    }
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await api.put('/profile/image', formData);
+      const updated = res.data?.data || res.data;
+      const imageUrl = updated.profileImage || updated.image;
+      if (imageUrl) {
+        updateProfile({ avatar: imageUrl, profileImage: imageUrl });
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Failed to upload profile image.');
+    }
   };
 
   return (
@@ -35,13 +74,22 @@ export default function Profile() {
         <section className={styles.card}>
           <div className={styles.avatarSection}>
             <div className={styles.avatarWrap}>
-              <img src={user?.avatar} alt={user?.fullName} />
-              <button className={styles.editAvatar} aria-label="Change photo">
+              <img
+                src={user?.avatar || user?.profileImage || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=200&h=200&fit=crop&crop=faces'}
+                alt={user?.fullName || user?.name}
+              />
+              <label className={styles.editAvatar} aria-label="Change photo" style={{ cursor: 'pointer' }}>
                 <FontAwesomeIcon icon={faPen} />
-              </button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
             </div>
             <div>
-              <h2>{user?.fullName}</h2>
+              <h2>{user?.fullName || user?.name}</h2>
               <p className={styles.muted}>{user?.email}</p>
             </div>
           </div>
@@ -55,7 +103,7 @@ export default function Profile() {
               <Input label="Age" type="number" {...register('age')} />
               <Input label="Phone Number" {...register('phone')} />
             </div>
-            <Button type="submit" disabled={!isDirty || isSubmitting}>
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
           </form>

@@ -43,9 +43,18 @@ const Profile = () => {
     setToast({ show: true, message: "Profile updated successfully!" });
   };
 
-  const handlePasswordSave = () => {
-    setShowPasswordModal(false);
-    setToast({ show: true, message: "Password updated successfully." });
+  const handlePasswordSave = async (data) => {
+    try {
+      await api.patch('/auth/change-password', {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+      setShowPasswordModal(false);
+      setToast({ show: true, message: "Password updated successfully." });
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || "Failed to update password.";
+      setToast({ show: true, message: msg });
+    }
   };
 
   const handleViewDocument = (cert) => {

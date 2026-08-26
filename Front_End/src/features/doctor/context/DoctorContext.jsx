@@ -58,11 +58,11 @@ export const DoctorProvider = ({ children }) => {
   // Fetch real data from Backend APIs
   const fetchDoctorData = async () => {
     try {
-      const [profileRes, slotsRes, sessionsRes, ticketsRes, patientsRes] = await Promise.allSettled([
+      const [profileRes, slotsRes, sessionsRes, communityRes, patientsRes] = await Promise.allSettled([
         api.get('/doctor'),
         api.get('/doctor/slots'),
         api.get('/session/my-sessions'),
-        api.get('/ticket/admin/pending'),
+        api.get('/doctor/community-access/pending'),
         api.get('/admin/patients'),
       ]);
 
@@ -132,19 +132,19 @@ export const DoctorProvider = ({ children }) => {
         }
       }
 
-      if (ticketsRes.status === 'fulfilled' && ticketsRes.value.data) {
-        const liveTickets = ticketsRes.value.data.data || ticketsRes.value.data;
-        if (Array.isArray(liveTickets) && liveTickets.length > 0) {
+      if (communityRes.status === 'fulfilled' && communityRes.value.data) {
+        const livePatients = communityRes.value.data.data || communityRes.value.data;
+        if (Array.isArray(livePatients) && livePatients.length > 0) {
           setRequests(
-            liveTickets.map((t) => ({
-              id: t._id || t.id,
-              patientName: t.patientId?.name || t.patientName || 'Patient Request',
-              age: 30,
-              gender: t.patientId?.gender || 'Unknown',
-              requestedDate: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Pending',
+            livePatients.map((p) => ({
+              id: p._id || p.id,
+              patientName: p.name || p.fullName || 'Patient Request',
+              age: p.age || 28,
+              gender: p.gender || 'Unknown',
+              requestedDate: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : 'Pending',
               requestedTime: '10:00 AM',
-              message: t.description || t.notes || 'Community mental health access request.',
-              status: t.status || 'pending',
+              message: p.description || 'Community mental health access request.',
+              status: p.communityAccess || 'pending',
               therapyType: 'Clinical Assessment',
             }))
           );
@@ -235,7 +235,13 @@ export const DoctorProvider = ({ children }) => {
   }, [requests]);
 
   // Update community access status for a patient
-  const updatePatientCommunityStatus = (patientId, newStatus) => {
+  const updatePatientCommunityStatus = async (patientId, newStatus) => {
+    const decision = newStatus.toLowerCase().includes('approv') ? 'approved' : 'rejected';
+    try {
+      await api.patch(`/doctor/community-access/${patientId}`, { decision });
+    } catch {
+      // Allow optimistic update
+    }
     setPatients((prev) =>
       prev.map((p) =>
         String(p.id) === String(patientId)

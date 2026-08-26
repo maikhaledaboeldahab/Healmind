@@ -97,10 +97,11 @@ function Contacts() {
       return
     }
 
-    // TODO: Connect future backend reply endpoint (e.g. POST /admin/contact/:id/reply)
-    // Payload: { contactId: selectedContact?.id, replyMessage: trimmed }
+    if (selectedContact?.email) {
+      window.open(`mailto:${selectedContact.email}?subject=Re: ${encodeURIComponent(selectedContact.subject)}&body=${encodeURIComponent(trimmed)}`)
+    }
     setReplyError('')
-    setReplyFeedback('Reply is ready for backend integration.')
+    setReplyFeedback('Reply email client opened successfully.')
   }
 
   const columns = [

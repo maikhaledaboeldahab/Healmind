@@ -11,5 +11,5 @@ export const submitContactMessage = (payload) => {
     subject: payload.subject?.trim(),
     message: payload.message?.trim(),
   };
-  return api.post('/contact', sanitized);
+  return api.post('/contactus', sanitized);
 };

@@ -8,11 +8,10 @@ const {
   decideCommunityAccess,
 } = require("../controllers/communityAccess.controller");
 
-// ⚠️ عدّلي المسار/الاسم لو مختلف عندك
-const { protect } = require("../middleware/authMiddleware");
-// ⚠️ لو عندك middleware بيتحقق من الـ role (زي restrictTo("doctor"))، ضيفيه هنا كمان
+const { protect, restrictTo } = require("../middleware/authMiddleware");
 
 router.use(protect);
+router.use(restrictTo("doctor"));
 
 router.get("/pending", getPendingPatients);
 router.patch("/:patientId", decideCommunityAccess);

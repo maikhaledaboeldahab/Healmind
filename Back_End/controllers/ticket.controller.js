@@ -571,6 +571,64 @@ const assignDoctor = async (req, res) => {
 
 
 // ======================================================
+// 5. GET TICKET BY ID
+// GET /api/ticket/:id
+// ======================================================
+
+const getTicketById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ticket ID.",
+      });
+    }
+
+    const ticket = await Ticket.findById(id)
+      .populate("patientId", "name email phone profileImage role")
+      .populate("assignedDoctor", "name email phone profileImage specialization yearsOfExperience")
+      .populate("assignedBy", "name email role");
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: "Ticket not found.",
+      });
+    }
+
+    // Role check: patient can view own ticket, doctor can view assigned ticket, admin can view all
+    const userRole = req.user.role;
+    const userId = req.user._id ? req.user._id.toString() : req.user.id;
+
+    if (userRole === "patient" && ticket.patientId?._id?.toString() !== userId && ticket.patientId?.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to view this ticket.",
+      });
+    }
+
+    if (userRole === "doctor" && ticket.assignedDoctor?._id?.toString() !== userId && ticket.assignedDoctor?.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to view this ticket.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: ticket,
+    });
+  } catch (error) {
+    console.error("Get Ticket By ID Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
+  }
+};
+
+// ======================================================
 // EXPORTS
 // ======================================================
 
@@ -580,4 +638,5 @@ module.exports = {
   getPendingTickets,
   getAvailableDoctors,
   assignDoctor,
+  getTicketById,
 };

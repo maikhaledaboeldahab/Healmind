@@ -51,6 +51,7 @@ app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/session", require("./routes/session.routes"));
 app.use("/api/session", require("./routes/video.routes"));
 app.use("/api/profile", require("./routes/profile.routes"));
+app.use("/api/doctor/community-access", require("./routes/communityAccess.routes"));
 app.use("/api/doctor", require("./routes/doctor.routs"));
 app.use("/api/reviews", require("./routes/review.routes"));
 app.use("/api/contactus", require("./routes/contactus.routes"));
@@ -60,7 +61,6 @@ app.use("/api/admin", require("./routes/admin.routes"));
 app.use("/api/ticket", require("./routes/ticket.routes"));
 app.use("/api/posts", require("./routes/post.routes"));
 app.use("/api/payments", require("./routes/payment.routes"));
-app.use("/api/payment", require("./routes/payment.routes"));
 
 
 // ================================

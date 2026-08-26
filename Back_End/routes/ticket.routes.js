@@ -6,6 +6,7 @@ const {
   getPendingTickets,
   getAvailableDoctors,
   assignDoctor,
+  getTicketById,
 } = require("../controllers/ticket.controller");
 
 const {
@@ -85,6 +86,15 @@ router.patch(
   restrictTo("admin"),
   validate(assignDoctorSchema),
   assignDoctor
+);
+
+// Get Single Ticket by ID
+// GET /api/ticket/:id
+
+router.get(
+  "/:id",
+  protect,
+  getTicketById
 );
 
 

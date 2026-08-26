@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass, faXmark, faArrowUpWideShort } from '@fortawesome/free-solid-svg-icons';
 import api from '../../../../shared/services/api';
-import { doctors as dummyDoctors, specialties } from '../../../../data/doctors';
+import specialties from '../../../../shared/constants/specialties';
 import DoctorCard from '../../../../shared/components/DoctorCard/DoctorCard';
 import EmptyState from '../../../../shared/components/EmptyState/EmptyState';
 import Loader from '../../../../shared/components/Loader/Loader';

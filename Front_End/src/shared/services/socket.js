@@ -16,8 +16,6 @@ export const connectSocket = (userId, role) => {
   }
 };
 
-export const disconnectSocket = () => {
-  if (socket.connected) {
-    socket.disconnect();
-  }
-};
+export const getSocket = () => socket;
+
+export default socket;

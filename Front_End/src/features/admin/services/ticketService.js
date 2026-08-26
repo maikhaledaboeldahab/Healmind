@@ -1,48 +1,46 @@
-import { MOCK_TICKETS } from '../constants/mockData'
-import { apiClient, simulateLatency } from './apiClient'
+import { apiClient } from './apiClient';
 
-let tickets = [...MOCK_TICKETS]
+export function normalizeTicket(t) {
+  if (!t) return null;
+  return {
+    ...t,
+    id: t._id || t.id,
+    patientId: t.patientId?._id || t.patientId,
+    patientName: t.patientId?.name || t.patientName || 'Patient',
+    doctorId: t.assignedDoctor?._id || t.assignedDoctor || t.doctorId,
+    doctorName: t.assignedDoctor?.name || t.doctorName || null,
+    scheduledTime: t.scheduledTime,
+    mode: t.mode || 'video',
+    status: t.status || 'pending',
+    createdAt: t.createdAt || new Date().toISOString(),
+    updatedAt: t.updatedAt || t.assignedAt || t.createdAt,
+  };
+}
 
 export const ticketService = {
   async getAll() {
-    try {
-      const res = await apiClient.get('/ticket/admin/pending')
-      const raw = res.data?.data || res.data?.tickets || res.data
-      return Array.isArray(raw) ? raw : tickets
-    } catch {
-      return simulateLatency([...tickets])
-    }
+    const res = await apiClient.get('/ticket/admin/pending');
+    const raw = res.data?.data || res.data?.tickets || res.data;
+    return Array.isArray(raw) ? raw.map(normalizeTicket) : [];
   },
 
   async getById(ticketId) {
-    try {
-      const res = await apiClient.get(`/ticket/${ticketId}`)
-      return res.data?.data || res.data || (tickets.find((ticket) => ticket.id === ticketId) ?? null)
-    } catch {
-      return simulateLatency(tickets.find((ticket) => ticket.id === ticketId) ?? null)
-    }
+    const res = await apiClient.get(`/ticket/${ticketId}`);
+    const raw = res.data?.data || res.data;
+    return normalizeTicket(raw);
   },
 
-  async update(ticketId, payload) {
-    try {
-      const res = await apiClient.patch(`/ticket/${ticketId}`, payload)
-      return res.data?.data || res.data
-    } catch {
-      tickets = tickets.map((ticket) => (ticket.id === ticketId ? { ...ticket, ...payload } : ticket))
-      return simulateLatency(tickets.find((ticket) => ticket.id === ticketId))
-    }
+  async getAvailableDoctors(ticketId) {
+    const res = await apiClient.get(`/ticket/admin/${ticketId}/available-doctors`);
+    const raw = res.data?.data || res.data;
+    return Array.isArray(raw) ? raw : [];
   },
 
   async assignDoctor(ticketId, doctorId) {
-    try {
-      const res = await apiClient.patch(`/ticket/admin/${ticketId}/assign`, { doctorId })
-      return res.data?.data || res.data
-    } catch {
-      return this.update(ticketId, {
-        doctorId,
-        status: 'under_evaluation',
-        updatedAt: new Date().toISOString(),
-      })
-    }
+    const res = await apiClient.patch(`/ticket/admin/${ticketId}/assign`, { doctorId });
+    const raw = res.data?.data || res.data;
+    return normalizeTicket(raw);
   },
-}
+};
+
+export default ticketService;

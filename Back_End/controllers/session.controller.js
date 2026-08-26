@@ -189,6 +189,8 @@ exports.getSessionDetails = async (req, res) => {
       query.doctorId = userId;
     } else if (userRole === "patient") {
       query.patientId = userId;
+    } else if (userRole === "admin") {
+      query = {};
     } else {
       // Failsafe in case a user without a valid role hits this route
       return res.status(403).json({
@@ -200,7 +202,9 @@ exports.getSessionDetails = async (req, res) => {
     const session = await Session.findOne({
       _id: sessionId,
       ...query
-    });
+    })
+      .populate('patientId', 'name email phone gender dateOfBirth profileImage')
+      .populate('doctorId', 'name email specialization sessionPrice profileImage');
 
     if (!session)
       return res

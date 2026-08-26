@@ -11,67 +11,75 @@ import {
   faUserDoctor,
   faVideo,
 } from '@fortawesome/free-solid-svg-icons';
-import { upcomingSessions, sessionHistory } from '../../../../data/sessions';
-import { doctors, getDoctorById } from '../../../../data/doctors';
+import api from '../../../../shared/services/api';
 import { getEligibleDoctorSession } from '../../../../shared/utils/videoWindow';
 import Button from '../../../../shared/components/Button/Button';
 import EmptyState from '../../../../shared/components/EmptyState/EmptyState';
 import styles from './Messages.module.css';
 
-// Default initial message templates per doctor
-const DEFAULT_CONVERSATIONS = {
-  'doc-01': [
-    { id: 1, from: 'doctor', text: "Hello! Looking forward to our consultation. How have your anxiety levels been this week?", time: '09:00 AM' },
-    { id: 2, from: 'patient', text: "Hi Dr. Jenkins, thanks for asking. It's been manageable, though work was a bit stressful on Wednesday.", time: '09:05 AM' },
-    { id: 3, from: 'doctor', text: "Noted. We will focus on some practical boundary-setting techniques during our upcoming session.", time: '09:12 AM' },
-  ],
-  'doc-03': [
-    { id: 1, from: 'doctor', text: "Hi! Just checking in — were you able to try the CBT daily reframing exercises we discussed?", time: 'Yesterday' },
-    { id: 2, from: 'patient', text: "Yes! Writing them down in the morning helped me catch negative thought loops before they spiraled.", time: 'Yesterday' },
-  ],
-  'doc-02': [
-    { id: 1, from: 'doctor', text: "Thank you for attending our previous session. Your session report and action items have been updated.", time: '3d ago' },
-  ],
-};
-
 export default function Messages() {
   const { doctorId } = useParams();
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(() => new Date());
+  const [conversationDoctors, setConversationDoctors] = useState([]);
+  const [allSessions, setAllSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDoctorId, setSelectedDoctorId] = useState(doctorId || null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [threads, setThreads] = useState({});
+  const [draft, setDraft] = useState('');
+  const bottomRef = useRef(null);
 
   // Real-time interval to smoothly update video call window eligibility
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 10000); // Check every 10 seconds
+    }, 10000);
     return () => clearInterval(timer);
   }, []);
 
-  const allSessions = useMemo(() => [...upcomingSessions, ...sessionHistory], []);
+  useEffect(() => {
+    let mounted = true;
+    async function loadData() {
+      try {
+        setLoading(true);
+        const [docsRes, sessRes] = await Promise.all([
+          api.get('/doctor/list').catch(() => api.get('/admin/doctors')),
+          api.get('/session/my-sessions').catch(() => ({ data: [] })),
+        ]);
 
-  // Find unique doctors associated with patient from upcoming and past sessions
-  const associatedDoctorIds = useMemo(() => {
-    const ids = new Set();
-    upcomingSessions.forEach((s) => s.doctorId && ids.add(s.doctorId));
-    sessionHistory.forEach((s) => s.doctorId && ids.add(s.doctorId));
-    return Array.from(ids);
-  }, []);
+        const rawDocs = docsRes.data?.data || docsRes.data || [];
+        const rawSess = sessRes.data?.data || sessRes.data?.sessions || sessRes.data || [];
 
-  const conversationDoctors = useMemo(() => {
-    if (associatedDoctorIds.length > 0) {
-      return associatedDoctorIds.map((id) => getDoctorById(id)).filter(Boolean);
+        if (mounted) {
+          const docs = Array.isArray(rawDocs)
+            ? rawDocs.map((d) => ({
+                id: d._id || d.id,
+                name: d.name || d.fullName || 'Doctor',
+                specialization: d.specialization || 'Mental Health Specialist',
+                image: d.profileImage || 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&crop=faces',
+              }))
+            : [];
+          setConversationDoctors(docs);
+          setAllSessions(Array.isArray(rawSess) ? rawSess : []);
+          if (!selectedDoctorId && docs.length > 0) {
+            setSelectedDoctorId(docs[0].id);
+          }
+        }
+      } catch {
+        if (mounted) {
+          setConversationDoctors([]);
+          setAllSessions([]);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
-    // Fallback to top doctors if no prior bookings exist
-    return doctors.slice(0, 3);
-  }, [associatedDoctorIds]);
-
-  // Selected doctor state (from URL parameter or first associated doctor)
-  const initialDoctorId = doctorId || conversationDoctors[0]?.id || 'doc-01';
-  const [selectedDoctorId, setSelectedDoctorId] = useState(initialDoctorId);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [threads, setThreads] = useState(DEFAULT_CONVERSATIONS);
-  const [draft, setDraft] = useState('');
-  const bottomRef = useRef(null);
+    loadData();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (doctorId && doctorId !== selectedDoctorId) {
@@ -79,9 +87,9 @@ export default function Messages() {
     }
   }, [doctorId, selectedDoctorId]);
 
-  const activeDoctor = getDoctorById(selectedDoctorId) || conversationDoctors[0];
+  const activeDoctor = conversationDoctors.find((d) => d.id === selectedDoctorId) || conversationDoctors[0];
   const activeMessages = threads[selectedDoctorId] || [
-    { id: 1, from: 'doctor', text: `Hi, I am ${activeDoctor?.name}. How can I assist you with your mental wellness today?`, time: 'Just now' },
+    { id: 1, from: 'doctor', text: `Hi, I am ${activeDoctor?.name || 'Doctor'}. How can I assist you with your mental wellness today?`, time: 'Just now' },
   ];
 
   // Video call eligibility with active doctor

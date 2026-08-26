@@ -41,11 +41,7 @@ export default function Payment() {
     try {
       const sessionId = state?.sessionId || bookingId;
       if (sessionId && !sessionId.startsWith('bk-')) {
-        try {
-          await api.post('/payments/mock-charge', { sessionId });
-        } catch {
-          await api.post('/payment/mock-charge', { sessionId });
-        }
+        await api.post('/payments/mock-charge', { sessionId });
       }
 
       navigate('/sessions/upcoming', {
@@ -59,18 +55,8 @@ export default function Payment() {
         },
       });
     } catch (err) {
-      console.warn('Payment mock-charge error:', err.message);
-      // Navigate anyway so patient experience succeeds smoothly
-      navigate('/sessions/upcoming', {
-        state: {
-          paid: true,
-          bookingId: state?.sessionId || bookingId,
-          depositAmount: state?.depositAmount || depositAmount,
-          remainingBalance: state?.remainingBalance || remainingBalance,
-          sessionPrice: state?.sessionPrice || sessionPrice,
-          doctorName: doctor.name,
-        },
-      });
+      const msg = err.response?.data?.message || err.message || 'Payment failed. Please try again.';
+      setErrorMsg(msg);
     } finally {
       setIsPaying(false);
     }

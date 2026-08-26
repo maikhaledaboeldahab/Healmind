@@ -68,6 +68,7 @@ const PatientDetails = () => {
         <div className="col-lg-4">
           <div style={{ position: "sticky", top: "20px" }}>
             <CommunityStatus
+              patientId={patient._id || patient.id}
               status={patient.communityStatus || patient.status}
               onDecision={handleDecision}
             />

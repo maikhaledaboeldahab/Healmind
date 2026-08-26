@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "../../../../../shared/services/api";
 import ConfirmModal from "../../../../../shared/components/ConfirmModal/ConfirmModal";
 import styles from "./CommunityStatus.module.css";
 
@@ -13,6 +14,7 @@ const DECISIONS = {
     confirmColor: "primary",
     resultingStatus: "Approved",
     toastMessage: "Community access approved.",
+    backendDecision: "approved",
   },
   reject: {
     title: "Reject Community Access",
@@ -21,6 +23,7 @@ const DECISIONS = {
     confirmColor: "error",
     resultingStatus: "Rejected",
     toastMessage: "Community access rejected.",
+    backendDecision: "rejected",
   },
   request: {
     title: "Request Another Session",
@@ -29,26 +32,49 @@ const DECISIONS = {
     confirmColor: "neutral",
     resultingStatus: "Needs Another Session",
     toastMessage: "Another session has been requested.",
+    backendDecision: "rejected",
   },
 };
 
 // Props:
+// patientId  -> string (MongoDB _id of patient)
 // status     -> "Approved" | "Pending" | "Rejected" | "Needs Another Session"
-// onDecision -> called with the new status string once the doctor confirms a decision
-const CommunityStatus = ({ status, onDecision }) => {
+// onDecision -> called with (resultingStatus, toastMessage) only after the API call succeeds
+const CommunityStatus = ({ patientId, status, onDecision }) => {
   const [activeDecision, setActiveDecision] = useState(null); // "approve" | "reject" | "request" | null
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const hasFullAccess = status === "Approved";
-  const statusKey = status.toLowerCase().replace(/\s/g, "");
+  const statusKey = status ? status.toLowerCase().replace(/\s/g, "") : "pending";
 
-  const handleConfirm = () => {
-    const decision = DECISIONS[activeDecision];
+  const handleConfirm = async () => {
+    const decisionConfig = DECISIONS[activeDecision];
+    if (!decisionConfig) return;
 
-    // TODO: replace with a real API call once the backend exists, e.g.
-    // await axios.patch(`/api/tickets/${ticketId}/decision`, { decision: activeDecision });
-    onDecision?.(decision.resultingStatus, decision.toastMessage);
+    if (!patientId) {
+      setError("Patient ID is missing. Cannot submit decision.");
+      return;
+    }
 
-    setActiveDecision(null);
+    try {
+      setLoading(true);
+      setError("");
+      await api.patch(`/doctor/community-access/${patientId}`, {
+        decision: decisionConfig.backendDecision,
+      });
+
+      onDecision?.(decisionConfig.resultingStatus, decisionConfig.toastMessage);
+      setActiveDecision(null);
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to update patient community access.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,10 +96,13 @@ const CommunityStatus = ({ status, onDecision }) => {
           : "This patient can only view posts and comments until their doctor approves full access."}
       </p>
 
+      {error && <p className="text-danger small mt-2">{error}</p>}
+
       <div className="d-flex flex-column gap-2 mt-3">
         <button
           className={`${styles.decisionBtn} ${styles.approveBtn}`}
           onClick={() => setActiveDecision("approve")}
+          disabled={loading}
         >
           <i className="fa-solid fa-check me-2"></i>
           Approve
@@ -81,6 +110,7 @@ const CommunityStatus = ({ status, onDecision }) => {
         <button
           className={`${styles.decisionBtn} ${styles.requestBtn}`}
           onClick={() => setActiveDecision("request")}
+          disabled={loading}
         >
           <i className="fa-solid fa-rotate-right me-2"></i>
           Request Another Session
@@ -88,6 +118,7 @@ const CommunityStatus = ({ status, onDecision }) => {
         <button
           className={`${styles.decisionBtn} ${styles.rejectBtn}`}
           onClick={() => setActiveDecision("reject")}
+          disabled={loading}
         >
           <i className="fa-solid fa-xmark me-2"></i>
           Reject
@@ -99,10 +130,10 @@ const CommunityStatus = ({ status, onDecision }) => {
           show={!!activeDecision}
           title={DECISIONS[activeDecision].title}
           message={DECISIONS[activeDecision].message}
-          confirmText={DECISIONS[activeDecision].confirmText}
+          confirmText={loading ? "Updating..." : DECISIONS[activeDecision].confirmText}
           confirmColor={DECISIONS[activeDecision].confirmColor}
           onConfirm={handleConfirm}
-          onCancel={() => setActiveDecision(null)}
+          onCancel={() => !loading && setActiveDecision(null)}
         />
       )}
     </div>

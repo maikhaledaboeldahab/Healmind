@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../../../../shared/services/api';
-import { upcomingSessions as dummySessions } from '../../../../data/sessions';
 import SessionCard from '../../../../shared/components/SessionCard/SessionCard';
 import EmptyState from '../../../../shared/components/EmptyState/EmptyState';
 import Button from '../../../../shared/components/Button/Button';

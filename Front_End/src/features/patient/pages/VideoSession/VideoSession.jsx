@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -5,8 +6,7 @@ import {
   faCalendarDay,
   faClock,
 } from '@fortawesome/free-solid-svg-icons';
-import { upcomingSessions, sessionHistory } from '../../../../data/sessions';
-import { getDoctorById } from '../../../../data/doctors';
+import api from '../../../../shared/services/api';
 import { useAuth } from '../../../../shared/context/AuthContext';
 import { formatShortDate } from '../../../../shared/utils/formatDate';
 import Button from '../../../../shared/components/Button/Button';
@@ -18,24 +18,29 @@ export default function VideoSession() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [session, setSession] = useState(null);
 
-  // Look up session from upcoming or past sessions (if available in local state)
-  const allSessions = [...upcomingSessions, ...sessionHistory];
-  const session = allSessions.find((s) => String(s.id) === String(sessionId)) || {
-    id: sessionId,
-    doctorName: 'Doctor',
-    date: new Date().toISOString(),
-    time: 'Scheduled Time',
-    status: 'In-progress',
-  };
+  useEffect(() => {
+    let mounted = true;
+    async function loadSession() {
+      try {
+        const res = await api.get(`/session/${sessionId}`);
+        if (mounted) setSession(res.data?.data || res.data);
+      } catch {
+        // Fallback gracefully
+      }
+    }
+    if (sessionId) loadSession();
+    return () => {
+      mounted = false;
+    };
+  }, [sessionId]);
 
-  const doctor = session.doctorId
-    ? getDoctorById(session.doctorId)
-    : {
-        name: session.doctorName || 'Doctor',
-        image: session.doctorImage || 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&crop=faces',
-        specialization: 'Specialist',
-      };
+  const doctorName = session?.doctorId?.name || session?.doctorName || 'Specialist Doctor';
+  const doctorSpecialization = session?.doctorId?.specialization || 'Psychology Specialist';
+  const doctorAvatar =
+    session?.doctorId?.profileImage ||
+    'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&crop=faces';
 
   if (!sessionId) {
     return (
@@ -59,15 +64,15 @@ export default function VideoSession() {
       <div className={styles.header}>
         <div className={styles.doctorMeta}>
           <img
-            src={doctor?.image || session.doctorImage || 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&crop=faces'}
-            alt={doctor?.name || session.doctorName}
+            src={doctorAvatar}
+            alt={doctorName}
             className={styles.doctorAvatar}
           />
           <div>
             <h1 className={styles.title}>Live Video Session</h1>
             <p className={styles.subtitle}>
-              <span>{doctor?.name || session.doctorName}</span>
-              {doctor?.specialization && <span>&bull; {doctor.specialization}</span>}
+              <span>{doctorName}</span>
+              {doctorSpecialization && <span> &bull; {doctorSpecialization}</span>}
             </p>
           </div>
         </div>
@@ -92,30 +97,30 @@ export default function VideoSession() {
       <VideoCall
         sessionId={sessionId}
         onLeave={handleEndCall}
-        fallbackDisplayName={user?.fullName || 'Patient'}
+        fallbackDisplayName={user?.fullName || user?.name || 'Patient'}
       />
 
       {/* Session Metadata Card */}
       <div className={styles.sessionDetailsCard}>
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>Session ID</span>
-          <span className={styles.detailValue}>#{session.id}</span>
+          <span className={styles.detailValue}>#{sessionId}</span>
         </div>
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>Scheduled Date</span>
           <span className={styles.detailValue}>
-            <FontAwesomeIcon icon={faCalendarDay} /> {formatShortDate(session.date)}
+            <FontAwesomeIcon icon={faCalendarDay} /> {session?.scheduledTime ? formatShortDate(session.scheduledTime) : 'Upcoming'}
           </span>
         </div>
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>Time Slot</span>
           <span className={styles.detailValue}>
-            <FontAwesomeIcon icon={faClock} /> {session.time}
+            <FontAwesomeIcon icon={faClock} /> {session?.scheduledTime ? new Date(session.scheduledTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Live'}
           </span>
         </div>
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>Session Status</span>
-          <span className={styles.detailValue}>{session.status}</span>
+          <span className={styles.detailValue}>{session?.status || 'In-progress'}</span>
         </div>
       </div>
     </div>

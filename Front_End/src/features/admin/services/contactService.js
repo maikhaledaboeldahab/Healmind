@@ -1,45 +1,42 @@
-import { MOCK_CONTACTS } from '../constants/mockData'
-import { apiClient, simulateLatency } from './apiClient'
+import { apiClient } from './apiClient';
 
-let contacts = [...MOCK_CONTACTS]
+export function normalizeContact(c) {
+  if (!c) return null;
+  return {
+    ...c,
+    id: c._id || c.id,
+    name: c.name || 'User',
+    email: c.email || '',
+    subject: c.subject || 'Inquiry',
+    message: c.message || '',
+    isRead: Boolean(c.isRead),
+    createdAt: c.createdAt || new Date().toISOString(),
+  };
+}
 
 export const contactService = {
   async getAll() {
-    try {
-      const response = await apiClient.get('/contact')
-      if (response.data) {
-        return response.data
-      }
-    } catch {
-      // If backend endpoint is missing/offline, fall back to simulated dataset
-    }
-    return simulateLatency([...contacts])
+    const response = await apiClient.get('/contactus');
+    const raw = response.data?.data || response.data?.contacts || response.data;
+    return Array.isArray(raw) ? raw.map(normalizeContact) : [];
   },
 
   async getById(contactId) {
-    try {
-      const response = await apiClient.get(`/contact/${contactId}`)
-      if (response.data) {
-        return response.data
-      }
-    } catch {
-      // Fall back to local
-    }
-    return simulateLatency(contacts.find((c) => c.id === contactId) ?? null)
+    const response = await apiClient.get(`/contactus/${contactId}`);
+    const raw = response.data?.data || response.data;
+    return normalizeContact(raw);
   },
 
   async markAsRead(contactId) {
-    try {
-      const response = await apiClient.patch(`/contact/${contactId}/read`)
-      if (response.data) {
-        return response.data
-      }
-    } catch {
-      // Backend mark-as-read endpoint might not exist yet; handle locally in state
-    }
-    contacts = contacts.map((c) =>
-      c.id === contactId ? { ...c, isRead: true, updatedAt: new Date().toISOString() } : c,
-    )
-    return simulateLatency(contacts.find((c) => c.id === contactId))
+    const response = await apiClient.patch(`/contactus/${contactId}/read`);
+    const raw = response.data?.data || response.data;
+    return normalizeContact(raw);
   },
-}
+
+  async deleteContact(contactId) {
+    const response = await apiClient.delete(`/contactus/${contactId}`);
+    return response.data;
+  },
+};
+
+export default contactService;

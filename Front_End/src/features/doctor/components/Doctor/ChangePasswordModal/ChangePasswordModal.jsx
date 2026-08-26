@@ -1,19 +1,21 @@
 import { useState } from "react";
+import api from "../../../../../shared/services/api";
 import styles from "./ChangePasswordModal.module.css";
 
 // Props:
 // show     -> boolean
 // onClose  -> closes without saving
-// onSave   -> called with { currentPassword, newPassword } once validation passes
+// onSave   -> called with { currentPassword, newPassword } once API call succeeds
 const ChangePasswordModal = ({ show, onClose, onSave }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   if (!show) return null;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       setError("All fields are required.");
       return;
@@ -27,10 +29,24 @@ const ChangePasswordModal = ({ show, onClose, onSave }) => {
       return;
     }
 
-    setError("");
-    // TODO: replace with a real API call once the backend exists, e.g.
-    // await axios.post('/api/doctor/change-password', { currentPassword, newPassword });
-    onSave({ currentPassword, newPassword });
+    try {
+      setLoading(true);
+      setError("");
+      await api.patch("/auth/change-password", {
+        currentPassword,
+        newPassword,
+      });
+      onSave?.({ currentPassword, newPassword });
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        (Array.isArray(err.response?.data?.errors) ? err.response.data.errors.join(", ") : null) ||
+        err.message ||
+        "Failed to update password. Please check your current password.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -47,6 +63,7 @@ const ChangePasswordModal = ({ show, onClose, onSave }) => {
             className={styles.input}
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
+            disabled={loading}
           />
         </div>
 
@@ -57,6 +74,7 @@ const ChangePasswordModal = ({ show, onClose, onSave }) => {
             className={styles.input}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            disabled={loading}
           />
         </div>
 
@@ -67,15 +85,16 @@ const ChangePasswordModal = ({ show, onClose, onSave }) => {
             className={styles.input}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={loading}
           />
         </div>
 
         <div className="d-flex justify-content-end gap-2 mt-4">
-          <button className={styles.cancelBtn} onClick={onClose}>
+          <button className={styles.cancelBtn} onClick={onClose} disabled={loading}>
             Cancel
           </button>
-          <button className={styles.saveBtn} onClick={handleSave}>
-            Update Password
+          <button className={styles.saveBtn} onClick={handleSave} disabled={loading}>
+            {loading ? "Updating..." : "Update Password"}
           </button>
         </div>
       </div>
