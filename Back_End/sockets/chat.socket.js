@@ -251,7 +251,9 @@ module.exports = (io) => {
             recipientModel: receiverModel,
             type: 'new_message',
             title: 'New Message',
-            message: `${socket.user.name} sent you a new message`,
+            message: `${socket.user.name}: "${message}"`,
+            senderId: socket.userId,
+            senderName: socket.user.name,
           });
 
         } catch (error) {

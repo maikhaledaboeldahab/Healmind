@@ -24,15 +24,20 @@ export default function Payment() {
     formState: { errors },
   } = useForm();
 
+  const isBalancePayment = Boolean(state?.isBalancePayment);
+
   const doctor = {
     id: state?.doctorId || 'doc-1',
     name: state?.doctorName || 'Doctor',
-    fee: state?.sessionPrice || 350,
+    fee: state?.sessionPrice || 500,
   };
 
-  const { sessionPrice, depositAmount, remainingBalance } = calculatePricing(
-    state?.sessionPrice || 350
-  );
+  const calculated = calculatePricing(doctor.fee);
+  const sessionPrice = state?.sessionPrice || calculated.sessionPrice;
+  const depositAmount = state?.depositAmount || calculated.depositAmount;
+  const remainingBalance = state?.remainingBalance || calculated.remainingBalance;
+
+  const payAmount = isBalancePayment ? remainingBalance : depositAmount;
 
   const onPay = async () => {
     setIsPaying(true);
@@ -40,17 +45,41 @@ export default function Payment() {
 
     try {
       const sessionId = state?.sessionId || bookingId;
-      if (sessionId && !sessionId.startsWith('bk-')) {
-        await api.post('/payments/mock-charge', { sessionId });
+
+      if (isBalancePayment) {
+        let res;
+        try {
+          res = await api.post('/payments/balance-checkout-session', { sessionId });
+        } catch (err) {
+          if (err.response?.status === 404) {
+            res = await api.post('/payment/balance-checkout-session', { sessionId });
+          } else {
+            throw err;
+          }
+        }
+
+        if (res.data?.checkoutUrl) {
+          window.location.href = res.data.checkoutUrl;
+          return;
+        }
+
+        if (res.data?.requiresMockCharge) {
+          await api.post('/payments/mock-charge-balance', { sessionId });
+        }
+      } else {
+        if (sessionId && !sessionId.startsWith('bk-')) {
+          await api.post('/payments/mock-charge', { sessionId });
+        }
       }
 
       navigate('/sessions/upcoming', {
         state: {
           paid: true,
           bookingId: sessionId,
-          depositAmount: state?.depositAmount || depositAmount,
-          remainingBalance: state?.remainingBalance || remainingBalance,
-          sessionPrice: state?.sessionPrice || sessionPrice,
+          isBalancePayment,
+          depositAmount,
+          remainingBalance,
+          sessionPrice,
           doctorName: doctor.name,
         },
       });
@@ -64,8 +93,18 @@ export default function Payment() {
 
   return (
     <div className={styles.page}>
-      <h1>Payment</h1>
-      <p className={styles.subtext}>Pay the required session deposit to confirm your appointment.</p>
+      <h1>{isBalancePayment ? 'Pay Remaining Balance' : 'Payment'}</h1>
+      <p className={styles.subtext}>
+        {isBalancePayment
+          ? `Pay the remaining balance (${payAmount.toFixed(2)} EGP) to confirm your appointment.`
+          : 'Pay the required session deposit to confirm your appointment.'}
+      </p>
+
+      {errorMsg && (
+        <div style={{ padding: '0.8rem 1rem', marginBottom: '1rem', background: '#fff5f5', color: '#e53e3e', borderRadius: '6px', border: '1px solid #feb2b2' }}>
+          {errorMsg}
+        </div>
+      )}
 
       <div className={styles.grid}>
         <form className={styles.form} onSubmit={handleSubmit(onPay)}>
@@ -115,11 +154,15 @@ export default function Payment() {
           </section>
 
           <Button type="submit" size="lg" fullWidth disabled={isPaying}>
-            {isPaying ? 'Processing Deposit...' : `Pay Deposit (${depositAmount.toFixed(2)} EGP)`}
+            {isPaying
+              ? (isBalancePayment ? 'Processing Balance...' : 'Processing Deposit...')
+              : (isBalancePayment
+                  ? `Pay Remaining Balance (${payAmount.toFixed(2)} EGP)`
+                  : `Pay Deposit (${depositAmount.toFixed(2)} EGP)`)}
           </Button>
         </form>
 
-        <BookingSummary doctor={doctor} date={state?.date} time={state?.time} />
+        <BookingSummary doctor={doctor} date={state?.date} time={state?.time} isBalancePayment={isBalancePayment} />
       </div>
     </div>
   );

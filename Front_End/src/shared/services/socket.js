@@ -9,10 +9,19 @@ export const socket = io(SOCKET_URL, {
   reconnectionDelay: 1000,
 });
 
-export const connectSocket = (userId, role) => {
-  if (!socket.connected) {
-    socket.auth = { userId, role };
-    socket.connect();
+export const connectSocket = (token) => {
+  const authToken = token || window.localStorage.getItem('healmind_token');
+  if (authToken) {
+    socket.auth = { token: authToken };
+    if (!socket.connected) {
+      socket.connect();
+    }
+  }
+};
+
+export const disconnectSocket = () => {
+  if (socket.connected) {
+    socket.disconnect();
   }
 };
 

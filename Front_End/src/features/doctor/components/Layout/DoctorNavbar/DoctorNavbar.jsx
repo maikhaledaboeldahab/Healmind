@@ -1,46 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useNotifications } from "../../../../../shared/context/NotificationContext";
+import { useAuth } from "../../../../../shared/context/AuthContext";
 import styles from "./DoctorNavbar.module.css";
 
 const DoctorNavbar = ({ doctorName = "Doctor", doctorImg }) => {
   const navigate = useNavigate();
-
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "New Session Booking",
-      text: "Sarah Jenkins booked a therapy session for tomorrow at 09:00 AM.",
-      time: "10m ago",
-      isRead: false,
-      link: "/doctor/sessions",
-      state: { tab: "history" },
-    },
-    {
-      id: 2,
-      title: "New Inquiry Ticket",
-      text: "Omar Khalil sent a new session request ticket.",
-      time: "45m ago",
-      isRead: false,
-      link: "/doctor/sessions",
-      state: { tab: "requests" },
-    },
-    {
-      id: 3,
-      title: "Patient Update",
-      text: "Marcus Thorne updated depression screening notes.",
-      time: "2h ago",
-      isRead: false,
-      link: "/doctor/patients",
-      state: {},
-    },
-  ]);
+  const { notifications = [], unreadCount = 0, markAsRead, markAllAsRead } = useNotifications() || {};
+  const { logout } = useAuth() || {};
 
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const notifRef = useRef(null);
   const profileRef = useRef(null);
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -56,23 +28,41 @@ const DoctorNavbar = ({ doctorName = "Doctor", doctorImg }) => {
   }, []);
 
   const onLogoutClick = () => {
+    if (logout) {
+      logout();
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("healmind_token");
+    localStorage.removeItem("healmind_auth_user");
     navigate("/login");
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  const handleNotificationClick = (notif) => {
+    const id = notif.id || notif._id;
+    if (id && markAsRead) {
+      markAsRead(id);
+    }
+    setShowNotifDropdown(false);
+    const targetLink = notif.link || (notif.type === "new_message" ? "/doctor/chat" : null);
+    if (targetLink) {
+      const navState = notif.state || { patientId: notif.senderId, patientName: notif.senderName };
+      navigate(targetLink, { state: navState });
+    }
   };
 
-  const handleNotificationClick = (notif) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notif.id ? { ...n, isRead: true } : n))
-    );
-    setShowNotifDropdown(false);
-    if (notif.link) {
-      navigate(notif.link, { state: notif.state });
-    }
+  const formatTime = (dateStr) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const now = new Date();
+    const diffMinutes = Math.floor((now - date) / 60000);
+    if (diffMinutes < 1) return "Just now";
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
   };
 
   return (
@@ -121,23 +111,31 @@ const DoctorNavbar = ({ doctorName = "Doctor", doctorImg }) => {
                 {notifications.length === 0 ? (
                   <div className="p-3 text-center text-muted small">No notifications</div>
                 ) : (
-                  notifications.map((notif) => (
-                    <div
-                      key={notif.id}
-                      className={`${styles.notifItem} ${!notif.isRead ? styles.notifUnread : ""} p-3 border-bottom`}
-                      onClick={() => handleNotificationClick(notif)}
-                    >
-                      <div className="d-flex justify-content-between align-items-start mb-1">
-                        <span className="fw-bold small">{notif.title}</span>
-                        <span className="text-muted" style={{ fontSize: "0.7rem" }}>
-                          {notif.time}
-                        </span>
+                  notifications.map((notif) => {
+                    const isRead = Boolean(notif.isRead ?? notif.read);
+                    const notifId = notif.id || notif._id;
+                    const notifTitle = notif.title || "Notification";
+                    const notifText = notif.message || notif.text || "";
+                    const displayTime = notif.createdAt ? formatTime(notif.createdAt) : (notif.time || "");
+
+                    return (
+                      <div
+                        key={notifId}
+                        className={`${styles.notifItem} ${!isRead ? styles.notifUnread : ""} p-3 border-bottom`}
+                        onClick={() => handleNotificationClick(notif)}
+                      >
+                        <div className="d-flex justify-content-between align-items-start mb-1">
+                          <span className="fw-bold small">{notifTitle}</span>
+                          <span className="text-muted" style={{ fontSize: "0.7rem" }}>
+                            {displayTime}
+                          </span>
+                        </div>
+                        <p className="text-muted mb-0 small" style={{ fontSize: "0.8rem", lineHeight: 1.3 }}>
+                          {notifText}
+                        </p>
                       </div>
-                      <p className="text-muted mb-0 small" style={{ fontSize: "0.8rem", lineHeight: 1.3 }}>
-                        {notif.text}
-                      </p>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>

@@ -4,7 +4,7 @@ import { formatShortDate } from '../../utils/formatDate';
 import { calculatePricing } from '../../utils/pricing';
 import styles from './BookingSummary.module.css';
 
-export default function BookingSummary({ doctor, date, time }) {
+export default function BookingSummary({ doctor, date, time, isBalancePayment = false }) {
   if (!doctor) return null;
 
   const { sessionPrice, depositAmount, remainingBalance, depositPercentage } = calculatePricing(
@@ -68,10 +68,16 @@ export default function BookingSummary({ doctor, date, time }) {
 
       <div className={styles.total}>
         <div className={styles.totalLabel}>
-          <span>Deposit Payable Now</span>
-          <small className={styles.subtext}>Remaining {remainingBalance.toFixed(2)} EGP due at session</small>
+          <span>{isBalancePayment ? 'Balance Payable Now' : 'Deposit Payable Now'}</span>
+          <small className={styles.subtext}>
+            {isBalancePayment
+              ? `Deposit of ${depositAmount.toFixed(2)} EGP already paid`
+              : `Remaining ${remainingBalance.toFixed(2)} EGP due at session`}
+          </small>
         </div>
-        <span className={styles.totalAmount}>{depositAmount.toFixed(2)} EGP</span>
+        <span className={styles.totalAmount}>
+          {(isBalancePayment ? remainingBalance : depositAmount).toFixed(2)} EGP
+        </span>
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ const DoctorDashboard = () => {
 
         <main className="flex-grow-1 p-4">
           <Routes>
-            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route index element={<Navigate to="/doctor/dashboard" replace />} />
             <Route path="dashboard" element={<DoctorHome />} />
             <Route path="patients" element={<Patients />} />
             <Route path="availability" element={<Availability />} />
@@ -36,7 +36,7 @@ const DoctorDashboard = () => {
             <Route path="patients/:id" element={<PatientDetails />} />
             <Route path="livechat" element={<LiveChat />} />
             <Route path="chatbot" element={<ChatBot />} />
-            <Route path="*" element={<Navigate to="dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/doctor/dashboard" replace />} />
           </Routes>
         </main>
       </div>

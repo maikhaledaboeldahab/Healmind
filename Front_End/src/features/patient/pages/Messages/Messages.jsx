@@ -12,10 +12,28 @@ import {
   faVideo,
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../../../shared/services/api';
+import { getSocket, connectSocket } from '../../../../shared/services/socket';
 import { getEligibleDoctorSession } from '../../../../shared/utils/videoWindow';
 import Button from '../../../../shared/components/Button/Button';
 import EmptyState from '../../../../shared/components/EmptyState/EmptyState';
 import styles from './Messages.module.css';
+
+function getInitials(name) {
+  if (!name) return 'DR';
+  const clean = name.replace(/^dr\.?\s+/i, '').trim();
+  const parts = clean.split(' ').filter(Boolean);
+  if (parts.length === 0) return 'DR';
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function getDoctorAvatar(doc) {
+  const img = doc?.profileImage || doc?.image;
+  if (img && typeof img === 'string' && !img.includes('unsplash.com') && img.trim() !== '') {
+    return img;
+  }
+  return null;
+}
 
 export default function Messages() {
   const { doctorId } = useParams();
@@ -38,28 +56,106 @@ export default function Messages() {
     return () => clearInterval(timer);
   }, []);
 
+  // Socket listener for incoming real-time doctor messages
+  useEffect(() => {
+    const token = window.localStorage.getItem('healmind_token');
+    if (token) connectSocket(token);
+
+    const socket = getSocket();
+    const handleReceiveMessage = (msgData) => {
+      if (!msgData) return;
+      const senderDocId = msgData.senderId;
+      const senderDocName = msgData.senderName || 'Doctor';
+      const newMsg = {
+        id: msgData.messageId || Date.now(),
+        from: msgData.senderRole || 'doctor',
+        text: msgData.message,
+        time: new Date(msgData.timestamp || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+
+      setConversationDoctors((prev) => {
+        const exists = prev.some((d) => d.id === senderDocId || d.name === senderDocName);
+        if (!exists && senderDocId) {
+          return [
+            ...prev,
+            {
+              id: senderDocId,
+              name: senderDocName,
+              specialization: 'Mental Health Specialist',
+              image: null,
+            },
+          ];
+        }
+        return prev;
+      });
+
+      setThreads((prev) => {
+        const existingIdMsgs = prev[senderDocId] || [];
+        const existingNameMsgs = prev[senderDocName] || [];
+        const merged = existingIdMsgs.length ? existingIdMsgs : existingNameMsgs;
+
+        return {
+          ...prev,
+          [senderDocId]: [...merged, newMsg],
+          [senderDocName]: [...merged, newMsg],
+        };
+      });
+
+      setSelectedDoctorId((curr) => curr || senderDocId);
+    };
+
+    socket.on('receive_message', handleReceiveMessage);
+    return () => {
+      socket.off('receive_message', handleReceiveMessage);
+    };
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     async function loadData() {
       try {
         setLoading(true);
-        const [docsRes, sessRes] = await Promise.all([
+        const [docsRes, sessRes, convsRes] = await Promise.all([
           api.get('/doctor/list').catch(() => api.get('/admin/doctors')),
           api.get('/session/my-sessions').catch(() => ({ data: [] })),
+          api.get('/conversations').catch(() => ({ data: [] })),
         ]);
 
         const rawDocs = docsRes.data?.data || docsRes.data || [];
         const rawSess = sessRes.data?.data || sessRes.data?.sessions || sessRes.data || [];
+        const rawConvs = convsRes.data?.data || convsRes.data || [];
 
         if (mounted) {
-          const docs = Array.isArray(rawDocs)
-            ? rawDocs.map((d) => ({
-                id: d._id || d.id,
+          const docsMap = new Map();
+          if (Array.isArray(rawDocs)) {
+            rawDocs.forEach((d) => {
+              const id = d._id || d.id;
+              docsMap.set(id, {
+                id,
                 name: d.name || d.fullName || 'Doctor',
                 specialization: d.specialization || 'Mental Health Specialist',
-                image: d.profileImage || 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&crop=faces',
-              }))
-            : [];
+                image: (d.profileImage && !d.profileImage.includes('unsplash.com')) ? d.profileImage : null,
+              });
+            });
+          }
+
+          if (Array.isArray(rawConvs)) {
+            rawConvs.forEach((conv) => {
+              if (conv.otherUser) {
+                const id = conv.otherUser._id || conv.otherUser.id;
+                if (!docsMap.has(id)) {
+                  docsMap.set(id, {
+                    id,
+                    name: conv.otherUser.name || 'Doctor',
+                    specialization: 'Mental Health Specialist',
+                    image: (conv.otherUser.profileImage && !conv.otherUser.profileImage.includes('unsplash.com')) ? conv.otherUser.profileImage : null,
+                  });
+                }
+              }
+            });
+          }
+
+          const docs = Array.from(docsMap.values());
           setConversationDoctors(docs);
           setAllSessions(Array.isArray(rawSess) ? rawSess : []);
           if (!selectedDoctorId && docs.length > 0) {
@@ -87,10 +183,43 @@ export default function Messages() {
     }
   }, [doctorId, selectedDoctorId]);
 
+  // Load message history from backend whenever selected doctor changes
+  useEffect(() => {
+    if (!selectedDoctorId) return;
+    let mounted = true;
+    api.get('/conversations').then((res) => {
+      if (!mounted) return;
+      const raw = res.data?.data || res.data || [];
+      const conv = raw.find((c) => c.otherUser && (c.otherUser._id === selectedDoctorId || c.otherUser.id === selectedDoctorId || c.otherUser.name === activeDoctor?.name));
+      if (conv?.conversationId) {
+        api.get(`/conversations/${conv.conversationId}/messages`).then((mRes) => {
+          if (!mounted) return;
+          const rawMsgs = mRes.data?.data || mRes.data || [];
+          if (Array.isArray(rawMsgs) && rawMsgs.length > 0) {
+            const formatted = rawMsgs.map((m) => ({
+              id: m._id || m.id,
+              from: m.senderModel === 'doctor' || m.sender?.role === 'doctor' ? 'doctor' : 'patient',
+              text: m.message,
+              time: new Date(m.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            }));
+            setThreads((prev) => ({
+              ...prev,
+              [selectedDoctorId]: formatted,
+            }));
+          }
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedDoctorId]);
+
   const activeDoctor = conversationDoctors.find((d) => d.id === selectedDoctorId) || conversationDoctors[0];
-  const activeMessages = threads[selectedDoctorId] || [
-    { id: 1, from: 'doctor', text: `Hi, I am ${activeDoctor?.name || 'Doctor'}. How can I assist you with your mental wellness today?`, time: 'Just now' },
-  ];
+  const activeMessages = (threads[selectedDoctorId] && threads[selectedDoctorId].length > 0)
+    ? threads[selectedDoctorId]
+    : (activeDoctor ? (threads[activeDoctor.name] || threads[activeDoctor.id] || []) : []);
 
   // Video call eligibility with active doctor
   const videoEligibility = useMemo(() => {
@@ -114,12 +243,13 @@ export default function Messages() {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!draft.trim()) return;
+    if (!draft.trim() || !selectedDoctorId) return;
 
+    const messageText = draft.trim();
     const newMsg = {
       id: Date.now(),
       from: 'patient',
-      text: draft.trim(),
+      text: messageText,
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     };
 
@@ -129,21 +259,15 @@ export default function Messages() {
     }));
     setDraft('');
 
-    // Simulated doctor reply after a short delay
-    setTimeout(() => {
-      setThreads((prev) => ({
-        ...prev,
-        [selectedDoctorId]: [
-          ...(prev[selectedDoctorId] || []),
-          {
-            id: Date.now() + 1,
-            from: 'doctor',
-            text: 'Thank you for reaching out. I have received your message and will review it.',
-            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-          },
-        ],
-      }));
-    }, 1200);
+    // Emit real-time message to doctor via socket
+    const token = window.localStorage.getItem('healmind_token');
+    if (token) connectSocket(token);
+    const socket = getSocket();
+    socket.emit('send_message', {
+      receiverId: selectedDoctorId,
+      receiverModel: 'doctor',
+      message: messageText,
+    });
   };
 
   if (!conversationDoctors.length) {
@@ -179,6 +303,7 @@ export default function Messages() {
             const docThread = threads[doc.id] || [];
             const lastMessage = docThread[docThread.length - 1];
             const isSelected = doc.id === selectedDoctorId;
+            const avatarUrl = getDoctorAvatar(doc);
 
             return (
               <button
@@ -188,7 +313,13 @@ export default function Messages() {
                 onClick={() => handleSelectDoctor(doc.id)}
               >
                 <div className={styles.avatarWrapper}>
-                  <img src={doc.image} alt={doc.name} className={styles.avatar} />
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={doc.name} className={styles.avatar} />
+                  ) : (
+                    <div className={styles.initialsAvatar}>
+                      {getInitials(doc.name)}
+                    </div>
+                  )}
                   <span className={styles.onlineIndicator} />
                 </div>
                 <div className={styles.itemContent}>
@@ -213,7 +344,13 @@ export default function Messages() {
           <>
             <header className={styles.chatHeader}>
               <div className={styles.headerDoctorInfo}>
-                <img src={activeDoctor.image} alt={activeDoctor.name} className={styles.headerAvatar} />
+                {getDoctorAvatar(activeDoctor) ? (
+                  <img src={getDoctorAvatar(activeDoctor)} alt={activeDoctor.name} className={styles.headerAvatar} />
+                ) : (
+                  <div className={styles.headerInitialsAvatar}>
+                    {getInitials(activeDoctor.name)}
+                  </div>
+                )}
                 <div>
                   <h3 className={styles.headerTitle}>{activeDoctor.name}</h3>
                   <div className={styles.headerStatus}>

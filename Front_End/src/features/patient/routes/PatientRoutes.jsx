@@ -26,6 +26,8 @@ import ContactUs from '../pages/ContactUs/ContactUs';
 import UserNotifications from '../pages/Notifications/Notifications';
 import PaymentHistory from '../pages/PaymentHistory/PaymentHistory';
 import UserProfile from '../pages/Profile/Profile';
+import PaymentSuccess from '../pages/PaymentSuccess/PaymentSuccess';
+import PaymentCancelled from '../pages/PaymentCancelled/PaymentCancelled';
 
 export default function PatientRoutes() {
   return (
@@ -45,6 +47,8 @@ export default function PatientRoutes() {
           <Route path="doctors/:doctorId" element={<UserDoctorDetails />} />
           <Route path="doctors/:doctorId/book" element={<BookAppointment />} />
           <Route path="payment/:bookingId" element={<Payment />} />
+          <Route path="payment-success" element={<PaymentSuccess />} />
+          <Route path="payment-cancelled" element={<PaymentCancelled />} />
           <Route path="sessions/upcoming" element={<UpcomingSessions />} />
           <Route path="sessions/history" element={<SessionHistory />} />
           <Route path="sessions/:sessionId" element={<SessionReport />} />

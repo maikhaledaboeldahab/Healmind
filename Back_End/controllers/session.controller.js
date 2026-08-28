@@ -120,10 +120,39 @@ exports.getAllSessions = async (req, res) => {
   }
 
 }
+// Helper function to auto-expire pending sessions older than 7 days
+async function cleanupExpiredSessions() {
+  try {
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const sevenDaysAgo = new Date(Date.now() - SEVEN_DAYS_MS);
+
+    const expiredSessions = await Session.find({
+      status: 'pending',
+      balancePaid: { $ne: true },
+      createdAt: { $lt: sevenDaysAgo },
+    });
+
+    for (const s of expiredSessions) {
+      s.status = 'cancelled';
+      await s.save();
+      if (s.doctorId && s.slotId) {
+        await Doctor.updateOne(
+          { _id: s.doctorId, 'slots._id': s.slotId },
+          { $set: { 'slots.$.isBooked': false } }
+        );
+      }
+    }
+  } catch (err) {
+    console.error('Error cleaning up expired sessions:', err.message);
+  }
+}
+
 // Doctor and patient
 //may filter by status, date range, and type
 exports.getMySessions = async (req, res) => {
   try {
+    await cleanupExpiredSessions();
+
     const userId = req.user.id;
     const { status, startDate, endDate, type } = req.query;
 

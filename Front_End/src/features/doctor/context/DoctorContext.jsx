@@ -109,8 +109,7 @@ export const DoctorProvider = ({ children }) => {
             patientName: s.patientId?.name || s.patientName || `Patient ${idx + 1}`,
             date: s.scheduledTime ? new Date(s.scheduledTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Scheduled',
             time: s.scheduledTime ? new Date(s.scheduledTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '10:00 AM',
-            sessionType: s.type || s.sessionType || 'Therapy Session',
-            status: s.status ? (s.status.charAt(0).toUpperCase() + s.status.slice(1)) : 'Confirmed',
+            status: s.balancePaid ? (s.status ? (s.status.charAt(0).toUpperCase() + s.status.slice(1)) : 'Confirmed') : (s.status === 'cancelled' ? 'Cancelled' : (s.status === 'rejected' ? 'Rejected' : 'Pending')),
             decision: s.doctorDecision || 'Approved',
           }));
           setAllSessions(formatted);

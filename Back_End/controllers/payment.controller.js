@@ -59,10 +59,10 @@ exports.createCheckoutSession = async (req, res) => {
 
     const slot = updatedDoctor.slots.id(slotId);
 
-    // Calculate amounts dynamically from the doctor's sessionPrice
-    const basePrice = updatedDoctor.sessionPrice || 0;
-    const finalAmount = basePrice * 0.20;
-    const balance = basePrice - finalAmount;
+    // Calculate amounts dynamically from the doctor's sessionPrice in database
+    const basePrice = (updatedDoctor.sessionPrice && updatedDoctor.sessionPrice > 0) ? updatedDoctor.sessionPrice : 500;
+    const finalAmount = Math.round(basePrice * 0.20 * 100) / 100;
+    const balance = Math.round((basePrice - finalAmount) * 100) / 100;
     const isBalancePrepaid = basePrice <= finalAmount;
 
     // 3. Create a pending Session document in the database
@@ -286,8 +286,9 @@ exports.stripeWebhook = async (req, res) => {
           const io = req.app.get("io");
           if (paymentType === "balance") {
             session.balancePaid = true;
+            session.status = "confirmed";
             await session.save();
-            console.log(`Session ${sessionId} remaining balance marked as paid.`);
+            console.log(`Session ${sessionId} remaining balance marked as paid and status updated to confirmed.`);
 
             // Notify the doctor that the balance is paid
             await createNotification(io, {
@@ -387,6 +388,25 @@ exports.createBalanceCheckoutSession = async (req, res) => {
       });
     }
 
+    // Check 7-day expiration for pending session
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const isExpired = session.status === "pending" && !session.balancePaid && (Date.now() - new Date(session.createdAt || Date.now()).getTime() > SEVEN_DAYS_MS);
+
+    if (isExpired) {
+      session.status = "cancelled";
+      await session.save();
+      if (session.slotId) {
+        await Doctor.updateOne(
+          { _id: session.doctorId, "slots._id": session.slotId },
+          { $set: { "slots.$.isBooked": false } }
+        );
+      }
+      return res.status(400).json({
+        success: false,
+        message: "This pending session has expired because the remaining balance was not paid within 7 days."
+      });
+    }
+
     const doctor = await Doctor.findById(session.doctorId);
     if (!doctor) {
       return res.status(404).json({
@@ -395,8 +415,10 @@ exports.createBalanceCheckoutSession = async (req, res) => {
       });
     }
 
-    // Remaining balance
-    const balance = doctor.sessionPrice - session.depositAmount;
+    // Remaining balance calculated from doctor database sessionPrice
+    const docPrice = (doctor.sessionPrice && doctor.sessionPrice > 0) ? doctor.sessionPrice : (session.sessionPrice || 500);
+    const depositAmt = session.depositAmount > 0 ? session.depositAmount : Math.round(docPrice * 0.20 * 100) / 100;
+    const balance = session.balance > 0 ? session.balance : Math.round((docPrice - depositAmt) * 100) / 100;
 
     if (balance <= 0) {
       session.balancePaid = true;
@@ -517,6 +539,25 @@ exports.mockChargeBalance = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Balance has already been paid for this session."
+      });
+    }
+
+    // Check 7-day expiration for pending session
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const isExpired = session.status === "pending" && !session.balancePaid && (Date.now() - new Date(session.createdAt || Date.now()).getTime() > SEVEN_DAYS_MS);
+
+    if (isExpired) {
+      session.status = "cancelled";
+      await session.save();
+      if (session.slotId) {
+        await Doctor.updateOne(
+          { _id: session.doctorId, "slots._id": session.slotId },
+          { $set: { "slots.$.isBooked": false } }
+        );
+      }
+      return res.status(400).json({
+        success: false,
+        message: "This pending session has expired because the remaining balance was not paid within 7 days."
       });
     }
 

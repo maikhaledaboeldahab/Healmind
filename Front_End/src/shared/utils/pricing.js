@@ -16,7 +16,7 @@ export const DEPOSIT_PERCENTAGE = 0.20;
  */
 export function calculatePricing(rawPrice) {
   const price = Number(rawPrice);
-  const sessionPrice = !isNaN(price) && price > 0 ? price : 50;
+  const sessionPrice = !isNaN(price) && price > 0 ? price : 500;
   const depositAmount = Math.round(sessionPrice * DEPOSIT_PERCENTAGE * 100) / 100;
   const remainingBalance = Math.round((sessionPrice - depositAmount) * 100) / 100;
 

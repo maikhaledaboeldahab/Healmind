@@ -103,6 +103,22 @@
   object-fit: cover;
 }
 
+.initialsAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary, #1e3a8a);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .onlineIndicator {
   position: absolute;
   bottom: 0;
@@ -186,6 +202,22 @@
   height: 42px;
   border-radius: var(--radius-full);
   object-fit: cover;
+}
+
+.headerInitialsAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary, #1e3a8a);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .headerTitle {

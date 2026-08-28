@@ -16,7 +16,7 @@ const { Patient, Doctor } = require("../models/User");
  * @param {String} title - عنوان مختصر
  * @param {String} message - تفاصيل الإشعار
  */
-const createNotification = async (io, { recipientId, recipientModel, type, title, message }) => {
+const createNotification = async (io, { recipientId, recipientModel, type, title, message, senderId, senderName }) => {
   try {
     // 1) نسجل الإشعار في الداتابيز
     const notification = await Notification.create({
@@ -39,6 +39,8 @@ const createNotification = async (io, { recipientId, recipientModel, type, title
         message: notification.message,
         isRead: notification.isRead,
         createdAt: notification.createdAt,
+        senderId,
+        senderName,
       });
     }
 

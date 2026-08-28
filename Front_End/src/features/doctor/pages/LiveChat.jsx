@@ -4,6 +4,8 @@ import ChatHeader from "../components/Doctor/ChatHeader/ChatHeader";
 import MessageBubble from "../components/Doctor/MessageBubble/MessageBubble";
 import ChatInput from "../components/Doctor/ChatInput/ChatInput";
 import { useDoctor } from "../context/DoctorContext";
+import api from "../../../shared/services/api";
+import { getSocket, connectSocket } from "../../../shared/services/socket";
 import styles from "./LiveChat.module.css";
 
 const formatTime = (totalSeconds) => {
@@ -37,15 +39,47 @@ const initialConversations = {
 const LiveChat = () => {
   const location = useLocation();
   const { patients, addPatientSessionHistory } = useDoctor();
+  const [extraPatients, setExtraPatients] = useState([]);
 
-  // Active chat patient list derived from real patients in DoctorContext
-  const dynamicPatientList = patients.map((p, index) => ({
+  // Load real backend conversations on mount
+  useEffect(() => {
+    let isMounted = true;
+    api.get("/conversations").then((res) => {
+      if (!isMounted) return;
+      const raw = res.data?.data || res.data || [];
+      if (Array.isArray(raw)) {
+        const fetchedPatients = raw
+          .filter((conv) => conv.otherUser)
+          .map((conv, idx) => ({
+            id: conv.otherUser._id || conv.otherUser.id,
+            name: conv.otherUser.name || "Patient",
+            isOnline: idx % 2 === 0,
+            lastMsg: conv.lastMessageText || "Active conversation",
+            lastTime: conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "Today",
+          }));
+        setExtraPatients(fetchedPatients);
+      }
+    }).catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Merge patients from DoctorContext and fetched/incoming patients
+  const basePatientList = patients.map((p, index) => ({
     id: p.id,
     name: p.patientName,
     isOnline: index % 2 === 0,
     lastMsg: p.notes?.[0]?.text || "Ready for consultation...",
     lastTime: p.lastSession || "Today",
   }));
+
+  const dynamicPatientList = [...basePatientList];
+  extraPatients.forEach((ep) => {
+    if (!dynamicPatientList.some((p) => p.id === ep.id || p.name === ep.name)) {
+      dynamicPatientList.push(ep);
+    }
+  });
 
   const [selectedPatient, setSelectedPatient] = useState(() => {
     const passedName = location.state?.patientName;
@@ -68,16 +102,114 @@ const LiveChat = () => {
 
   const messagesEndRef = useRef(null);
 
+  // Socket listener for incoming patient messages
   useEffect(() => {
-    if (location.state?.patientName) {
-      const found = dynamicPatientList.find((p) => p.name === location.state.patientName);
+    const token = window.localStorage.getItem("healmind_token");
+    if (token) connectSocket(token);
+
+    const socket = getSocket();
+    const handleReceiveMessage = (msgData) => {
+      if (!msgData) return;
+
+      const newMsg = {
+        id: msgData.messageId || Date.now(),
+        sender: msgData.senderRole || "patient",
+        text: msgData.message,
+        timestamp: formatClockTime(),
+      };
+
+      const pId = msgData.senderId;
+      const pName = msgData.senderName || "Patient";
+
+      // Add to patient list if missing
+      setExtraPatients((prev) => {
+        if (!prev.some((p) => p.id === pId || p.name === pName)) {
+          return [
+            ...prev,
+            { id: pId, name: pName, isOnline: true, lastMsg: msgData.message, lastTime: "Just now" },
+          ];
+        }
+        return prev;
+      });
+
+      setConversations((prev) => {
+        const existingIdMsgs = prev[pId] || [];
+        const existingNameMsgs = prev[pName] || [];
+        const mergedMsgs = existingIdMsgs.length ? existingIdMsgs : existingNameMsgs;
+
+        return {
+          ...prev,
+          [pId]: [...mergedMsgs, newMsg],
+          [pName]: [...mergedMsgs, newMsg],
+        };
+      });
+
+      // Auto select incoming patient if none selected
+      setSelectedPatient((curr) => {
+        if (!curr) {
+          return { id: pId, name: pName, isOnline: true, lastMsg: msgData.message, lastTime: "Just now" };
+        }
+        return curr;
+      });
+    };
+
+    socket.on("receive_message", handleReceiveMessage);
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+    };
+  }, []);
+
+  // Sync selected patient from location state (e.g. from notification click)
+  useEffect(() => {
+    const pName = location.state?.patientName;
+    const pId = location.state?.patientId;
+    if (pName || pId) {
+      const found = dynamicPatientList.find((p) => (pId && p.id === pId) || (pName && p.name === pName));
       if (found) {
         setSelectedPatient(found);
         setElapsedSeconds(0);
         setIsTimerRunning(true);
+      } else {
+        const newP = { id: pId || Date.now(), name: pName || "Patient", isOnline: true, lastMsg: "Active chat", lastTime: "Just now" };
+        setSelectedPatient(newP);
+        setExtraPatients((prev) => [...prev, newP]);
       }
     }
   }, [location.state]);
+
+  // Load message history from backend whenever selected patient changes
+  useEffect(() => {
+    if (!selectedPatient) return;
+    let isMounted = true;
+    api.get("/conversations").then((res) => {
+      if (!isMounted) return;
+      const raw = res.data?.data || res.data || [];
+      const conv = raw.find((c) => c.otherUser && (c.otherUser._id === selectedPatient.id || c.otherUser.name === selectedPatient.name));
+      if (conv?.conversationId) {
+        api.get(`/conversations/${conv.conversationId}/messages`).then((mRes) => {
+          if (!isMounted) return;
+          const rawMsgs = mRes.data?.data || mRes.data || [];
+          if (Array.isArray(rawMsgs) && rawMsgs.length > 0) {
+            const formatted = rawMsgs.map((m) => ({
+              id: m._id || m.id,
+              sender: (m.senderModel === "doctor" || m.sender?.role === "doctor" || m.sender?._id === selectedPatient.id) ? (m.senderModel === "doctor" ? "doctor" : "patient") : "patient",
+              text: m.message,
+              timestamp: new Date(m.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+            }));
+            setConversations((prev) => ({
+              ...prev,
+              [selectedPatient.id]: formatted,
+              [selectedPatient.name]: formatted,
+            }));
+          }
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedPatient?.id, selectedPatient?.name]);
 
   // Timer
   useEffect(() => {
@@ -87,7 +219,10 @@ const LiveChat = () => {
   }, [isTimerRunning, selectedPatient]);
 
   // Auto Scroll
-  const currentMessages = selectedPatient ? conversations[selectedPatient.name] || [] : [];
+  const currentMessages = selectedPatient
+    ? conversations[selectedPatient.id] || conversations[selectedPatient.name] || []
+    : [];
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [currentMessages]);
@@ -106,20 +241,38 @@ const LiveChat = () => {
     if ((!text || !text.trim()) && !doc) return;
     if (!selectedPatient) return;
 
+    const messageText = text?.trim() || "";
     const newMessage = {
       id: Date.now(),
       sender: "doctor",
-      text: text?.trim() || "",
+      text: messageText,
       attachment: doc || null,
       timestamp: formatClockTime(),
     };
 
-    setConversations((prev) => ({
-      ...prev,
-      [selectedPatient.name]: [...(prev[selectedPatient.name] || []), newMessage],
-    }));
+    setConversations((prev) => {
+      const existingIdMsgs = prev[selectedPatient.id] || [];
+      const existingNameMsgs = prev[selectedPatient.name] || [];
+      const merged = existingIdMsgs.length ? existingIdMsgs : existingNameMsgs;
+
+      return {
+        ...prev,
+        [selectedPatient.id]: [...merged, newMessage],
+        [selectedPatient.name]: [...merged, newMessage],
+      };
+    });
     setInputValue("");
     setAttachedDoc(null);
+
+    // Send via socket to patient
+    const token = window.localStorage.getItem("healmind_token");
+    if (token) connectSocket(token);
+    const socket = getSocket();
+    socket.emit("send_message", {
+      receiverId: selectedPatient.id,
+      receiverModel: "patient",
+      message: messageText,
+    });
   };
 
   const handleEndChatClick = () => {
