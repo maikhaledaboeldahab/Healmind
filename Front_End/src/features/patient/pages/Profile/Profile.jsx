@@ -1,10 +1,22 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faRightFromBracket, faTicket, faClockRotateLeft, faCreditCard } from '@fortawesome/free-solid-svg-icons';
+import {
+  faPen,
+  faCamera,
+  faRightFromBracket,
+  faTicket,
+  faClockRotateLeft,
+  faCreditCard,
+  faSpinner,
+  faCheck,
+} from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../../shared/services/api';
 import { useAuth } from '../../../../shared/context/AuthContext';
 import Input from '../../../../shared/components/Input/Input';
 import Button from '../../../../shared/components/Button/Button';
+import Avatar from '../../../../shared/components/Avatar/Avatar';
 import styles from './Profile.module.css';
 
 const HISTORY_LINKS = [
@@ -16,12 +28,14 @@ const HISTORY_LINKS = [
 export default function Profile() {
   const { user, updateProfile, logout } = useAuth();
   const navigate = useNavigate();
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
   const {
     register,
     handleSubmit,
-    setValue,
-    formState: { isSubmitting, isDirty },
+    formState: { isSubmitting },
   } = useForm({
     defaultValues: {
       fullName: user?.fullName || user?.name || '',
@@ -32,6 +46,7 @@ export default function Profile() {
   });
 
   const onSubmit = async (data) => {
+    setStatusMessage({ type: '', text: '' });
     try {
       const payload = {
         name: data.fullName,
@@ -41,9 +56,12 @@ export default function Profile() {
       const res = await api.put('/profile/profile', payload);
       const updated = res.data?.data || res.data;
       updateProfile({ ...data, name: data.fullName, ...updated });
-      alert('Profile updated successfully.');
+      setStatusMessage({ type: 'success', text: 'Profile information updated successfully!' });
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to update profile.');
+      setStatusMessage({
+        type: 'error',
+        text: err.response?.data?.message || err.message || 'Failed to update profile.',
+      });
     }
   };
 
@@ -51,46 +69,100 @@ export default function Profile() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Check size limit (e.g. 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setStatusMessage({ type: 'error', text: 'Image file size must be less than 5MB.' });
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+    setUploadingImage(true);
+    setStatusMessage({ type: '', text: '' });
+
     const formData = new FormData();
     formData.append('image', file);
 
     try {
       const res = await api.put('/profile/image', formData);
       const updated = res.data?.data || res.data;
-      const imageUrl = updated.profileImage || updated.image;
+      const imageUrl = updated?.profileImage || updated?.image || previewUrl;
       if (imageUrl) {
         updateProfile({ avatar: imageUrl, profileImage: imageUrl });
       }
+      setStatusMessage({ type: 'success', text: 'Profile photo updated successfully!' });
     } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Failed to upload profile image.');
+      setStatusMessage({
+        type: 'error',
+        text: err.response?.data?.message || err.message || 'Failed to upload profile photo.',
+      });
+    } finally {
+      setUploadingImage(false);
     }
   };
 
+  const currentAvatarSrc = imagePreview || user?.avatar || user?.profileImage || user?.image || '';
+  const displayName = user?.fullName || user?.name || 'Patient';
+
   return (
     <div className={styles.page}>
-      <h1>Profile</h1>
+      <div className={styles.pageHeader}>
+        <h1>Patient Profile</h1>
+        <p className={styles.pageSub}>Manage your personal information and photo</p>
+      </div>
+
+      {statusMessage.text && (
+        <div
+          className={`${styles.statusAlert} ${
+            statusMessage.type === 'success' ? styles.alertSuccess : styles.alertError
+          }`}
+        >
+          {statusMessage.type === 'success' && <FontAwesomeIcon icon={faCheck} className={styles.alertIcon} />}
+          <span>{statusMessage.text}</span>
+        </div>
+      )}
 
       <div className={styles.grid}>
         <section className={styles.card}>
           <div className={styles.avatarSection}>
-            <div className={styles.avatarWrap}>
-              <img
-                src={user?.avatar || user?.profileImage || 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=200&h=200&fit=crop&crop=faces'}
-                alt={user?.fullName || user?.name}
-              />
-              <label className={styles.editAvatar} aria-label="Change photo" style={{ cursor: 'pointer' }}>
-                <FontAwesomeIcon icon={faPen} />
+            <div className={styles.avatarWrapper}>
+              <div className={styles.avatarContainer}>
+                <Avatar
+                  src={currentAvatarSrc}
+                  name={displayName}
+                  size="xl"
+                  className={styles.avatarElement}
+                />
+                {uploadingImage && (
+                  <div className={styles.uploadOverlay}>
+                    <FontAwesomeIcon icon={faSpinner} spin className={styles.spinner} />
+                  </div>
+                )}
+              </div>
+
+              <label
+                className={`${styles.editAvatarBtn} ${uploadingImage ? styles.disabledBtn : ''}`}
+                aria-label="Upload new photo"
+                title="Upload new photo"
+              >
+                <FontAwesomeIcon icon={faCamera} />
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
+                  disabled={uploadingImage}
                   style={{ display: 'none' }}
                 />
               </label>
             </div>
-            <div>
-              <h2>{user?.fullName || user?.name}</h2>
-              <p className={styles.muted}>{user?.email}</p>
+
+            <div className={styles.userHeaderDetails}>
+              <div className={styles.nameRow}>
+                <h2>{displayName}</h2>
+                <span className={styles.patientBadge}>Patient Account</span>
+              </div>
+              <p className={styles.muted}>{user?.email || 'No email provided'}</p>
+              <p className={styles.photoTip}>Recommended: Square JPG or PNG, max 5MB</p>
             </div>
           </div>
 
@@ -103,9 +175,11 @@ export default function Profile() {
               <Input label="Age" type="number" {...register('age')} />
               <Input label="Phone Number" {...register('phone')} />
             </div>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
+            <div className={styles.formActions}>
+              <Button type="submit" disabled={isSubmitting || uploadingImage}>
+                {isSubmitting ? 'Saving changes...' : 'Save Changes'}
+              </Button>
+            </div>
           </form>
         </section>
 
@@ -135,3 +209,4 @@ export default function Profile() {
     </div>
   );
 }
+

@@ -1,27 +1,49 @@
-import { classNames } from '../../../features/admin/utils/classNames'
-import styles from './Avatar.module.css'
+import { useState, useEffect } from 'react';
+import styles from './Avatar.module.css';
 
 function getInitials(name = '') {
-  return name
-    .replace('Dr. ', '')
-    .split(' ')
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
+  if (!name || typeof name !== 'string') return '';
+  const clean = name.replace(/^(Dr\.|Prof\.|Mr\.|Mrs\.|Ms\.)\s+/i, '').trim();
+  const parts = clean.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function Avatar({ name, src, size = 'md', status }) {
+function Avatar({ name = '', src = '', size = 'md', status, className = '', alt = '' }) {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [src]);
+
+  const initials = getInitials(name) || (name ? name.charAt(0).toUpperCase() : 'U');
+  const showImage = Boolean(src && !imgError);
+
+  const wrapperClasses = [
+    styles.wrapper,
+    styles[size] || styles.md,
+    className,
+  ].filter(Boolean).join(' ');
+
   return (
-    <span className={classNames(styles.wrapper, styles[size])}>
-      {src ? (
-        <img src={src} alt={name} className={styles.image} />
+    <span className={wrapperClasses}>
+      {showImage ? (
+        <img
+          src={src}
+          alt={alt || name || 'User avatar'}
+          className={styles.image}
+          onError={() => setImgError(true)}
+        />
       ) : (
-        <span className={styles.initials}>{getInitials(name)}</span>
+        <span className={styles.initials} aria-label={name || 'Avatar'}>
+          {initials}
+        </span>
       )}
-      {status && <span className={classNames(styles.statusDot, styles[status])} />}
+      {status && <span className={`${styles.statusDot} ${styles[status] || ''}`} />}
     </span>
-  )
+  );
 }
 
-export default Avatar
+export default Avatar;
+

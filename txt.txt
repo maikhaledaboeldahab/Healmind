@@ -1,0 +1,6 @@
+patient email  =  maiaboeldahab.work@gmail.com
+patient password  = Yh_12345  
+
+
+Doctor1 email = farah@healmind.com
+Doctor1 password = Yh_12345
