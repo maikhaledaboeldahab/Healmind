@@ -56,6 +56,7 @@ const LiveChat = () => {
             isOnline: idx % 2 === 0,
             lastMsg: conv.lastMessageText || "Active conversation",
             lastTime: conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "Today",
+            lastMessageAt: new Date(conv.lastMessageAt || 0).getTime(),
           }));
         setExtraPatients(fetchedPatients);
       }
@@ -72,14 +73,22 @@ const LiveChat = () => {
     isOnline: index % 2 === 0,
     lastMsg: p.notes?.[0]?.text || "Ready for consultation...",
     lastTime: p.lastSession || "Today",
+    lastMessageAt: p.lastMessageAt ? new Date(p.lastMessageAt).getTime() : 0,
   }));
 
   const dynamicPatientList = [...basePatientList];
   extraPatients.forEach((ep) => {
-    if (!dynamicPatientList.some((p) => p.id === ep.id || p.name === ep.name)) {
+    const existingIndex = dynamicPatientList.findIndex((p) => p.id === ep.id || p.name === ep.name);
+    if (existingIndex === -1) {
       dynamicPatientList.push(ep);
+    } else if (ep.lastMessageAt > dynamicPatientList[existingIndex].lastMessageAt) {
+      dynamicPatientList[existingIndex] = {
+        ...dynamicPatientList[existingIndex],
+        ...ep,
+      };
     }
   });
+  dynamicPatientList.sort((patientA, patientB) => patientB.lastMessageAt - patientA.lastMessageAt);
 
   const [selectedPatient, setSelectedPatient] = useState(() => {
     const passedName = location.state?.patientName;
@@ -101,6 +110,7 @@ const LiveChat = () => {
   const [recordedSummary, setRecordedSummary] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const messageThreadRef = useRef(null);
 
   // Socket listener for incoming patient messages
   useEffect(() => {
@@ -115,6 +125,7 @@ const LiveChat = () => {
         id: msgData.messageId || Date.now(),
         sender: msgData.senderRole || "patient",
         text: msgData.message,
+        timestampValue: new Date(msgData.timestamp || Date.now()).getTime(),
         timestamp: formatClockTime(),
       };
 
@@ -123,13 +134,21 @@ const LiveChat = () => {
 
       // Add to patient list if missing
       setExtraPatients((prev) => {
-        if (!prev.some((p) => p.id === pId || p.name === pName)) {
-          return [
-            ...prev,
-            { id: pId, name: pName, isOnline: true, lastMsg: msgData.message, lastTime: "Just now" },
-          ];
+        const incomingPatient = {
+          id: pId,
+          name: pName,
+          isOnline: true,
+          lastMsg: msgData.message,
+          lastTime: "Just now",
+          lastMessageAt: newMsg.timestampValue,
+        };
+        const existingIndex = prev.findIndex((p) => p.id === pId || p.name === pName);
+        if (existingIndex === -1) {
+          return [...prev, incomingPatient];
         }
-        return prev;
+        return prev.map((patient, index) => (
+          index === existingIndex ? { ...patient, ...incomingPatient } : patient
+        ));
       });
 
       setConversations((prev) => {
@@ -224,7 +243,12 @@ const LiveChat = () => {
     : [];
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messageThreadRef.current) {
+      messageThreadRef.current.scrollTo({
+        top: messageThreadRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   }, [currentMessages]);
 
   const handleSelectPatient = (patient) => {
@@ -246,9 +270,24 @@ const LiveChat = () => {
       id: Date.now(),
       sender: "doctor",
       text: messageText,
+      timestampValue: Date.now(),
       attachment: doc || null,
       timestamp: formatClockTime(),
     };
+
+    setExtraPatients((prev) => {
+      const existingIndex = prev.findIndex((p) => p.id === selectedPatient.id || p.name === selectedPatient.name);
+      const updatedPatient = {
+        ...selectedPatient,
+        lastMsg: messageText || "Attachment sent",
+        lastTime: "Just now",
+        lastMessageAt: newMessage.timestampValue,
+      };
+      if (existingIndex === -1) return [...prev, updatedPatient];
+      return prev.map((patient, index) => (
+        index === existingIndex ? { ...patient, ...updatedPatient } : patient
+      ));
+    });
 
     setConversations((prev) => {
       const existingIdMsgs = prev[selectedPatient.id] || [];
@@ -305,7 +344,7 @@ const LiveChat = () => {
   };
 
   return (
-    <div className="row g-3" style={{ height: "calc(100vh - 160px)", minHeight: "580px" }}>
+    <div className={`row g-3 ${styles.chatPage}`}>
       {/* Left Column: Patients List */}
       <div className="col-12 col-md-4 col-lg-3 h-100">
         <div className="bg-white rounded-4 shadow-sm p-3 h-100 d-flex flex-column">
@@ -366,7 +405,7 @@ const LiveChat = () => {
                 onEndChat={handleEndChatClick}
               />
 
-              <div className="flex-grow-1 p-3 p-md-4" style={{ overflowY: "auto" }}>
+              <div ref={messageThreadRef} className={`flex-grow-1 p-3 p-md-4 ${styles.messageThread}`}>
                 {isLoading ? (
                   <div className="text-center py-5">
                     <div className="spinner-border" style={{ color: "var(--color-primary)" }} role="status"></div>

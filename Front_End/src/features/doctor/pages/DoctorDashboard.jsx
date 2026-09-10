@@ -1,4 +1,4 @@
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import DoctorNavbar from "../components/Layout/DoctorNavbar/DoctorNavbar";
 import DoctorSidebar from "../components/Layout/DoctorSidebar/DoctorSidebar";
 import DoctorFooter from "../components/Layout/DoctorFooter/DoctorFooter";
@@ -16,16 +16,18 @@ import { useDoctor } from "../context/DoctorContext";
 const DoctorDashboard = () => {
   const { user } = useAuth();
   const { profile } = useDoctor();
+  const location = useLocation();
   const doctorName = profile?.name || user?.name || user?.fullName || "Doctor";
+  const isFixedHeightPage = location.pathname.includes("/livechat") || location.pathname.includes("/chatbot");
 
   return (
     <div className="dashboard-wrapper">
       <DoctorNavbar doctorName={doctorName} />
 
-      <div className="d-flex flex-grow-1">
+      <div className="d-flex flex-grow-1 doctor-body">
         <DoctorSidebar />
 
-        <main className="flex-grow-1 p-4">
+        <main className={`flex-grow-1 p-4 doctor-main ${isFixedHeightPage ? "doctor-main-fixed" : ""}`}>
           <Routes>
             <Route index element={<Navigate to="/doctor/dashboard" replace />} />
             <Route path="dashboard" element={<DoctorHome />} />

@@ -17,6 +17,16 @@ export default function SharedLogin() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const fillTestCredentials = (role) => {
+    const credentials = role === 'doctor'
+      ? { email: 'doctor1@healmind.com', password: 'Doctor1@123' }
+      : { email: 'patient1@healmind.com', password: 'Patient1@123' };
+
+    setEmail(credentials.email);
+    setPassword(credentials.password);
+    setError('');
+  };
+
   // If already authenticated, show choice instead of automatic trapping redirect loop
   if (isUserAuth || isAdminAuth) {
     const name = isUserAuth ? (user?.name || user?.fullName) : admin?.name;
@@ -147,6 +157,26 @@ export default function SharedLogin() {
             {isSubmitting ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className={styles.testAccounts}>
+          <span className={styles.testAccountsLabel}>Test account</span>
+          <div className={styles.testAccountButtons}>
+            <button
+              type="button"
+              className={styles.testAccountBtn}
+              onClick={() => fillTestCredentials('doctor')}
+            >
+              Fill Doctor
+            </button>
+            <button
+              type="button"
+              className={styles.testAccountBtn}
+              onClick={() => fillTestCredentials('patient')}
+            >
+              Fill Patient
+            </button>
+          </div>
+        </div>
 
         <p className={styles.footerText}>
           Don't have an account? <Link to="/register" className={styles.link}>Create one</Link>

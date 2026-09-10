@@ -37,10 +37,16 @@ export default function LiveChat() {
 
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [draft, setDraft] = useState('');
+  const threadRef = useRef(null);
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (threadRef.current) {
+      threadRef.current.scrollTo({
+        top: threadRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }, [messages]);
 
   const sendMessage = (e) => {
@@ -85,7 +91,7 @@ export default function LiveChat() {
         </div>
       </header>
 
-      <div className={styles.thread}>
+      <div className={styles.thread} ref={threadRef}>
         {messages.map((message) => (
           <div
             key={message.id}

@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import api from '../services/api';
+import { connectSocket, disconnectSocket } from '../services/socket';
 
 const AuthContext = createContext(null);
 
@@ -29,6 +30,7 @@ export function AuthProvider({ children }) {
       }
 
       window.localStorage.setItem('healmind_token', token);
+      connectSocket(token);
       const displayName = rawUser?.name || rawUser?.fullName || credentials.email.split('@')[0];
       const fullUserData = { ...rawUser, name: displayName, fullName: displayName, email: rawUser.email || credentials.email, token };
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(fullUserData));
@@ -59,6 +61,7 @@ export function AuthProvider({ children }) {
 
       if (token) {
         window.localStorage.setItem('healmind_token', token);
+        connectSocket(token);
       }
       const displayName = rawUser?.name || rawUser?.fullName || (formData instanceof FormData ? formData.get('name') : formData.name);
       const fullUserData = { ...rawUser, name: displayName, fullName: displayName, token };
@@ -82,6 +85,7 @@ export function AuthProvider({ children }) {
     } catch {
       // Ignore network errors on logout
     } finally {
+      disconnectSocket();
       window.localStorage.removeItem(STORAGE_KEY);
       window.localStorage.removeItem('healmind_token');
       setUser(null);

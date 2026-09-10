@@ -1,8 +1,12 @@
 .navbar {
   background-color: var(--white-color);
   border-bottom: 1px solid #dee2e6;
-  padding: 0.5rem 1.5rem;
-  height: 70px;
+  box-sizing: border-box;
+  padding: 0 1.5rem;
+  height: 70px !important;
+  min-height: 70px !important;
+  max-height: 70px;
+  flex: 0 0 70px;
 }
 
 .brand {
@@ -121,4 +125,4 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
+}

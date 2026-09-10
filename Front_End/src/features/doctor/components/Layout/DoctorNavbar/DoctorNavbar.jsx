@@ -44,7 +44,7 @@ const DoctorNavbar = ({ doctorName = "Doctor", doctorImg }) => {
       markAsRead(id);
     }
     setShowNotifDropdown(false);
-    const targetLink = notif.link || (notif.type === "new_message" ? "/doctor/chat" : null);
+    const targetLink = notif.link || (notif.type === "new_message" ? "/doctor/livechat" : null);
     if (targetLink) {
       const navState = notif.state || { patientId: notif.senderId, patientName: notif.senderName };
       navigate(targetLink, { state: navState });

@@ -1,6 +1,9 @@
 .navbar {
   display: flex;
   align-items: center;
+  height: 70px;
+  min-height: 70px;
+  flex-shrink: 0;
   gap: 16px;
   padding: 14px 24px;
   background-color: var(--hm-surface-container-lowest);

@@ -1,5 +1,8 @@
 .sidebar {
   width: 240px;
+  height: auto;
+  min-height: 0 !important;
+  align-self: stretch;
   background-color: var(--color-primary);
 }
 

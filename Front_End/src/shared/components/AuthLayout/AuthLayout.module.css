@@ -1,5 +1,5 @@
 .shell {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   grid-template-columns: 1fr 1fr;
   background-color: var(--color-bg);
@@ -52,6 +52,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   padding: var(--space-5);
 }
 
@@ -61,6 +62,9 @@
   }
   .panel {
     padding: var(--space-6) var(--space-4);
+  }
+  .formSide {
+    align-items: flex-start;
   }
   .headline {
     font-size: 1.75rem;

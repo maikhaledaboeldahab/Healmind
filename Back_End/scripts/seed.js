@@ -2,6 +2,9 @@ require("dotenv").config();
 
 const mongoose = require("mongoose");
 const { Admin } = require("../models/User");
+const seedDoctors = require("../seeds/doctor.seeds");
+const seedPatients = require("../seeds/patient.seeds");
+const seedSessions = require("../seeds/session.seeds");
 
 const seedSuperAdmin = async () => {
   try {
@@ -15,26 +18,29 @@ const seedSuperAdmin = async () => {
 
     if (existAdmin) {
       console.log("Already Found Admin");
-      return;
+    } else {
+      const newAdmin = {
+        name: "Super Admin",
+        email: process.env.EMAIL_ADMIN,
+        password: process.env.PASSWORD_ADMIN,
+        isSuperAdmin: true,
+      };
+
+      const admin = await Admin.create(newAdmin);
+
+      console.log("Super Admin Created Successfully");
+      console.log({
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        isSuperAdmin: admin.isSuperAdmin,
+      });
     }
 
-    const newAdmin = {
-      name: "Super Admin",
-      email: process.env.EMAIL_ADMIN,
-      password: process.env.PASSWORD_ADMIN,
-      isSuperAdmin: true,
-    };
-
-    const admin = await Admin.create(newAdmin);
-
-    console.log("Super Admin Created Successfully");
-    console.log({
-      id: admin._id,
-      name: admin.name,
-      email: admin.email,
-      role: admin.role,
-      isSuperAdmin: admin.isSuperAdmin,
-    });
+    await seedDoctors();
+    await seedPatients();
+    await seedSessions();
 
   } catch (error) {
     console.error("Seed Super Admin Error:", error);

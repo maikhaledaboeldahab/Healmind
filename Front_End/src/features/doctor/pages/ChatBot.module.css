@@ -1,7 +1,8 @@
 .page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 140px);
+  height: calc(100dvh - 70px - 50px - 48px);
+  min-height: 0;
   max-width: 820px;
   margin: 0 auto;
   padding: 0 var(--space-2);
@@ -104,6 +105,7 @@
 
 .thread {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -353,7 +355,7 @@
 
 @media (max-width: 576px) {
   .page {
-    height: calc(100vh - 120px);
+    height: calc(100dvh - 70px - 50px - 32px);
   }
   .bubbleAssistantWrapper,
   .bubbleUser {

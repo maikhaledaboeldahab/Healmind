@@ -29,6 +29,7 @@ export function NotificationProvider({ children }) {
               id: n._id || n.id,
               title: n.title || (isMsg ? 'New Message' : 'Notification'),
               message: n.message || '',
+              isRead: Boolean(n.isRead ?? n.read),
               read: Boolean(n.isRead ?? n.read),
               createdAt: n.createdAt || new Date().toISOString(),
               category,
@@ -64,6 +65,7 @@ export function NotificationProvider({ children }) {
           {
             ...notification,
             id: notification._id || notification.id || Date.now(),
+            isRead: false,
             read: false,
             createdAt: notification.createdAt || new Date().toISOString(),
             category,
@@ -87,10 +89,10 @@ export function NotificationProvider({ children }) {
     };
   }, [fetchNotifications]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !(n.isRead ?? n.read)).length;
 
   const markAsRead = async (id) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true, read: true } : n)));
     try {
       await api.patch(`/notifications/${id}/read`);
     } catch {
@@ -99,7 +101,7 @@ export function NotificationProvider({ children }) {
   };
 
   const markAllAsRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true, read: true })));
     try {
       await api.patch('/notifications/read-all');
     } catch {

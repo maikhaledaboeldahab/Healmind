@@ -1,3 +1,27 @@
+.chatPage {
+  height: calc(100dvh - 70px - 50px - 48px);
+  min-height: 0;
+}
+
+.messageThread {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .chatPage {
+    height: auto;
+  }
+
+  .chatPage > [class*="col-"] {
+    height: auto !important;
+  }
+
+  .chatPage > [class*="col-"] > div {
+    min-height: 360px;
+  }
+}
+
 .typingBubble {
   display: flex;
   gap: 4px;

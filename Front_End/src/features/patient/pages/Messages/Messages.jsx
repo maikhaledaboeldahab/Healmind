@@ -46,6 +46,7 @@ export default function Messages() {
   const [searchQuery, setSearchQuery] = useState('');
   const [threads, setThreads] = useState({});
   const [draft, setDraft] = useState('');
+  const threadRef = useRef(null);
   const bottomRef = useRef(null);
 
   // Real-time interval to smoothly update video call window eligibility
@@ -70,6 +71,7 @@ export default function Messages() {
         id: msgData.messageId || Date.now(),
         from: msgData.senderRole || 'doctor',
         text: msgData.message,
+        timestamp: new Date(msgData.timestamp || Date.now()).getTime(),
         time: new Date(msgData.timestamp || Date.now()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       };
 
@@ -135,6 +137,8 @@ export default function Messages() {
                 name: d.name || d.fullName || 'Doctor',
                 specialization: d.specialization || 'Mental Health Specialist',
                 image: (d.profileImage && !d.profileImage.includes('unsplash.com')) ? d.profileImage : null,
+                lastMessageText: '',
+                lastMessageAt: 0,
               });
             });
           }
@@ -143,14 +147,17 @@ export default function Messages() {
             rawConvs.forEach((conv) => {
               if (conv.otherUser) {
                 const id = conv.otherUser._id || conv.otherUser.id;
-                if (!docsMap.has(id)) {
-                  docsMap.set(id, {
-                    id,
-                    name: conv.otherUser.name || 'Doctor',
-                    specialization: 'Mental Health Specialist',
-                    image: (conv.otherUser.profileImage && !conv.otherUser.profileImage.includes('unsplash.com')) ? conv.otherUser.profileImage : null,
-                  });
-                }
+                const doctor = docsMap.get(id) || {
+                  id,
+                  name: conv.otherUser.name || 'Doctor',
+                  specialization: 'Mental Health Specialist',
+                  image: (conv.otherUser.profileImage && !conv.otherUser.profileImage.includes('unsplash.com')) ? conv.otherUser.profileImage : null,
+                  lastMessageText: '',
+                  lastMessageAt: 0,
+                };
+                doctor.lastMessageText = conv.lastMessageText || '';
+                doctor.lastMessageAt = new Date(conv.lastMessageAt || 0).getTime();
+                docsMap.set(id, doctor);
               }
             });
           }
@@ -200,6 +207,7 @@ export default function Messages() {
               id: m._id || m.id,
               from: m.senderModel === 'doctor' || m.sender?.role === 'doctor' ? 'doctor' : 'patient',
               text: m.message,
+              timestamp: new Date(m.createdAt).getTime(),
               time: new Date(m.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
             }));
             setThreads((prev) => ({
@@ -228,13 +236,26 @@ export default function Messages() {
   }, [allSessions, activeDoctor?.id, currentTime]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (threadRef.current) {
+      threadRef.current.scrollTo({
+        top: threadRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }, [activeMessages]);
 
-  const filteredDoctors = conversationDoctors.filter((doc) =>
-    doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doc.specialization.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDoctors = conversationDoctors
+    .filter((doc) =>
+      doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.specialization.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((doctorA, doctorB) => {
+      const lastMessageA = threads[doctorA.id]?.at(-1);
+      const lastMessageB = threads[doctorB.id]?.at(-1);
+      const timestampA = lastMessageA?.timestamp || doctorA.lastMessageAt || 0;
+      const timestampB = lastMessageB?.timestamp || doctorB.lastMessageAt || 0;
+      return timestampB - timestampA;
+    });
 
   const handleSelectDoctor = (docId) => {
     setSelectedDoctorId(docId);
@@ -250,6 +271,7 @@ export default function Messages() {
       id: Date.now(),
       from: 'patient',
       text: messageText,
+      timestamp: Date.now(),
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     };
 
@@ -302,6 +324,10 @@ export default function Messages() {
           {filteredDoctors.map((doc) => {
             const docThread = threads[doc.id] || [];
             const lastMessage = docThread[docThread.length - 1];
+            const latestText = lastMessage?.text || doc.lastMessageText;
+            const latestTime = lastMessage?.time || (doc.lastMessageAt
+              ? new Date(doc.lastMessageAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+              : 'Recent');
             const isSelected = doc.id === selectedDoctorId;
             const avatarUrl = getDoctorAvatar(doc);
 
@@ -325,11 +351,11 @@ export default function Messages() {
                 <div className={styles.itemContent}>
                   <div className={styles.itemTop}>
                     <h4 className={styles.doctorName}>{doc.name}</h4>
-                    <span className={styles.time}>{lastMessage?.time || 'Recent'}</span>
+                    <span className={styles.time}>{latestTime}</span>
                   </div>
                   <div className={styles.specialization}>{doc.specialization}</div>
                   <p className={styles.preview}>
-                    {lastMessage ? `${lastMessage.from === 'patient' ? 'You: ' : ''}${lastMessage.text}` : 'Start conversation...'}
+                    {latestText ? `${lastMessage?.from === 'patient' ? 'You: ' : ''}${latestText}` : 'Start conversation...'}
                   </p>
                 </div>
               </button>
@@ -390,7 +416,7 @@ export default function Messages() {
               </div>
             </header>
 
-            <div className={styles.thread}>
+              <div className={styles.thread} ref={threadRef}>
               {activeMessages.map((msg) => (
                 <div
                   key={msg.id}

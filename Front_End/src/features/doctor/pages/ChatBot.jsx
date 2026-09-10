@@ -118,10 +118,16 @@ export default function ChatBot() {
   const [draft, setDraft] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef(null);
+  const threadRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (threadRef.current) {
+      threadRef.current.scrollTo({
+        top: threadRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }, [messages, isLoading]);
 
   const handleClearChat = () => {
@@ -229,7 +235,7 @@ export default function ChatBot() {
         </button>
       </header>
 
-      <div className={styles.thread}>
+      <div className={styles.thread} ref={threadRef}>
         {messages.map((message) => (
           <div
             key={message.id}
@@ -320,4 +326,4 @@ export default function ChatBot() {
       </form>
     </div>
   );
-}
+}
